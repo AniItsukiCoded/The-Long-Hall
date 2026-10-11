@@ -49,3 +49,6 @@ The database URL is already in `js/net.js` (`FB_CONFIG`).
 - Camera: bogus mouse deltas after pointer lock are ignored, the field of view no longer pops when a chase starts or ends, and entering/leaving a locker eases the view instead of snapping.
 - Performance: adaptive render resolution, ~80 fps cap, 5 dynamic lights instead of 7, smaller film-grain layer, cached HUD writes, and the multiplayer player list no longer re-renders on every movement packet.
 - Multiplayer: everyone spawns in the same bed room at spread-out, non-overlapping spots; other players are self-lit so they are never a black silhouette.
+
+## v4.5
+- Closing the tab (Ctrl+W, the X) during a run or party now shows the browser's "Leave site?" prompt. Browsers only allow this after you have clicked or pressed a key on the page, which always happens before you can play.

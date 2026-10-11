@@ -308,6 +308,8 @@ function bindMP(){$('mMP').onclick=()=>{hide_('menu');show('mpmenu');$('mpErr').
  $('lobStart').onclick=()=>Net.start(Net.m?Net.m.df:1);$('lobLeave').onclick=mpLeave;$('lobDiff').oninput=e=>Net.setDiff(+e.target.value);
  $('lobCopy').onclick=()=>{try{navigator.clipboard.writeText(Net.code);$('lobCopy').textContent='Copied'}catch(e){}};
  const st=(id,fn)=>$(id).onclick=e=>{e.stopPropagation();fn()};st('specPrev',()=>specNext(-1));st('specNext',()=>specNext(1));st('specLeave',mpLeave);$('overLeave').onclick=mpLeave;
+ /* Ctrl+W / closing the tab by accident: ask first while a run or party is in progress */
+ addEventListener('beforeunload',e=>{const busy=(started||RUN||(MP&&Net.active))&&state!=='over'&&state!=='won'&&state!=='dead';if(!busy)return;e.preventDefault();e.returnValue='';return''});
  addEventListener('pagehide',()=>{if(MP&&Net.active)Net.leave()})}
 
 let lastF=0,fAcc=0,fN=0,okT=0,failPR=99,lastAvg=0,lastPR=0,lastRed=false,noGain=false;
