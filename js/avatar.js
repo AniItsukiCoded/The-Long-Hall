@@ -21,6 +21,21 @@ const PModel={
   const mesh=new THREE.SkinnedMesh(this.geo,mat);mesh.frustumCulled=false;mesh.add(bones[0]);g.add(mesh);mesh.updateMatrixWorld(true);mesh.bind(new THREE.Skeleton(bones,inv),new THREE.Matrix4());
   return{g,bones,mesh,mat,root:bones[0]}},
 };
+/* ---- network smoothing: snapshot interpolation ----
+   Samples are placed on the SENDER's clock (so arrival jitter does not matter) and played back a fraction of a second
+   in the past, tweening between two real samples. No chasing, no rubber-banding, no snapping. */
+const _S={x:0,z:0,yaw:0};
+function pushSample(o,s,ts){const now=performance.now();let t;
+ if(!o.buf){o.buf=[];o.off=null;o.lastTs=null;o.sp=80}const b=o.buf;
+ if(ts==null||isNaN(ts)){t=now}else{if(o.lastTs!=null&&ts<o.lastTs-2000){b.length=0;o.off=null}
+  if(o.lastTs!=null){const g=ts-o.lastTs;if(g>0&&g<400)o.sp=o.sp*.9+g*.1}o.lastTs=ts;
+  const d=now-ts;if(o.off==null||d<o.off)o.off=d;else o.off+=(d-o.off)*.02;t=ts+o.off}
+ if(b.length&&t<=b[b.length-1].t)t=b[b.length-1].t+1;s.t=t;b.push(s);if(b.length>16)b.shift()}
+const ivDelay=o=>Math.max(110,Math.min(220,1.6*(o.sp||80)+20));
+function sampleBuf(b,rt){const n=b?b.length:0;if(!n)return null;if(rt<=b[0].t)return b[0];const L=b[n-1];if(rt>=L.t)return L;
+ let i=n-2;while(i>0&&b[i].t>rt)i--;const p=b[i],c=b[i+1];
+ if(Math.hypot(c.x-p.x,c.z-p.z)>5)return rt-p.t<c.t-rt?p:c;   /* a real teleport (respawn): never tween across it */
+ const u=(rt-p.t)/(c.t-p.t);let dy=c.yaw-p.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));_S.x=p.x+(c.x-p.x)*u;_S.z=p.z+(c.z-p.z)*u;_S.yaw=p.yaw+dy*u;return _S}
 const _X=new THREE.Vector3(1,0,0),_Y=new THREE.Vector3(0,1,0),_q1=new THREE.Quaternion(),_q2=new THREE.Quaternion();
 class Avatar{
  constructor(nick,slot,scene){this.nick=nick;this.slot=slot;const m=PModel.create(slot);this.m=m;this.g=new THREE.Group();this.g.add(m.g);this.g.visible=false;
@@ -30,13 +45,11 @@ class Avatar{
  mkTag(s){const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.font='italic 34px "IM Fell English",Georgia,serif';x.textAlign='center';x.textBaseline='middle';x.lineWidth=7;x.strokeStyle='rgba(0,0,0,.85)';x.strokeText(s,128,34);x.fillStyle='#ece6d8';x.fillText(s,128,34);
   const t=new THREE.CanvasTexture(c),sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false,fog:false,opacity:.9}));sp.scale.set(1.0,.25,1);return sp}
  /* net snapshot (x,z,yaw,pitch,crouch,run) */
- snap(x,z,yaw,pitch,cr,run){if(!this.has){this.has=true;this.x=x;this.z=z;this.yaw=yaw;this.g.position.set(x,0,z)}this.tx=x;this.tz=z;this.tyaw=yaw;this.pitch=pitch;this.cr=cr;this.rn=run}
+ snap(x,z,yaw,pitch,cr,run,ts){if(!this.has){this.has=true;this.x=x;this.z=z;this.yaw=yaw;this.g.position.set(x,0,z)}pushSample(this,{x,z,yaw},ts);this.tx=x;this.tz=z;this.tyaw=yaw;this.pitch=pitch;this.cr=cr;this.rn=run}
  setScene(sc){if(this.g.parent)this.g.parent.remove(this.g);sc.add(this.g)}
  vis(v){this.g.visible=v}
  R(i,n,a){this.d[PModel.id[n]].setFromAxisAngle(i,a)}
- update(dt,lookerX,lookerZ){if(!this.has)return;const k=Math.min(1,dt*10);
-  const dx=this.tx-this.x,dz=this.tz-this.z;if(dx*dx+dz*dz>64){this.x=this.tx;this.z=this.tz}else{this.x+=dx*k;this.z+=dz*k}
-  let dy=this.tyaw-this.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));this.yaw+=dy*Math.min(1,dt*12);
+ update(dt,lookerX,lookerZ){if(!this.has)return;const s=sampleBuf(this.buf,performance.now()-ivDelay(this));if(s){this.x=s.x;this.z=s.z;this.yaw=s.yaw}
   const sp=Math.hypot(this.x-this.px,this.z-this.pz)/Math.max(dt,1e-3);this.px=this.x;this.pz=this.z;this.spd+=(Math.min(sp,7)-this.spd)*Math.min(1,dt*8);
   this.spitch+=(this.pitch-this.spitch)*Math.min(1,dt*10);this.crouch+=((this.cr?1:0)-this.crouch)*Math.min(1,dt*10);this.run+=((this.rn&&this.spd>3.6?1:0)-this.run)*Math.min(1,dt*8);
   this.g.position.set(this.x,0,this.z);this.g.rotation.y=this.yaw+Math.PI;

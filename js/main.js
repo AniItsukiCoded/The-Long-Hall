@@ -7,7 +7,7 @@ const DIFF=[
 {n:'Normal',spd:1,hear:11,sight:34,amb:0,d:['Faster than your walk, slower than your sprint','Hears sprinting from a room away','The way it was meant to be']},
 {n:'Hard',spd:1.15,hear:14,sight:42,amb:-.05,d:['Faster than your sprint once you hold all 4 fuses','Sprinting carries far','Darker halls']},
 {n:'Nightmare',spd:1.35,hear:18,sight:52,amb:-.1,d:['Faster than your sprint by the second fuse','He hears almost everything','Almost no light. Lockers are your only friend']}];
-let scene,cam,ren,clock,en,amb,fl,keys=0,state='menu',started=false,stam=1,yaw=0,pitch=0,bob=0,stepT=0,beatT=0,eStep=0,eventT=15,blackout=0,msgT=0,time=0,H=null,hideT=0,wasCh=false,scareT=0,from='menu',grace=0,lockTry=0,mxn=0,myn=0,bat=1,bot=0,hasKey=false,bats=0,sel='bottle',crouch=0,fovK=1,day=1,RUN=null,wakeT=0,W0=.5,wk=0,HELD={},kick=0,SC=null,nNotes=0,proj=[],noteT=0,dust=null,fon=true,NT=6,MP=false,mpPlay=false,dead=false,escd=false,paused=false,av={},specId=null,dying={},ending=false,poseT=0,enT=0,chkT=0,pendKill=false,enNet=null,WOFF={x:0,z:0},lastEStr='',fovCur=72,lastLock=0,visYaw=0,visPitch=0,snapT=0,vp={x:0,y:0,z:0},prMax=1,prCur=1;
+let scene,cam,ren,clock,en,amb,fl,keys=0,state='menu',started=false,stam=1,yaw=0,pitch=0,bob=0,stepT=0,beatT=0,eStep=0,eventT=15,blackout=0,msgT=0,time=0,H=null,hideT=0,wasCh=false,scareT=0,from='menu',grace=0,lockTry=0,mxn=0,myn=0,bat=1,bot=0,hasKey=false,bats=0,sel='bottle',crouch=0,fovK=1,day=1,RUN=null,wakeT=0,W0=.5,wk=0,HELD={},kick=0,SC=null,nNotes=0,proj=[],noteT=0,dust=null,fon=true,NT=6,MP=false,mpPlay=false,dead=false,escd=false,paused=false,av={},specId=null,dying={},ending=false,poseT=0,enT=0,chkT=0,pendKill=false,enNet=null,WOFF={x:0,z:0},lastEStr='',fovCur=72,lastLock=0,visYaw=0,visPitch=0,snapT=0,vp={x:0,y:0,z:0},prMax=1,prCur=1,lastESent=0,enS={buf:null,off:null,lastTs:null,sp:80};
 const _e={};function ws(id,p,v){const e=_e[id]||(_e[id]=document.getElementById(id));if(e.style[p]!==v)e.style[p]=v}
 const P={x:0,z:0,noisy:false,hidden:false,lk:null,yaw:0,pid:null},KEYS={};
 const RK='lhrun',loadRun=()=>{try{return JSON.parse(sessionStorage.getItem(RK))}catch(e){return null}},saveRun=r=>{try{r?sessionStorage.setItem(RK,JSON.stringify(r)):sessionStorage.removeItem(RK)}catch(e){}};
@@ -218,12 +218,12 @@ function rmAv(pid){const a=av[pid];if(!a)return;if(a.g.parent)a.g.parent.remove(
 function parseQ(pid,q){const a=av[pid];if(!a)return;const p=q.split(','),x=+p[0],z=+p[1],yw=+p[2],pt=+p[3],fl=+p[4]|0,lk=+p[5],T=a.T,wasH=T.hidden;
  T.hidden=!!(fl&8);T.crouch=!!(fl&1);T.noisy=!!(fl&2);T.lk=lk>=0?Level.lockers[lk]||null:null;T.yaw=yw;if(!T.hidden){T.px=x;T.pz=z}
  if(!wasH&&T.hidden&&T.lk&&Net.isHost()&&en&&en.cansee({x:T.px,z:T.pz,hidden:false,crouch:T.crouch}))en.check(T.lk,true);
- T.x=x;T.z=z;T.live=true;a.lit=!!(fl&4);a.snap(x,z,yw,pt,fl&1,fl&2)}
+ T.x=x;T.z=z;T.live=true;a.lit=!!(fl&4);a.snap(x,z,yw,pt,fl&1,fl&2,+p[6])}
 function avFrame(dt){for(const pid in av){const a=av[pid],pl=Net.players[pid],al=pl&&pl.a===0&&a.T.live;a.vis(!!(al&&!a.T.hidden&&!(state==='spec'&&specId===pid)));a.update(dt,P.x,P.z);if(a.has){a.src.x=a.x-Math.sin(a.yaw)*1.4;a.src.z=a.z-Math.cos(a.yaw)*1.4}}}
 /* ----- sync tick ----- */
 function netTick(dt){poseT-=dt;
- if(poseT<=0){poseT=.12;if(state==='play'&&!dead&&!escd){const fl=(P.crouch?1:0)|(P.noisy?2:0)|(fon&&bat>0&&!H?4:0)|(H?8:0);Net.pose(`${r2(P.x)},${r2(P.z)},${r2(yaw)},${r2(pitch)},${fl},${H?Level.lockers.indexOf(H):-1}`)}}
- if(Net.isHost()){enT-=dt;if(enT<=0){enT=.1;const g=en.g.position,s=`${day}|${r2(g.x)}|${r2(g.z)}|${r2(en.g.rotation.y)}|${Math.max(0,ES.indexOf(en.state))}|${en.tgtPid||''}`;if(s!==lastEStr){lastEStr=s;Net.sendEnemy(s)}}}
+ if(poseT<=0){poseT=.08;if(state==='play'&&!dead&&!escd){const fl=(P.crouch?1:0)|(P.noisy?2:0)|(fon&&bat>0&&!H?4:0)|(H?8:0);Net.pose(`${r2(P.x)},${r2(P.z)},${r2(Math.atan2(Math.sin(yaw),Math.cos(yaw)))},${r2(pitch)},${fl},${H?Level.lockers.indexOf(H):-1}`)}}
+ if(Net.isHost()){enT-=dt;if(enT<=0){enT=.08;const g=en.g.position,s=`${day}|${r2(g.x)}|${r2(g.z)}|${r2(en.g.rotation.y)}|${Math.max(0,ES.indexOf(en.state))}|${en.tgtPid||''}`;const nw=performance.now();if(s!==lastEStr||nw-lastESent>1500){lastEStr=s;lastESent=nw;Net.sendEnemy(s)}}}
  chkT-=dt;if(chkT<=0){chkT=.6;dayCheck();Net.watchdog()}}
 function dayCheck(){if(!Net.isHost()||!mpPlay||ending||!Net.m||Net.m.s!==1)return;const ks=Object.keys(Net.players);if(!ks.length||!ks.every(k=>Net.players[k].a>0))return;ending=true;
  setTimeout(()=>{ending=false;if(!Net.active||!Net.isHost()||!Net.m||Net.m.s!==1)return;const ps=Net.players,k2=Object.keys(ps);if(!k2.length||!k2.every(k=>ps[k].a>0))return;
@@ -235,7 +235,7 @@ function enemyTick(dt){en.lis=P;setCfg();if(!MP){en.update(dt,P,keys);return}
   if(en.found){en.found=false;const v=T.find(t=>t.hidden&&t.lk&&t.lk===en.lk);if(v)killT(v,now);en.state='patrol';en.T=null;en.cool=3}
   else for(const t of T){if(t.hidden)continue;const d=Math.hypot(t.x-g.x,t.z-g.z);if(d<1.15&&en.state!=='patrol'||d<.9){killT(t,now);break}}
   en.dist=Math.hypot(P.x-g.x,P.z-g.z)}
- else{en.net=enNet&&enNet.day===day?enNet:null;en.tgtPid=en.net?en.net.pid:'';en.puppet(dt);en.dist=Math.hypot(P.x-en.g.position.x,P.z-en.g.position.z)}}
+ else{en.sb=enS;en.net=enNet&&enNet.day===day?enNet:null;en.tgtPid=en.net?en.net.pid:'';en.puppet(dt);en.dist=Math.hypot(P.x-en.g.position.x,P.z-en.g.position.z)}}
 function killT(t,now){if(t===P)pendKill=true;else{Net.kill(t.pid);dying[t.pid]=now+9000}en.wait=2.4;if(en.state!=='scare'){en.state='patrol';en.T=null;en.cool=4}}
 /* ----- spectating ----- */
 function alivePids(){return Object.keys(av).filter(k=>{const p=Net.players[k];return p&&p.a===0&&av[k].T.live}).sort()}
@@ -253,7 +253,7 @@ function mpDie(){const d=[];let k=0;const put=t=>{const ang=k*2.4,r=.35+.1*k++;l
  if(H){const l=H;H=null;setTimeout(()=>{l.open=false},2500)}dead=true;P.hidden=false;P.lk=null;Net.setA(1);en.state='patrol';en.T=null;en.wait=0;en.cool=3;enterSpec('You were caught.')}
 function mpEscape(){escd=true;if(H)H=null;Net.setA(2);enterSpec('YOU ESCAPED.');say('YOU ESCAPED.',6000)}
 /* ----- day / party flow ----- */
-function resetRun(){keys=0;bat=1;bot=0;hasKey=false;bats=0;sel='bottle';nNotes=0;stam=1;H=null;fon=true;blackout=0;crouch=0;dead=false;escd=false;paused=false;pendKill=false;dying={};ending=false;wasCh=false;noteT=0;eventT=15;enNet=null;lastEStr='';
+function resetRun(){keys=0;bat=1;bot=0;hasKey=false;bats=0;sel='bottle';nNotes=0;stam=1;H=null;fon=true;blackout=0;crouch=0;dead=false;escd=false;paused=false;pendKill=false;dying={};ending=false;wasCh=false;noteT=0;eventT=15;enNet=null;enS.buf=null;enS.off=null;enS.lastTs=null;lastESent=0;lastEStr='';
  P.hidden=false;P.lk=null;P.crouch=false;P.noisy=false;P.pid=Net.pid;for(const k in KEYS)KEYS[k]=0;Net.resetPose();
  document.querySelectorAll('#fuses i').forEach(e=>e.classList.remove('on'));$('obj').textContent='FIND THE FUSES';$('note').classList.add('hidden');$('hud').classList.remove('spec');
  ['spec','over','pause','killfx','lockerfx'].forEach(hide_);ren.domElement.style.filter='';$('flash').style.opacity=0;$('chasefx').style.opacity=0;Aud.setHum(0,0);hud()}
@@ -261,7 +261,7 @@ function mpStartDay(m){mpPlay=false;MP=true;day=m.d;Aud.chase(false);for(const k
  ['menu','mpmenu','lobby','over','how','settings','pause','hud','spec','lids','card'].forEach(hide_);
  $('dayT').textContent='DAY '+day;$('dayP').textContent=DAYT[day-1];$('dayGo').classList.add('hidden');$('dayNew').classList.add('hidden');show('dayscr');
  setTimeout(()=>{if(!Net.active||!Net.m||Net.m.s!==1)return;const mm=Net.m;mkWorld(mm.sd);resetRun();Net.watchWorld(WH);for(const k of Net.sorted())mkAv(k);apply();mpPlay=true;begin()},day>1?2400:150)}
-function onMeta(m,old){lobRender();if(!m)return;
+function onMeta(m,old){lobRender();if(!m)return;if(old&&old.h!==m.h){enS.buf=null;enS.off=null;enS.lastTs=null;lastESent=0}
  if(m.s===1&&(!old||old.s!==1||old.d!==m.d||old.sd!==m.sd))return mpStartDay(m);
  if(m.s===2&&(!old||old.s!==2))return mpEnd(m);
  if(m.s===0&&old&&old.s!==0)mpToLobby()}
@@ -291,7 +291,7 @@ function wireNet(){Net.cb={meta:onMeta,
  player:(pid,v,ev,old)=>{if(mpPlay&&pid!==Net.pid){if(ev==='add')mkAv(pid);else if(ev==='del')rmAv(pid);else if(av[pid]){if(v&&v.q&&v.a===0)parseQ(pid,v.q);else av[pid].T.live=false}}
   if(pid===Net.pid&&ev==='chg'&&v&&v.k&&(!old||old.k!==v.k)){if(state==='play'&&!dead&&!escd)pendKill=true;Net.clearKill()}
   if(ev!=='chg'||!old||!v||old.a!==v.a||old.n!==v.n){plistRender();lobRender()}},
- enemy:s=>{const p=s.split('|');enNet={day:+p[0],x:+p[1],z:+p[2],r:+p[3],s:ES[+p[4]]||'patrol',pid:p[5]||''}},
+ enemy:s=>{const p=s.split('|');if(enNet&&enNet.day!==+p[0]){enS.buf=null;enS.off=null;enS.lastTs=null}enNet={day:+p[0],x:+p[1],z:+p[2],r:+p[3],s:ES[+p[4]]||'patrol',pid:p[5]||''};pushSample(enS,{x:enNet.x,z:enNet.z,yaw:enNet.r},+p[6])},
  event:e=>{if(!mpPlay||!e||e.u===Net.pid||e.k!==1)return;spawnBottle(e.x,e.y,e.z,e.a,e.b,e.c)},
  gone:()=>{say('The party was closed.',3000);mpLeave()}}}
 function pubRefresh(quiet){const e=$('pubList');if(!e)return;if(!quiet)e.innerHTML='<div class="pe">Looking for parties…</div>';

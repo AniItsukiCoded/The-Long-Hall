@@ -52,3 +52,8 @@ The database URL is already in `js/net.js` (`FB_CONFIG`).
 
 ## v4.5
 - Closing the tab (Ctrl+W, the X) during a run or party now shows the browser's "Leave site?" prompt. Browsers only allow this after you have clicked or pressed a key on the page, which always happens before you can play.
+
+## v4.6: multiplayer smoothness
+- Other players and the Boiled One are now drawn with snapshot interpolation: every position packet carries the sender's clock, and the game plays them back ~0.12-0.2 s in the past, tweening between two real samples. This removes rubber-banding, stutter and teleporting.
+- Position packets go out ~12 times a second (only when something changed), enemy packets ~12/s plus a 1.5 s heartbeat so a standing enemy no longer looks like a dead host.
+- Yaw is sent wrapped to +-pi; the host timeline is reset when the host changes or a new day starts.

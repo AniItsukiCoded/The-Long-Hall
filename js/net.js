@@ -67,12 +67,12 @@ const Net={
  finish(result){if(!this.isHost())return;this.ref.update({'m/s':2,'m/r':String(result).slice(0,120),'w':null,'e':null})},
  toLobby(){if(!this.isHost())return;const up={'m/s':0,'m/r':null,'w':null,'e':null};this.sorted().forEach(k=>{up['u/'+k+'/a']=0;up['u/'+k+'/q']=null;up['u/'+k+'/k']=null});this.ref.update(up)},
  /* ---------- player ---------- */
- pose(q){if(!this.active||q===this._lastQ)return;this._lastQ=q;this.ref.child('u/'+this.pid+'/q').set(q)},
+ pose(q){if(!this.active||q===this._lastQ)return;this._lastQ=q;this.ref.child('u/'+this.pid+'/q').set(q+','+(performance.now()|0))},
  resetPose(){this._lastQ=''},
  setA(a){if(!this.active)return;this._lastQ='';const up={};up['u/'+this.pid+'/a']=a;if(a)up['u/'+this.pid+'/q']=null;this.ref.update(up)},
  kill(pid){if(this.active)this.ref.child('u/'+pid+'/k').set(Date.now()%1e9)},
  clearKill(){if(this.active)this.ref.child('u/'+this.pid+'/k').remove()},
- sendEnemy(s){if(this.active)this.ref.child('e').set(s)},
+ sendEnemy(s){if(this.active)this.ref.child('e').set(s+'|'+(performance.now()|0))},
  /* ---------- world ---------- */
  unwatch(){this.wsubs.forEach(([r,e,f])=>r.off(e,f));this.wsubs=[]},
  watchWorld(h){this.unwatch();const w=(path,evs,fn)=>{const r=this.ref.child('w/'+path);evs.forEach(e=>{const f=r.on(e,s=>fn(s.key,s.val(),e));this.wsubs.push([r,e,f])})};

@@ -46,8 +46,8 @@ update(dt,PL,keys){const list=Array.isArray(PL)?PL:[PL],g=this.g.position,cf=thi
  if(this.acc>a0&&this.acc>=this.nextStep){this.nextStep=this.acc+this.stride;this.footstep()}else if(this.nextStep===undefined)this.nextStep=this.acc+this.stride}
 /* multiplayer client: follow the host's enemy */
 puppet(dt){const g=this.g.position,n=this.net;this.wait=0;this.anim(dt);if(!n)return;this.state=n.s;
- const dx=n.x-g.x,dz=n.z-g.z;if(Math.hypot(dx,dz)>6){g.x=n.x;g.z=n.z}else{const k=Math.min(1,dt*10);g.x+=dx*k;g.z+=dz*k}
- let dy=n.r-this.g.rotation.y;dy=Math.atan2(Math.sin(dy),Math.cos(dy));this.g.rotation.y+=dy*Math.min(1,dt*10);
+ const sb=this.sb,s=sb?sampleBuf(sb.buf,performance.now()-ivDelay(sb)):null;
+ if(s){g.x=s.x;g.z=s.z;this.g.rotation.y=s.yaw}else{g.x=n.x;g.z=n.z;this.g.rotation.y=n.r}
  const m=Math.hypot(g.x-(this.lx??g.x),g.z-(this.lz??g.z));this.lx=g.x;this.lz=g.z;if(m>1e-4){this.acc+=m;this.mv=true}
  if(this.nextStep===undefined)this.nextStep=this.acc+this.stride;if(this.acc>=this.nextStep){this.nextStep=this.acc+this.stride;this.footstep()}}
 think(dt,P,keys,sees,hears,csp){const g=this.g.position,cf=this.cfg;
