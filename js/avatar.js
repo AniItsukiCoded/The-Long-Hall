@@ -17,7 +17,7 @@ const PModel={
   for(let i=0;i<n;i++){const p=this.par[i];let q=this.Bq[i].clone(),v=this.Bp[i].clone();if(p>=0){const pi=this.Bq[p].clone().invert();q=pi.clone().multiply(this.Bq[i]);v=v.sub(this.Bp[p]).applyQuaternion(pi);bones[p].add(bones[i])}
    bones[i].position.copy(v);bones[i].quaternion.copy(q);bones[i]._bq=q.clone();
    inv.push(new THREE.Matrix4().compose(this.Bp[i],this.Bq[i],new THREE.Vector3(1,1,1)).invert())}
-  const mat=new THREE.MeshStandardMaterial({map:this.tex,color:this.TINT[slot%this.TINT.length],roughness:.9,metalness:0,emissive:0x0c0806,skinning:true,side:THREE.DoubleSide});
+  const mat=new THREE.MeshStandardMaterial({map:this.tex,color:this.TINT[slot%this.TINT.length],roughness:.9,metalness:0,emissive:new THREE.Color(this.TINT[slot%this.TINT.length]).multiplyScalar(.42),emissiveMap:this.tex,skinning:true,side:THREE.DoubleSide});
   const mesh=new THREE.SkinnedMesh(this.geo,mat);mesh.frustumCulled=false;mesh.add(bones[0]);g.add(mesh);mesh.updateMatrixWorld(true);mesh.bind(new THREE.Skeleton(bones,inv),new THREE.Matrix4());
   return{g,bones,mesh,mat,root:bones[0]}},
 };

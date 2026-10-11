@@ -43,3 +43,9 @@ The database URL is already in `js/net.js` (`FB_CONFIG`).
 
 ## v4.3: launching from anywhere
 `index.html` no longer links the css/js files directly. A small boot script downloads them and injects them in order, trying (1) files next to the page, (2) `raw.githubusercontent.com/AniItsukiCoded/The-Long-Hall/main/`, (3) the jsDelivr GitHub mirror. A source is only used if every file loads from it. So the same `index.html` works on GitHub Pages, the p5.js editor, localhost, or pasted on its own. Keep `css/` and `js/` in the repo root on the `main` branch. Change `USER`, `REPO`, `BR` at the top of the boot script if the repo moves.
+
+## v4.4 notes
+- The page is never reloaded any more (death, next day, win, abandon run, leave party all reset in place), so launching from `about:blank` keeps working.
+- Camera: bogus mouse deltas after pointer lock are ignored, the field of view no longer pops when a chase starts or ends, and entering/leaving a locker eases the view instead of snapping.
+- Performance: adaptive render resolution, ~80 fps cap, 5 dynamic lights instead of 7, smaller film-grain layer, cached HUD writes, and the multiplayer player list no longer re-renders on every movement packet.
+- Multiplayer: everyone spawns in the same bed room at spread-out, non-overlapping spots; other players are self-lit so they are never a black silhouette.

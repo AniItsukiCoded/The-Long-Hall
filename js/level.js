@@ -112,7 +112,7 @@ build(scene){let ok=false;for(let i=0;i<60&&!ok;i++)ok=this.gen(i>35);if(!ok)thr
  const im=new THREE.InstancedMesh(new THREE.BoxGeometry(S,H,S),this.wallMat,ws.length),m=new THREE.Matrix4();ws.forEach(([x,z],i)=>{m.setPosition(x*S,H/2,z*S);im.setMatrixAt(i,m)});scene.add(im);
  const mk=(t,y,rot)=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(W*S,D*S),new THREE.MeshStandardMaterial({map:t,roughness:.9}));p.rotation.x=rot;p.position.set((W-1)*S/2,y,(D-1)*S/2);scene.add(p)};
  mk(ft,0,-Math.PI/2);mk(ct,H,Math.PI/2);
- for(let i=0;i<7;i++){const l=new THREE.PointLight(0xffb070,0,12);scene.add(l);this.pool.push(l)}
+ for(let i=0;i<5;i++){const l=new THREE.PointLight(0xffb070,0,12);scene.add(l);this.pool.push(l)}
  Props.build(scene)},
 updLights(px,pz,dt,black,t){const src=this.src,pool=this.pool;this._lt-=dt;const re=this._lt<=0;if(re)this._lt=.25;const cand=this._c||(this._c=[]);cand.length=0;
  for(const s of src){

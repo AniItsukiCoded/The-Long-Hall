@@ -41,7 +41,7 @@ html,body{margin:0;background:#000}
 <div id="card" class="hidden"><h1>THE LONG<br>HALLS</h1><div>the boiled one</div></div>
 
 <div id="menu" class="screen">
-  <div id="ver">v4.3.0 · multiplayer</div>
+  <div id="ver">v4.4.0 · multiplayer</div>
   <div id="menuL">
     <button class="gb" id="start">Play</button>
     <button class="gb" id="mMP">Multiplayer</button>
@@ -119,7 +119,7 @@ html,body{margin:0;background:#000}
 (function(){
  var USER='AniItsukiCoded',REPO='The-Long-Hall',BR='main';
  var SOURCES=[
-  {n:'local',u:function(p){return new URL(p,document.baseURI).href}},
+  {n:'local',u:function(p){return new URL(p,document.baseURI).href},ok:function(){try{var u=new URL(document.baseURI);return u.protocol==='http:'||u.protocol==='https:'||u.protocol==='file:'}catch(e){return false}}},
   {n:'github raw',u:function(p){return 'https://raw.githubusercontent.com/'+USER+'/'+REPO+'/'+BR+'/'+p}},
   {n:'jsdelivr',u:function(p){return 'https://cdn.jsdelivr.net/gh/'+USER+'/'+REPO+'@'+BR+'/'+p}}
  ];
@@ -161,13 +161,14 @@ html,body{margin:0;background:#000}
   }).then(function(t){if(/^\s*</.test(t.slice(0,200)))throw new Error('got HTML instead of a file: '+url);return t})
  }
  function firstOk(urls){var i=0;return (function next(){if(i>=urls.length)return Promise.reject(new Error('could not load '+urls[0]));return fetchText(urls[i++]).catch(next)})()}
- function loadSet(src){got=0;return Promise.all(FILES.map(function(f){return fetchText(src.u(f[0]))}))}
+ function loadSet(src){got=0;return Promise.all(FILES.map(function(f){return Promise.resolve().then(function(){return fetchText(src.u(f[0]))})}))}
  function loadAll(){
   var i=0,last=null;
   var threeP=firstOk(THREE_URLS);threeP.catch(function(){});
   return (function tryNext(){
    if(i>=SOURCES.length)return Promise.reject(last||new Error('no source worked'));
    var s=SOURCES[i++];
+   if(s.ok&&!s.ok())return tryNext();   /* about:blank / sandboxed pages have no usable base URL */
    if(i>1)set(.04,'Trying '+s.n);
    return loadSet(s).then(function(files){return threeP.then(function(three){return {src:s,files:files,three:three}})}).catch(function(e){last=e;console.warn('[Long Halls] '+s.n+' failed: '+e.message);return tryNext()})
   })();

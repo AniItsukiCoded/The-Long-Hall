@@ -7,7 +7,8 @@ const DIFF=[
 {n:'Normal',spd:1,hear:11,sight:34,amb:0,d:['Faster than your walk, slower than your sprint','Hears sprinting from a room away','The way it was meant to be']},
 {n:'Hard',spd:1.15,hear:14,sight:42,amb:-.05,d:['Faster than your sprint once you hold all 4 fuses','Sprinting carries far','Darker halls']},
 {n:'Nightmare',spd:1.35,hear:18,sight:52,amb:-.1,d:['Faster than your sprint by the second fuse','He hears almost everything','Almost no light. Lockers are your only friend']}];
-let scene,cam,ren,clock,en,amb,fl,keys=0,state='menu',started=false,stam=1,yaw=0,pitch=0,bob=0,stepT=0,beatT=0,eStep=0,eventT=15,blackout=0,msgT=0,time=0,H=null,hideT=0,wasCh=false,scareT=0,from='menu',grace=0,lockTry=0,mxn=0,myn=0,bat=1,bot=0,hasKey=false,bats=0,sel='bottle',crouch=0,fovK=1,day=1,RUN=null,wakeT=0,W0=.5,wk=0,HELD={},kick=0,SC=null,nNotes=0,proj=[],noteT=0,dust=null,fon=true,NT=6,MP=false,mpPlay=false,dead=false,escd=false,paused=false,av={},specId=null,dying={},ending=false,poseT=0,enT=0,chkT=0,pendKill=false,enNet=null,WOFF={x:0,z:0},lastEStr='';
+let scene,cam,ren,clock,en,amb,fl,keys=0,state='menu',started=false,stam=1,yaw=0,pitch=0,bob=0,stepT=0,beatT=0,eStep=0,eventT=15,blackout=0,msgT=0,time=0,H=null,hideT=0,wasCh=false,scareT=0,from='menu',grace=0,lockTry=0,mxn=0,myn=0,bat=1,bot=0,hasKey=false,bats=0,sel='bottle',crouch=0,fovK=1,day=1,RUN=null,wakeT=0,W0=.5,wk=0,HELD={},kick=0,SC=null,nNotes=0,proj=[],noteT=0,dust=null,fon=true,NT=6,MP=false,mpPlay=false,dead=false,escd=false,paused=false,av={},specId=null,dying={},ending=false,poseT=0,enT=0,chkT=0,pendKill=false,enNet=null,WOFF={x:0,z:0},lastEStr='',fovCur=72,lastLock=0,visYaw=0,visPitch=0,snapT=0,vp={x:0,y:0,z:0},prMax=1,prCur=1;
+const _e={};function ws(id,p,v){const e=_e[id]||(_e[id]=document.getElementById(id));if(e.style[p]!==v)e.style[p]=v}
 const P={x:0,z:0,noisy:false,hidden:false,lk:null,yaw:0,pid:null},KEYS={};
 const RK='lhrun',loadRun=()=>{try{return JSON.parse(sessionStorage.getItem(RK))}catch(e){return null}},saveRun=r=>{try{r?sessionStorage.setItem(RK,JSON.stringify(r)):sessionStorage.removeItem(RK)}catch(e){}};
 const DAYT=['The power failed in the night. Find the fuses.','The halls have moved. He is faster, and he remembers you.','Third day. He knows how you hide.','Fourth day. He is waiting at every door.','The last day. There will not be another.'];
@@ -27,7 +28,7 @@ function buildOpts(){const cb=(k,t)=>`<label class="cb"><input type="checkbox" d
   e.oninput=()=>{SET[k]=e.type==='checkbox'?e.checked:+e.value;save();apply()}});bind();$('rs').onclick=()=>{SET=Object.assign({},DEF);save();bind();apply()}}
 function init(){
  cam=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,.05,80);cam.rotation.order='YXZ';
- ren=new THREE.WebGLRenderer({canvas:$('gl'),antialias:true});ren.setPixelRatio(Math.min(devicePixelRatio,1.5));ren.setSize(innerWidth,innerHeight);
+ ren=new THREE.WebGLRenderer({canvas:$('gl'),antialias:true});prMax=prCur=Math.min(devicePixelRatio||1,1.5);ren.setPixelRatio(prCur);ren.setSize(innerWidth,innerHeight);
  amb=new THREE.AmbientLight(0x2a2018,.12);
  fl=new THREE.SpotLight(0xffdfae,1.9,22,.5,.6,1.5);cam.add(fl);fl.position.set(0,0,0);const tg=new THREE.Object3D();tg.position.set(0,0,-1);cam.add(tg);fl.target=tg;
  mkWorld(null);HELD=Props.held();for(const k in HELD){HELD[k].visible=false;HELD[k].position.set(.27,-.27,-.52);cam.add(HELD[k])}clock=new THREE.Clock();Menu3D.init();buildOpts();apply();
@@ -36,10 +37,10 @@ function init(){
   if(e.code==='KeyF'&&!H){fon=!fon;Aud.tone(fon&&bat>0?1200:700,.05,'square',.1)}if(e.code==='KeyG'&&!H)throwBottle();if(e.code==='KeyE')interact();if((e.code==='KeyQ'||e.code==='Space')&&!H){e.preventDefault();dropItem()}if(e.code==='KeyR'&&!H)useBattery();if(e.code==='Digit1')selItem('bottle');if(e.code==='Digit2')selItem('battery');if(e.code==='Digit3')selItem('key');if(e.code==='ControlLeft'||e.code==='ControlRight')e.preventDefault();if(e.code==='KeyP')pause()});
  addEventListener('keyup',e=>KEYS[e.code]=0);
  addEventListener('wheel',e=>{if(state!=='play'||H||paused)return;const a=['bottle','battery','key'].filter(t=>cnt(t)>0);if(a.length<2)return;const i=a.indexOf(sel);sel=a[(i+(e.deltaY>0?1:a.length-1))%a.length];hud()},{passive:true});
- addEventListener('mousemove',e=>{mxn=e.clientX/innerWidth-.5;myn=e.clientY/innerHeight-.5;if(document.pointerLockElement&&state==='play'&&!paused){yaw-=e.movementX*.0022*SET.sens;pitch=Math.max(-1.4,Math.min(1.4,pitch+(SET.invy?1:-1)*e.movementY*.0022*SET.sens))}});
+ addEventListener('mousemove',e=>{mxn=e.clientX/innerWidth-.5;myn=e.clientY/innerHeight-.5;if(document.pointerLockElement&&state==='play'&&!paused){const dx=e.movementX||0,dy=e.movementY||0;if(performance.now()-lastLock<150||Math.abs(dx)>450||Math.abs(dy)>450)return;/* browsers sometimes report one huge bogus delta right after (re)locking: that was the camera flick */yaw-=dx*.0022*SET.sens;pitch=Math.max(-1.4,Math.min(1.4,pitch+(SET.invy?1:-1)*dy*.0022*SET.sens))}});
  document.addEventListener('pointerdown',()=>{if(!Aud.ctx){Aud.init();apply()}},{once:true});
  document.addEventListener('click',()=>{if(state==='spec'&&!paused)return specNext(1);if((state==='play'||state==='wake')&&!paused&&!document.pointerLockElement)lock()});
- document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement)hide_('lockhint');else if(state==='play'&&performance.now()>grace)pause()});
+ document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement){lastLock=performance.now();hide_('lockhint')}else if(state==='play'&&performance.now()>grace)pause()});
  const away=()=>{Aud.fade(false);if(!MP)pause()};
  document.addEventListener('visibilitychange',()=>document.hidden?away():Aud.fade(true));addEventListener('blur',away);addEventListener('focus',()=>{if(!document.hidden)Aud.fade(true)});
  document.querySelectorAll('.gb').forEach(b=>b.addEventListener('mouseenter',()=>{if(Aud.ctx&&Aud.ctx.state==='running')Aud.tone(170,.08,'sine',.08)}));
@@ -47,8 +48,8 @@ function init(){
  $('mHow').onclick=()=>{hide_('menu');show('how')};$('hBack').onclick=()=>{hide_('how');show('menu')};
  $('sBack').onclick=()=>{hide_('settings');show(from)};$('mQuit').onclick=()=>{show('quit');setTimeout(()=>hide_('quit'),2200)};
 
- $('dayGo').onclick=begin;$('dayNew').onclick=()=>{saveRun(null);location.reload()};$('pAb').onclick=()=>{if(MP)return mpLeave();saveRun(null);location.reload()};
- RUN=loadRun();if(RUN&&RUN.day>=1&&RUN.day<=MAXD){day=RUN.day;time=RUN.time||0;hide_('menu');$('dayT').textContent='DAY '+day;const left=MAXD-day+1;$('dayP').textContent=(RUN.died?`It found you. ${left} ${left===1?'day':'days'} left. `:'')+DAYT[day-1];show('dayscr')}else RUN=null;
+ $('dayGo').onclick=begin;$('dayNew').onclick=toMenu;$('pAb').onclick=()=>{if(MP)return mpLeave();toMenu()};
+ {const r=loadRun();if(r&&r.day>=1&&r.day<=MAXD)showDay(r);else RUN=null}
  let seen=false;try{seen=!!localStorage.getItem('lhw')}catch(e){}if(!seen)try{seen=!!sessionStorage.getItem('lhw')}catch(e){}if(!seen)show('warn');
  const wok=()=>{try{localStorage.setItem('lhw','1')}catch(e){}try{sessionStorage.setItem('lhw','1')}catch(e){}hide_('warn')};$('wOk').onclick=wok;$('wSafe').onclick=()=>{SET.safe=true;save();buildOpts();apply();wok()};
  bindMP();loop()}
@@ -57,7 +58,7 @@ function lock(){try{const p=ren.domElement.requestPointerLock();if(p&&p.catch)p.
 function begin(){if(!Aud.ctx){Aud.init();apply()}Aud.fade(true);Aud.level(1);hide_('menu');hide_('dayscr');hide_('lobby');hide_('mpmenu');show('hud');show('lids');started=true;state='wake';wakeT=0;wk=0;W0=(MP?day>1:RUN)?.6:2.8;WOFF=MP?spawnOff():{x:0,z:0};grace=performance.now()+9000;fon=true;fl.intensity=0;
  if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();$('dayl').textContent='DAY '+day;lock();if(!(MP?day>1:RUN))show('card');hud()}
 const lidSet=o=>{const h=(1-o)*52+'%',c=$('lids').children;c[0].style.height=h;c[1].style.height=h};
-function endWake(){const st=Level.start;state='play';wk=9;P.x=st.x+WOFF.x;P.z=st.z+WOFF.z;yaw=st.yaw;pitch=0;ren.domElement.style.filter='';hide_('lids');grace=performance.now()+1500;if(!document.pointerLockElement)show('lockhint');say(day===1?'Find the fuses.':DAYT[day-1],4500);hud()}
+function endWake(){const st=Level.start;state='play';wk=9;fovCur=SET.fov;snapT=0;P.x=st.x+WOFF.x;P.z=st.z+WOFF.z;yaw=st.yaw;pitch=0;ren.domElement.style.filter='';hide_('lids');grace=performance.now()+1500;if(!document.pointerLockElement)show('lockhint');say(day===1?'Find the fuses.':DAYT[day-1],4500);hud()}
 function updWake(dt){wakeT+=dt;const t=wakeT-W0,st=Level.start,n=[-st.s[0],-st.s[1]];en.anim(dt);Props.update(dt,wakeT,P);Level.updLights(st.x,st.z,dt,0,wakeT);updDust(dt);
  const o=t<0?0:lidK(t),sit=ease((t-2.7)/1.5),stand=ease((t-4.2)/1.6);lidSet(o);
  ren.domElement.style.filter=t>5.4?'':`blur(${Math.max(0,(1-o)*9+Math.max(0,1-t/5.4)*5).toFixed(1)}px)`;
@@ -76,9 +77,9 @@ function take(f){if(MP){Net.fuse(f.i,ok=>{if(!ok)say('Someone already took it.',
 function fuseGot(f,who){if(f.taken)return;f.taken=true;f.g.visible=false;f.l.intensity=0;keys++;Aud.pickup();document.querySelectorAll('#fuses i').forEach((e,i)=>e.classList.toggle('on',i<keys));
  say(who&&who!==Net.pid?`${nickOf(who)} took a fuse. (${keys}/4)`:keys<4?['It hums in your hand.','Something heard that.','It knows where you are.'][keys-1]:'Four fuses. The exit is waiting.');
  if(keys===4){Level.xd.lt.color.set(0x33ff66);Level.xd.sg.material.color.set(0x66ff88);$('obj').textContent='REACH THE EXIT'}}
-function hide(l){const pre={x:P.x,z:P.z,hidden:false,crouch:!!P.crouch};H=l;hideT=0;l.open=false;P.x=l.cx;P.z=l.cz;yaw=l.yaw;pitch=0;if(MP){if(Net.isHost()&&en.cansee(pre))en.check(l,true)}else if(en.seen&&en.dist<DIFF[SET.diff].sight)en.check(l,true);
+function hide(l){const pre={x:P.x,z:P.z,hidden:false,crouch:!!P.crouch};H=l;hideT=0;snapT=.3;l.open=false;P.x=l.cx;P.z=l.cz;yaw=l.yaw;pitch=0;if(MP){if(Net.isHost()&&en.cansee(pre))en.check(l,true)}else if(en.seen&&en.dist<DIFF[SET.diff].sight)en.check(l,true);
  show('lockerfx');Level.lockLight.position.set(l.cx,1.9,l.cz);Level.lockLight.intensity=.4;Aud.locker();Aud.muffle(true)}
-function leave(){const l=H;H=null;l.open=true;setTimeout(()=>{if(H!==l)l.open=false},2500);P.x=l.px;P.z=l.pz;hide_('lockerfx');Level.lockLight.intensity=0;Aud.locker();Aud.muffle(false)}
+function leave(){const l=H;H=null;snapT=.25;l.open=true;setTimeout(()=>{if(H!==l)l.open=false},2500);P.x=l.px;P.z=l.pz;hide_('lockerfx');Level.lockLight.intensity=0;Aud.locker();Aud.muffle(false)}
 function target(){if(H)return null;let best=null,bs=99;const fx=-Math.sin(yaw),fz=-Math.cos(yaw);
  const tr=(k,o,x,z,lim,fac,label)=>{const dx=x-P.x,dz=z-P.z,d=Math.hypot(dx,dz);if(d>lim)return;const dot=d>.01?(dx*fx+dz*fz)/d:1;if(fac&&dot<.25&&d>1.1)return;const s=d-dot*.8;if(s<bs){bs=s;best={k,o,label}}};
  for(const f of Level.fuses)if(!f.taken)tr('fuse',f,f.x,f.z,1.9,0,'[E] TAKE FUSE');
@@ -117,7 +118,7 @@ function throwBottle(){if(state!=='play'||H||bot<=0)return;bot--;kick=1;const cp
  const bx=P.x+f[0]*.4,bz=P.z+f[2]*.4,vx=f[0]*12,vy=f[1]*12+1.6,vz=f[2]*12;spawnBottle(bx,1.5,bz,vx,vy,vz);if(MP){const r=n=>Math.round(n*100)/100;Net.throwB({k:1,u:Net.pid,x:r(bx),y:1.5,z:r(bz),a:r(vx),b:r(vy),c:r(vz)})}Aud.tone(300,.1,'sine',.1,200);hud()}
 function spawnBottle(x,y,z,vx,vy,vz){const mt=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,.22,8),new THREE.MeshStandardMaterial({color:0x4a7a4a,transparent:true,opacity:.8,roughness:.2}));mt.position.set(x,y,z);scene.add(mt);proj.push({m:mt,vx,vy,vz})}
 function shatter(x,y,z){Aud.glass(MP?Math.max(.12,1-Math.hypot(x-P.x,z-P.z)/32):1);if(!MP||Net.isHost())en.hearNoise(x,z);const n=10,pg=new THREE.BufferGeometry(),a=new Float32Array(n*3);for(let i=0;i<n;i++){a[i*3]=x+(R()-.5)*.3;a[i*3+1]=y+R()*.2;a[i*3+2]=z+(R()-.5)*.3}pg.setAttribute('position',new THREE.BufferAttribute(a,3));
- const pt=new THREE.Points(pg,new THREE.PointsMaterial({map:Props.dot(),color:0x9fd8a8,size:.08,transparent:true,opacity:.9,depthWrite:false}));scene.add(pt);setTimeout(()=>{scene.remove(pt);pg.dispose()},900)}
+ const pt=new THREE.Points(pg,new THREE.PointsMaterial({map:Props.dot(),color:0x9fd8a8,size:.08,transparent:true,opacity:.9,depthWrite:false}));scene.add(pt);setTimeout(()=>{scene.remove(pt);pg.dispose();pt.material.dispose()},900)}
 function initDust(){const n=220,pg=new THREE.BufferGeometry(),a=new Float32Array(n*3);for(let i=0;i<n;i++){a[i*3]=(R()-.5)*16;a[i*3+1]=R()*3;a[i*3+2]=(R()-.5)*16}pg.setAttribute('position',new THREE.BufferAttribute(a,3));
  dust=new THREE.Points(pg,new THREE.PointsMaterial({map:Props.dot(),color:0xccbbaa,size:.035,transparent:true,opacity:.5,depthWrite:false}));dust.frustumCulled=false;scene.add(dust)}
 function updDust(dt){const a=dust.geometry.attributes.position;for(let i=0;i<a.count;i++){let x=a.getX(i),y=a.getY(i)+dt*.05,z=a.getZ(i);const dx=x-P.x,dz=z-P.z;if(dx>8)x-=16;else if(dx<-8)x+=16;if(dz>8)z-=16;else if(dz<-8)z+=16;if(y>3)y=0;a.setXYZ(i,x,y,z)}a.needsUpdate=true}
@@ -135,20 +136,24 @@ function update(dt){
  if(d<16){eStep-=dt;if(eStep<=0){Aud.thud(1-d/16);eStep=ch?.4:.8}}
  const bs=SET.bob?1:0;if(H)cam.position.set(H.cx-H.nx*.08,1.55+Math.sin(time*1.6)*.004,H.cz-H.nz*.08);
  else{cam.position.set(P.x,1.65-.6*crouch+Math.sin(bob)*(run?.07:.04)*bs*(1-.6*crouch),P.z);const sh=fear>.5?(fear-.5)*.02:0;cam.position.x+=(R()-.5)*sh;cam.position.z+=(R()-.5)*sh}
- cam.rotation.set(pitch,yaw,Math.sin(bob*.5)*.01*(mv?bs:0));fovK+=((ch&&!H?1.3:1)-fovK)*Math.min(1,dt*6);cam.fov=Math.min(160,(H?58:SET.fov)*fovK-(ch?0:fear*8));cam.updateProjectionMatrix();
+ {let ry=yaw,rp=pitch;/* entering/leaving a locker used to snap the view: ease it */
+  if(snapT>0){snapT-=dt;const k=Math.min(1,dt*12);let dy=yaw-visYaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));visYaw+=dy*k;visPitch+=(pitch-visPitch)*k;vp.x+=(cam.position.x-vp.x)*k;vp.y+=(cam.position.y-vp.y)*k;vp.z+=(cam.position.z-vp.z)*k;ry=visYaw;rp=visPitch;cam.position.set(vp.x,vp.y,vp.z)}
+  else{visYaw=yaw;visPitch=pitch;vp.x=cam.position.x;vp.y=cam.position.y;vp.z=cam.position.z}
+  cam.rotation.set(rp,ry,Math.sin(bob*.5)*.01*(mv?bs:0))}
+ fovK+=((ch&&!H?1.3:1)-fovK)*Math.min(1,dt*6);const tf=Math.min(160,(H?58:SET.fov)*fovK-(ch?0:fear*8));fovCur+=(tf-fovCur)*Math.min(1,dt*8);cam.fov=fovCur;cam.updateProjectionMatrix();
  if(fon&&!H&&bat>0){const b0=bat;bat=Math.max(0,bat-dt/210);if(b0>0&&bat<=0){say('The flashlight dies.',2500);Aud.dead()}}let fi=2.1;if(SET.safe){fi*=1-fear*.3;if(bat<.2)fi*=.6}else{if(fear>.3&&R()<fear*.35)fi=R()*.8;if(bat<.2&&bat>0&&R()<.1+(.2-bat)*1.5)fi*=.25}if(bat<=0||!fon)fi=0;if(blackout>0){blackout-=dt;fi=0}fl.intensity=H?0:fi;
  if(H)Level.lockLight.intensity=blackout>0?0:.3+fear*.3*(R()<.3?1:.4);
  Level.updLights(P.x,P.z,dt,blackout,time);updDust(dt);updHeld(dt,mv,run);
  for(let i=proj.length-1;i>=0;i--){const p=proj[i],q=p.m;p.vy-=14*dt;const nx=q.position.x+p.vx*dt,ny=q.position.y+p.vy*dt,nz=q.position.z+p.vz*dt;if(ny<.06||ny>Level.H||Level.wall(nx,nz)||Level.hitCol(nx,nz)){shatter(q.position.x,Math.max(.06,q.position.y),q.position.z);scene.remove(q);proj.splice(i,1);continue}q.position.set(nx,ny,nz);q.rotation.x+=dt*14;q.rotation.z+=dt*9}
  if(noteT>0){noteT-=dt;if(noteT<=0)$('note').classList.add('hidden')}
- $('batfill').style.width=bat*100+'%';$('batfill').style.background=bat<.2?'#a31616':'';
+ ws('batfill','width',Math.round(bat*1000)/10+'%');ws('batfill','background',bat<.2?'#a31616':'');
  beatT-=dt;if(fear>.15&&beatT<=0){Aud.beat(Math.min(1,fear*1.4));beatT=1.1-fear*.7}Aud.setHum(fear*.35,fear);
- $('vig').style.opacity=.75+fear*.25;$('chasefx').style.opacity=ch?.55+Math.sin(time*(SET.safe?3:9))*(SET.safe?.1:.25):0;
+ ws('vig','opacity',String(+(.75+fear*.25).toFixed(2)));ws('chasefx','opacity',String(ch?+(.55+Math.sin(time*(SET.safe?3:9))*(SET.safe?.1:.25)).toFixed(2):0));
  eventT-=dt;if(eventT<=0){eventT=15+R()*25;if(R()<.5){blackout=1.2;Aud.bang()}else Aud.creak()}
  let pr='';if(H)pr=hideT>.8?'[E] LEAVE LOCKER':'';else{
   const x=Level.xd,xd=Math.hypot(x.x-P.x,x.z-P.z);if(x.open&&x.t>.8&&xd<1.3){$('flash').style.background='#fff';$('flash').style.opacity=1;state='won';setTimeout(()=>{$('flash').style.opacity=0;MP?mpEscape():over(true)},900);return}
   const tg=target();pr=tg?tg.label:''}
- $('prompt').textContent=SET.hints?pr:'';$('stamfill').style.width=stam*100+'%'}
+ {const pe=$('prompt'),pv=SET.hints?pr:'';if(pe.textContent!==pv)pe.textContent=pv}ws('stamfill','width',Math.round(stam*1000)/10+'%')}
 function updHeld(dt,mv,run){const t=!H&&state==='play'&&cnt(sel)>0?sel:null;for(const k in HELD)HELD[k].visible=k===t;if(!t)return;kick=Math.max(0,kick-dt*3.2);const h=HELD[t],bs=SET.bob&&mv?1:0;
  h.position.set(.27+Math.sin(bob*.5)*.01*bs,-.27+Math.abs(Math.sin(bob))*.014*bs-kick*.3-crouch*.02,-.52+kick*.16);h.rotation.set(-.35-kick*1.2,.5+Math.sin(time*.7)*.03,.15+Math.sin(time*1.1)*.02)}
 function scare(){paused=false;hide_('pause');state='scare';scareT=0;en.state='scare';for(const k in HELD)HELD[k].visible=false;hide_('hud');const g=en.g.position,dx=g.x-P.x,dz=g.z-P.z,dd=Math.hypot(dx,dz);let ux,uz;
@@ -174,10 +179,10 @@ function updScare(dt){scareT+=dt;const t=scareT;en.anim(dt);Props.update(dt,time
  if(t>3.1){f.style.opacity=0;over(false)}}
 function over(w){if(MP&&!w){mpDie();return}state=w?'won':'dead';document.exitPointerLock();hide_('hud');hide_('lockerfx');hide_('killfx');ren.domElement.style.filter='';$('flash').style.opacity=0;const st=`FUSES ${keys}/4 · NOTES ${nNotes}/${NT} · TIME ${fmt(time)}`;
  /* Granny rules: getting caught costs you a day. Survive the five days and you are out; escape on any day and you win. */
- if(!w&&day<MAXD){saveRun({day:day+1,time,died:1});location.reload();return}
+ if(!w&&day<MAXD){spNextDay();return}
  if(w)saveRun(null);else saveRun(null);show('over');
  $('overT').textContent=w?'YOU ESCAPED':'THE FIFTH DAY IS OVER';$('overP').textContent=w?(day===1?'On the very first day. He will not forgive that.':`On day ${day}. The halls fall silent. For now.`):'Five days. He has you now.';$('overS').textContent=`DAY ${day} · `+st;
- const b=$('overBtn');b.textContent=w?'Again':'Start over from day 1';b.onclick=()=>{saveRun(null);location.reload()}}
+ const b=$('overBtn');b.textContent=w?'Again':'Start over from day 1';b.onclick=toMenu}
 /* ================= WORLD (rebuildable) ================= */
 function disposeScene(sc){sc.traverse(o=>{if(o.geometry&&o.geometry.dispose)o.geometry.dispose();const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];for(const m of ms){for(const k in m){const v=m[k];if(v&&v.isTexture)v.dispose()}m.dispose()}})}
 function mkWorld(seed){if(scene){scene.remove(cam);scene.remove(amb);disposeScene(scene)}
@@ -192,7 +197,11 @@ function nickOf(pid){const p=Net.players[pid];return p?p.n:'Someone'}
 function lockerBusy(l){if(!MP)return false;for(const k in av){const T=av[k].T;if(T.live&&T.hidden&&T.lk===l)return true}return false}
 function setCfg(){const D=DIFF[curDiff()];en.cfg=Object.assign({},D,{spd:D.spd*(1+(day-1)*.07),sight:D.sight*(1+(day-1)*.04)})}
 function chaseOn(){return en.state==='chase'&&(!MP||en.tgtPid===Net.pid||en.dist<12)}
-function spawnOff(){const st=Level.start,s=st.s,t=[-s[1],s[0]],m=[0,.7,-.7,1.4][Net.slot(Net.pid)%4];for(const f of[1,.5,0]){const x=st.x+t[0]*m*f,z=st.z+t[1]*m*f;if(!Level.blocked(x,z,.4))return{x:x-st.x,z:z-st.z}}return{x:0,z:0}}
+function spawnOff(){/* deterministic: every client computes the same spots from the shared seed, all inside the bed room */
+ const st=Level.start,s=st.s,t=[-s[1],s[0]],my=Math.min(3,Net.slot(Net.pid)),cand=[];
+ for(const fw of[0,.6,-.6,1.1])for(const m of[0,.7,-.7,1.3,-1.3])cand.push([t[0]*m-s[0]*fw,t[1]*m-s[1]*fw]);
+ const used=[];for(let k=0;k<=my;k++){let b=null;for(const c of cand){const x=st.x+c[0],z=st.z+c[1];if(Level.blocked(x,z,.4)||!Level.los(st.x,st.z,x,z))continue;if(used.some(u=>Math.hypot(u[0]-c[0],u[1]-c[1])<.65))continue;b=c;break}used.push(b||[0,0])}
+ return{x:used[my][0],z:used[my][1]}}
 function openExit(){const x=Level.xd;if(!x||x.open)return;x.open=true;Aud.door();say('The door grinds open. Go.')}
 function rmItem(it){it.taken=true;it.g.visible=false;it.sp.visible=false;const i=Level.items.indexOf(it);if(i>=0)Level.items.splice(i,1)}
 function netItem(nid,v){const it=Level.items.find(i=>i.nid===nid);
@@ -204,8 +213,8 @@ const WH={fuse:(i,v)=>{const f=Level.fuses[i];if(f)fuseGot(f,v)},exit:()=>openEx
 /* ----- avatars of the other players ----- */
 function mkAv(pid){if(pid===Net.pid||av[pid])return;const p=Net.players[pid],a=new Avatar(p?p.n:'?',Net.slot(pid),scene);
  a.T={pid,x:0,z:0,px:0,pz:0,hidden:false,lk:null,noisy:false,crouch:false,yaw:0,live:false};a.lit=false;
- a.src={x:0,y:1.4,z:0,col:new THREE.Color(0xffdfae),d:9,I:()=>a.lit&&a.g.visible?.5:0};Level.src.push(a.src);av[pid]=a;if(p&&p.q&&p.a===0)parseQ(pid,p.q)}
-function rmAv(pid){const a=av[pid];if(!a)return;if(a.g.parent)a.g.parent.remove(a.g);const i=Level.src.indexOf(a.src);if(i>=0)Level.src.splice(i,1);delete av[pid];if(specId===pid)specId=null}
+ a.src={x:0,y:1.4,z:0,col:new THREE.Color(0xffdfae),d:9,I:()=>a.lit&&a.g.visible?.8:0};Level.src.push(a.src);av[pid]=a;if(p&&p.q&&p.a===0)parseQ(pid,p.q)}
+function rmAv(pid){const a=av[pid];if(!a)return;if(a.g.parent)a.g.parent.remove(a.g);try{a.tag.material.map.dispose();a.tag.material.dispose();a.m.mat.dispose()}catch(e){}const i=Level.src.indexOf(a.src);if(i>=0)Level.src.splice(i,1);delete av[pid];if(specId===pid)specId=null}
 function parseQ(pid,q){const a=av[pid];if(!a)return;const p=q.split(','),x=+p[0],z=+p[1],yw=+p[2],pt=+p[3],fl=+p[4]|0,lk=+p[5],T=a.T,wasH=T.hidden;
  T.hidden=!!(fl&8);T.crouch=!!(fl&1);T.noisy=!!(fl&2);T.lk=lk>=0?Level.lockers[lk]||null:null;T.yaw=yw;if(!T.hidden){T.px=x;T.pz=z}
  if(!wasH&&T.hidden&&T.lk&&Net.isHost()&&en&&en.cansee({x:T.px,z:T.pz,hidden:false,crouch:T.crouch}))en.check(T.lk,true);
@@ -261,7 +270,16 @@ function mpEnd(m){mpPlay=false;state='over';document.exitPointerLock();['hud','s
  $('overT').textContent=won?(iEsc?'YOU ESCAPED':'THEY GOT OUT'):'THE FIFTH DAY IS OVER';$('overP').textContent=won?`${names} escaped on day ${m.d}. The halls fall silent. For now.`:'Five days. He has you all now.';
  $('overS').textContent=`DAY ${m.d} · TIME ${fmt(time)}`;const b=$('overBtn'),host=Net.isHost();b.textContent=host?'Back to lobby':'Waiting for the host…';b.disabled=!host;b.onclick=()=>Net.toLobby();$('overLeave').classList.remove('hidden');show('over')}
 function mpToLobby(){mpPlay=false;started=false;state='menu';Net.unwatch();for(const k in av)rmAv(k);document.exitPointerLock();['hud','spec','over','lids','killfx','lockerfx','pause','dayscr','card'].forEach(hide_);$('overLeave').classList.add('hidden');ren.domElement.style.filter='';$('flash').style.opacity=0;Aud.chase(false);Aud.setHum(0,0);Aud.level(.6);show('lobby');lobRender()}
-function mpLeave(){try{Net.leave()}catch(e){}setTimeout(()=>location.reload(),250)}
+function mpLeave(){try{Net.leave()}catch(e){}toMenu()}
+/* ----- soft resets: the page is NEVER reloaded (reloading breaks about:blank launches) ----- */
+function showDay(r){RUN=r;day=r.day;time=r.time||0;hide_('menu');$('dayT').textContent='DAY '+day;const left=MAXD-day+1;$('dayP').textContent=(r.died?`It found you. ${left} ${left===1?'day':'days'} left. `:'')+DAYT[day-1];$('dayGo').classList.remove('hidden');$('dayNew').classList.remove('hidden');show('dayscr')}
+function softWorld(){document.exitPointerLock();started=false;state='menu';paused=false;mpPlay=false;hideT=0;kick=0;fovK=1;eStep=0;beatT=0;SC=null;snapT=0;scareT=0;
+ for(const k in av)rmAv(k);
+ ['menu','hud','spec','over','pause','killfx','lockerfx','lids','dayscr','daydone','card','settings','how','mpmenu','lobby','quit'].forEach(hide_);$('overLeave').classList.add('hidden');
+ ren.domElement.style.filter='';$('flash').style.opacity=0;Aud.chase(false);Aud.setHum(0,0);Aud.muffle(false);Aud.level(1);
+ mkWorld(null);resetRun()}
+function spNextDay(){const r={day:day+1,time,died:1};saveRun(r);softWorld();showDay(r)}
+function toMenu(){saveRun(null);RUN=null;MP=false;day=1;time=0;softWorld();$('dayGo').classList.remove('hidden');$('dayNew').classList.remove('hidden');show('menu')}
 /* ----- UI ----- */
 function tint(slot){return'#'+PModel.TINT[slot%PModel.TINT.length].toString(16).padStart(6,'0')}
 function lobRender(){if($('lobby').classList.contains('hidden'))return;const m=Net.m,host=Net.isHost();$('lobCode').textContent=Net.code||'';
@@ -272,7 +290,7 @@ function plistRender(){const e=$('plist');if(!e)return;e.innerHTML=MP?Net.sorted
 function wireNet(){Net.cb={meta:onMeta,
  player:(pid,v,ev,old)=>{if(mpPlay&&pid!==Net.pid){if(ev==='add')mkAv(pid);else if(ev==='del')rmAv(pid);else if(av[pid]){if(v&&v.q&&v.a===0)parseQ(pid,v.q);else av[pid].T.live=false}}
   if(pid===Net.pid&&ev==='chg'&&v&&v.k&&(!old||old.k!==v.k)){if(state==='play'&&!dead&&!escd)pendKill=true;Net.clearKill()}
-  plistRender();lobRender()},
+  if(ev!=='chg'||!old||!v||old.a!==v.a||old.n!==v.n){plistRender();lobRender()}},
  enemy:s=>{const p=s.split('|');enNet={day:+p[0],x:+p[1],z:+p[2],r:+p[3],s:ES[+p[4]]||'patrol',pid:p[5]||''}},
  event:e=>{if(!mpPlay||!e||e.u===Net.pid||e.k!==1)return;spawnBottle(e.x,e.y,e.z,e.a,e.b,e.c)},
  gone:()=>{say('The party was closed.',3000);mpLeave()}}}
@@ -292,7 +310,14 @@ function bindMP(){$('mMP').onclick=()=>{hide_('menu');show('mpmenu');$('mpErr').
  const st=(id,fn)=>$(id).onclick=e=>{e.stopPropagation();fn()};st('specPrev',()=>specNext(-1));st('specNext',()=>specNext(1));st('specLeave',mpLeave);$('overLeave').onclick=mpLeave;
  addEventListener('pagehide',()=>{if(MP&&Net.active)Net.leave()})}
 
-function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.05);
+let lastF=0,fAcc=0,fN=0,okT=0,failPR=99,lastAvg=0,lastPR=0,lastRed=false,noGain=false;
+function setPR(v){prCur=v;ren.setPixelRatio(v);ren.setSize(innerWidth,innerHeight)}
+/* adaptive resolution: drop render scale when the frame rate is low, creep back up when it is healthy */
+function perf(ms){if(ms>250||document.hidden||state==='pause'||paused)return;fAcc+=ms;fN++;if(fAcc<1500)return;const avg=fAcc/fN;fAcc=0;fN=0;
+ if(avg>24&&prCur>.7&&!noGain){if(lastRed&&avg>lastAvg*.93){setPR(lastPR);noGain=true;lastRed=false}else{lastAvg=avg;lastPR=prCur;lastRed=true;failPR=prCur;okT=0;setPR(Math.max(.7,prCur*.85))}}
+ else if(avg<=24){lastRed=false;if(avg<18.5&&prCur<prMax){okT+=1.5;if(okT>=9){okT=0;const n=Math.min(prMax,failPR-.01,prCur+.1);if(n>prCur+.01)setPR(n)}}else okT=0}}
+function loop(){requestAnimationFrame(loop);const now=performance.now(),raw=now-lastF;if(raw<11.5)return;lastF=now;perf(raw);/* cap at ~80fps on very fast displays */
+ const dt=Math.min(clock.getDelta(),.05);
  if(!started){Menu3D.update(dt,mxn,myn);ren.render(Menu3D.scene,Menu3D.cam)}
  else{if(state==='play')update(dt);else if(state==='scare')updScare(dt);else if(state==='wake')updWake(dt);else if(state==='spec')updSpec(dt);if(MP&&mpPlay){if(state==='wake'||state==='spec')enemyTick(dt);avFrame(dt);netTick(dt)}ren.render(scene,cam)}}
 window.LHBoot?LHBoot.run(init):init();
