@@ -71,7 +71,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:28px;background:#3a3a3a;bo
 
 #inv>div.sel{opacity:1}#inv>div.sel span{opacity:1;color:#fff}#inv>div.sel span::before{content:'› '}
 
-#lids{position:fixed;inset:0;z-index:3;pointer-events:none}#lids i{position:absolute;left:0;right:0;height:52%;background:#000;box-shadow:0 0 50px 24px #000}#lids i:first-child{top:0}#lids i:last-child{bottom:0}
+#lids{position:fixed;inset:-6% -4%;z-index:3;pointer-events:none;overflow:hidden}#lids i{position:absolute;left:-8%;right:-8%;height:54%;background:radial-gradient(ellipse at 50% 100%,#1a0807 0%,#050101 55%,#000 100%);box-shadow:0 0 70px 36px rgba(0,0,0,.95)}#lids i:first-child{top:0;border-radius:0 0 50% 50%/0 0 34% 34%;background:radial-gradient(ellipse at 50% 0%,#1a0807 0%,#050101 55%,#000 100%)}#lids i:last-child{bottom:0;border-radius:50% 50% 0 0/34% 34% 0 0}
 #daybn{position:fixed;left:0;right:0;top:34%;text-align:center;z-index:3;pointer-events:none;opacity:0;font-family:Rye,'IM Fell English',serif;font-style:normal;font-size:clamp(44px,9vw,120px);color:#f4f0e6;letter-spacing:.06em;text-shadow:0 5px 0 #000,0 0 40px rgba(160,0,0,.55)}
 #daybn.show{animation:dayb 4.6s ease-out forwards}@keyframes dayb{0%{opacity:0;transform:scale(1.08)}18%{opacity:1}70%{opacity:1}100%{opacity:0;transform:scale(1)}}
 #killfx{position:fixed;inset:0;pointer-events:none;z-index:4}

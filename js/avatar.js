@@ -7,7 +7,7 @@ const PModel={
   g.setAttribute('position',new THREE.BufferAttribute(f(D.p),3));g.setAttribute('normal',new THREE.BufferAttribute(f(D.n),3));g.setAttribute('uv',new THREE.BufferAttribute(f(D.uv),2));
   g.setAttribute('skinIndex',new THREE.BufferAttribute(Uint16Array.from(this.b64(D.j,Uint8Array)),4));g.setAttribute('skinWeight',new THREE.BufferAttribute(f(D.w),4));
   g.setIndex(new THREE.BufferAttribute(this.b64(D.ix,Uint16Array),1));
-  const t=this.tex=new THREE.TextureLoader().load(D.tex);t.flipY=false;t.anisotropy=4;
+  const T=window.LHT;let ok,er;if(T){T.pend++;T.total++;ok=()=>{T.pend--};er=()=>{T.pend--;T.fail++}}const t=this.tex=new THREE.TextureLoader().load(D.tex,ok,undefined,er);t.flipY=false;t.anisotropy=4;
   /* bind-pose data */
   const n=D.names.length;this.N=n;this.id={};D.names.forEach((s,i)=>this.id[s]=i);this.par=D.par;
   this.Bq=D.bq.map(q=>new THREE.Quaternion(q[0],q[1],q[2],q[3]));this.Bp=D.bp.map(p=>new THREE.Vector3(p[0],p[1],p[2]));

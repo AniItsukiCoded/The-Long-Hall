@@ -12,11 +12,12 @@
 #ldtxt{font-size:20px;opacity:.7;min-height:26px;max-width:80vw}#ldtxt.err{color:#d98;opacity:1}
 #ldtxt:not(:empty):not(.err)::after{content:'...';display:inline-block;width:1.2em;text-align:left;animation:ldd 1.2s steps(4,end) infinite;overflow:hidden;vertical-align:bottom}
 @keyframes ldd{0%{width:0}100%{width:1.2em}}
+#ldlist{margin-top:10px;font-size:17px;opacity:.8;text-align:left;font-style:normal}#ldlist div{display:flex;justify-content:space-between;gap:28px;min-width:270px;padding:1px 0}#ldlist b{font-weight:400;opacity:.45}#ldlist .ok b{color:#9c9;opacity:1}
 #ldtip{font-size:18px;opacity:.4;position:absolute;bottom:7vh;padding:0 20px}
 html,body{margin:0;background:#000}
 </style></head>
 <body>
-<div id="loading"><div class="ldlogo">THE LONG<br>HALLS</div><div class="ldsub">the boiled one</div><div class="ldbar"><i id="ldfill"></i></div><div id="ldtxt">Loading</div><div id="ldtip"></div></div>
+<div id="loading"><div class="ldlogo">THE LONG<br>HALLS</div><div class="ldsub">the boiled one</div><div class="ldbar"><i id="ldfill"></i></div><div id="ldtxt">Loading</div><div id="ldlist"></div><div id="ldtip"></div></div>
 <svg width="0" height="0" style="position:absolute"><filter id="rough"><feTurbulence baseFrequency=".05 .08" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="6"/></filter></svg>
 <canvas id="gl"></canvas>
 <div id="chasefx"></div><div id="vig"></div><div id="lockerfx" class="hidden"></div><div id="grain"></div><div id="flash"></div><div id="killfx" class="hidden"></div>
@@ -29,9 +30,10 @@ html,body{margin:0;background:#000}
   <div id="stam"><i id="stamfill"></i></div>
   <div id="inv">
     <div id="bat"><span>Flashlight</span><b><i id="batfill"></i></b></div>
-    <div id="botn" class="hidden"><span>Bottles</span><u id="botc">0</u><em>G throw · SPACE drop · 1</em></div>
-    <div id="batn" class="hidden"><span>Batteries</span><u id="batc">0</u><em>R use · SPACE drop · 2</em></div>
-    <div id="keyn" class="hidden"><span>Brass key</span><em>SPACE drop · 3</em></div>
+    <div id="botn" class="hidden"><span>Bottles</span><u id="botc">0</u><em>G throw · SPACE drop</em></div>
+    <div id="batn" class="hidden"><span>Batteries</span><u id="batc">0</u><em>R use · G throw · SPACE drop</em></div>
+    <div id="keyn" class="hidden"><span>Brass key</span><em>G throw · SPACE drop</em></div>
+    <div id="sdn" class="hidden"><span>Screwdriver</span><em>G throw · SPACE drop</em></div>
     <div id="notn"><span>Notes</span><u id="notc">0</u><em>/ 6</em></div>
   </div>
   <div id="note" class="hidden"><p></p></div>
@@ -41,7 +43,7 @@ html,body{margin:0;background:#000}
 <div id="card" class="hidden"><h1>THE LONG<br>HALLS</h1><div>the boiled one</div></div>
 
 <div id="menu" class="screen">
-  <div id="ver">v4.6.0 · multiplayer</div>
+  <div id="ver">v5.0.0 · multiplayer</div>
   <div id="menuL">
     <button class="gb" id="start">Play</button>
     <button class="gb" id="mMP">Multiplayer</button>
@@ -56,11 +58,11 @@ html,body{margin:0;background:#000}
 <div id="how" class="screen hidden">
   <h2>How to play</h2>
   <div class="pan">
-    <p>You wake in a bed, and the power is out. You have <b>five days</b>. Every time he catches you, you wake up on the <b>next day</b>: the halls are rebuilt and he gets faster. Get caught on day five and it is over. The exit is sealed. Search the <b>rooms</b> off the halls for <b>4 fuses</b> glowing on pedestals, then <b>open the exit</b> and walk into the light.</p>
+    <p>You wake in a bed, and the power is out. You have <b>three days</b>. Every time he catches you, you wake up on the <b>next day</b> in the <b>same house</b>, and he gets faster. Get caught on day three and he drags you away for good. The house has <b>3 or 4 floors</b> joined by <b>stairs</b>, and he uses them too. The exit on the <b>ground floor</b> is sealed: find <b>4 fuses</b> spread through the house, then <b>open the exit</b> and walk into the light.</p>
     <p>Close <b>doors</b> behind you. A shut door hides you from his eyes, and an open one you did not open means he has already been through.</p>
-    <p>Your flashlight runs on <b>batteries</b>. Take <b>bottles</b> and throw one: he will go and look. Pick items up with <b>E</b> and drop them with <b>SPACE</b>; the item in your hand is the one you drop (mouse wheel or <b>1-3</b> to switch). A <b>brass key</b> opens the room he never visits; spare <b>batteries</b> are used with <b>R</b>. Hold <b>C</b> or <b>CTRL</b> to crouch: you move slowly, but quietly and lower. <b>Notes</b> tell you what happened here.</p>
+    <p>Your flashlight runs on <b>batteries</b>. Take <b>bottles</b> and throw one: he will go and look. You can only <b>carry one item at a time</b>. Pick it up with <b>E</b> and drop it with <b>SPACE</b> to free your hands. A <b>brass key</b> opens the room he never visits; spare <b>batteries</b> are used with <b>R</b>. Press <b>C</b> or <b>CTRL</b> to toggle crouch: you move slowly, but quietly and lower. <b>Vents</b> are screwed shut: carry a <b>screwdriver</b> to one and hold <b>E</b>, then crouch and crawl through. While you are inside a vent he cannot see you or catch you. Anything that makes noise (dropping or throwing things, unscrewing a vent) reaches him no matter how far away he is. <b>Notes</b> tell you what happened here.</p>
     <p><b>Lockers</b> are your only shelter. If he <b>sees you climb in</b>, he will drag you out. Sprinting is loud. Lights fail. Don't stop moving.</p>
-    <div class="keys">WASD move &nbsp;·&nbsp; SHIFT sprint &nbsp;·&nbsp; MOUSE look &nbsp;·&nbsp; E interact / hide &nbsp;·&nbsp; F flashlight &nbsp;·&nbsp; G throw bottle &nbsp;·&nbsp; C / CTRL crouch &nbsp;·&nbsp; SPACE drop item &nbsp;·&nbsp; R use battery &nbsp;·&nbsp; 1-3 select item &nbsp;·&nbsp; ESC pause</div>
+    <div class="keys">WASD move &nbsp;·&nbsp; SHIFT sprint &nbsp;·&nbsp; MOUSE look &nbsp;·&nbsp; look at a door + E open / close &nbsp;·&nbsp; F flashlight &nbsp;·&nbsp; G throw item &nbsp;·&nbsp; C / CTRL toggle crouch &nbsp;·&nbsp; SPACE drop item &nbsp;·&nbsp; R use battery &nbsp;·&nbsp; ESC pause</div>
   </div>
   <button class="gb sm bx" id="hBack">Back ›</button>
 </div>
@@ -107,7 +109,7 @@ html,body{margin:0;background:#000}
 
 <div id="dayscr" class="screen hidden"><h1 id="dayT"></h1><p id="dayP"></p><button class="gb" id="dayGo">Wake up</button><button class="rs" id="dayNew">Start over</button></div>
 <div id="daydone" class="screen hidden"><h1 id="ddT"></h1><p id="ddP"></p><div class="keys" id="ddS"></div><button class="gb" id="ddGo">Sleep</button></div>
-<div id="warn" class="screen hidden"><h2>⚠ WARNING</h2><p>This game contains <b>flashing lights</b>, strobing effects and sudden jump scares that may trigger seizures in people with photosensitive epilepsy. If you or anyone in your family has a history of seizures or epilepsy, consult a doctor before playing.</p><p>You can change this later in Options.</p><button class="gb sm" id="wSafe">Reduce flashing &amp; continue</button><button class="gb sm" id="wOk">I understand, continue</button></div>
+<div id="warn" class="screen hidden"><h2>⚠ WARNING</h2><p>This game contains <b>flickering and failing lights</b>, screen shake, film grain, very dark scenes and sudden jump scares. These can trigger seizures in people with <b>photosensitive epilepsy</b>. If you or anyone in your family has a history of seizures or epilepsy, consult a doctor before playing, and stop immediately if you feel dizzy, disoriented or unwell.</p><p><b>Reduce flashing</b> is on by default and calms the flickering lights and grain. You can change it later in Options.</p><button class="gb sm" id="wSafe">Reduce flashing &amp; continue</button><button class="gb sm" id="wOk">I understand, continue</button></div>
 <div id="quit" class="screen hidden"><h2>There is no leaving.</h2></div>
 
 <script>
@@ -136,10 +138,14 @@ html,body{margin:0;background:#000}
  /* ---------- loading screen ---------- */
  var $=function(i){return document.getElementById(i)},el=$('loading'),bar=$('ldfill'),tx=$('ldtxt'),tip=$('ldtip');
  var quick=false;try{quick=!!sessionStorage.getItem('lhrun')}catch(e){}
- var TIPS=['Shut doors behind you.','Lockers are your only shelter.','Throw a bottle and he will go and look.','Crouch to stay quiet.','Spare batteries are used with R.','Sprinting is loud.'];
+ var TIPS=['Shut doors behind you.','Lockers are your only shelter.','Anything that makes noise, he hears. Anywhere.','Toggle crouch with C. Small spaces are safe from him.','Vents are screwed shut. Find a screwdriver.','He uses the stairs too.','Sprinting is loud.'];
  if(tip)tip.textContent=quick?'':TIPS[Math.random()*TIPS.length|0];
- var MIN=quick?500:2000,t0=performance.now(),target=.04,shown=0,failed=false,fin=false;
+ window.LHT={pend:0,total:0,fail:0};   /* every texture that has to decode registers here, so the loader can truly wait for them */
+ var MIN=quick?300:900,t0=performance.now(),target=.02,shown=0,failed=false,fin=false;
  function set(p,t){if(p>target)target=p;if(t&&!failed)tx.textContent=t}
+ var ST=[['files','Game files',.5],['engine','3D engine',.04],['fonts','Fonts',.04],['world','Building the floors',.14],['assets','Models and textures',.16],['shaders','Compiling shaders',.12]],SP={},list=$('ldlist');
+ ST.forEach(function(s){SP[s[0]]=0;var d=document.createElement('div');d.id='ld_'+s[0];d.innerHTML='<span>'+s[1]+'</span><b>waiting</b>';list.appendChild(d)});
+ function stage(n,p,t){if(p>SP[n])SP[n]=p;var d=$('ld_'+n);if(d){d.className=SP[n]>=1?'ok':'';d.lastChild.textContent=SP[n]>=1?'\u2713':SP[n]>0?Math.round(SP[n]*100)+'%':'waiting'}var tot=0;ST.forEach(function(s){tot+=s[2]*SP[s[0]]});set(tot>=.999?1:tot,t)}
  function fail(msg){if(fin)return;failed=true;tx.textContent=msg;tx.className='err';bar.style.background='#7a1b1b';console.error('[Long Halls] '+msg)}
  function finish(){if(fin)return;fin=true;el.classList.add('out');setTimeout(function(){el.classList.add('hidden');document.dispatchEvent(new Event('lhloaded'))},600)}
  function tick(){if(failed)return;var lim=Math.min(target,(performance.now()-t0)/MIN);shown+=(lim-shown)*.2;
@@ -149,7 +155,7 @@ html,body{margin:0;background:#000}
 
  /* ---------- fetching ---------- */
  var got=0;
- function bump(n){got+=n;set(.04+.52*Math.min(1,got/TOTAL))}
+ function bump(n){got+=n;stage('files',Math.min(.99,got/TOTAL))}
  function fetchText(url){
   return fetch(url,{credentials:'omit'}).then(function(r){
    if(!r.ok)throw new Error(r.status+' '+url);
@@ -169,7 +175,7 @@ html,body{margin:0;background:#000}
    if(i>=SOURCES.length)return Promise.reject(last||new Error('no source worked'));
    var s=SOURCES[i++];
    if(s.ok&&!s.ok())return tryNext();   /* about:blank / sandboxed pages have no usable base URL */
-   if(i>1)set(.04,'Trying '+s.n);
+   if(i>1)set(.02,'Trying '+s.n);
    return loadSet(s).then(function(files){return threeP.then(function(three){return {src:s,files:files,three:three}})}).catch(function(e){last=e;console.warn('[Long Halls] '+s.n+' failed: '+e.message);return tryNext()})
   })();
  }
@@ -181,15 +187,21 @@ html,body{margin:0;background:#000}
  /* ---------- boot ---------- */
  window.LHBoot={run:function(fn){   /* called by main.js once it has been injected */
   if(typeof THREE==='undefined')return fail('Could not load the 3D engine. Check your connection, then refresh.');
+  stage('engine',1,'3D engine ready');
   var fonts=document.fonts&&document.fonts.ready?Promise.race([document.fonts.ready,new Promise(function(r){setTimeout(r,2500)})]):Promise.resolve();
-  set(.6,'Loading fonts');
-  fonts.then(function(){set(.7,'Building the halls');
+  fonts.then(function(){stage('fonts',1,'Fonts ready');stage('world',.15,'Building the floors');
    requestAnimationFrame(function(){requestAnimationFrame(function(){
     try{fn()}catch(e){console.error(e);return fail('Something went wrong while loading. Refresh the page.')}
-    set(.92,'Waking up');requestAnimationFrame(function(){requestAnimationFrame(function(){set(1,'')})})})})})}};
- set(.04,'Downloading');
+    stage('world',1,'Floors built');var T=window.LHT,t1=performance.now();
+    (function waitA(){if(failed)return;var pr=T.total?1-T.pend/T.total:1;stage('assets',Math.min(.99,pr),'Loading models and textures');
+     if(T.fail)return fail('A model texture failed to load. Refresh the page.');
+     if(T.pend>0){if(performance.now()-t1>25000)return fail('Textures are taking too long. Refresh the page.');return setTimeout(waitA,50)}
+     stage('assets',1,'Textures ready');stage('shaders',.2,'Compiling shaders');
+     requestAnimationFrame(function(){try{if(window.LHHook)window.LHHook.compile()}catch(e){console.warn(e)}stage('shaders',1,'Ready')})})()
+   })})})}};
+ stage('files',0.01,'Downloading');
  loadAll().then(function(r){
-  set(.56,'Starting');
+  stage('files',1,'Starting');
   inject('js',r.three,'three.min.js');
   FILES.forEach(function(f,i){inject(f[2]||'js',r.files[i],f[0])});   /* main.js is last: it calls LHBoot.run(init) */
  }).catch(function(e){fail('Could not download the game files. Check your connection and refresh.');console.error(e)});
