@@ -40,3 +40,6 @@ The database URL is already in `js/net.js` (`FB_CONFIG`).
 ## v4.2 notes
 - Loading screen on startup (about 2 seconds, near instant after a death reload).
 - The content warning is shown once and remembered in the browser (`lhw`). Death, winning and restarts reload the page without showing it again.
+
+## v4.3: launching from anywhere
+`index.html` no longer links the css/js files directly. A small boot script downloads them and injects them in order, trying (1) files next to the page, (2) `raw.githubusercontent.com/AniItsukiCoded/The-Long-Hall/main/`, (3) the jsDelivr GitHub mirror. A source is only used if every file loads from it. So the same `index.html` works on GitHub Pages, the p5.js editor, localhost, or pasted on its own. Keep `css/` and `js/` in the repo root on the `main` branch. Change `USER`, `REPO`, `BR` at the top of the boot script if the repo moves.

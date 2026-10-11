@@ -3,7 +3,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Rye&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css"></head>
+<style id="lh-boot-css">#loading{position:fixed;inset:0;z-index:100;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;transition:opacity .55s ease;font-family:'IM Fell English',Georgia,serif;font-style:italic;color:#d9d2c3}
+#loading.out{opacity:0;pointer-events:none}
+.ldlogo{font-family:Rye,'IM Fell English',Georgia,serif;font-style:normal;font-size:clamp(40px,8vw,84px);line-height:1.05;letter-spacing:.08em;color:#f4f0e6;text-shadow:0 5px 0 #000,0 0 40px rgba(160,0,0,.45)}
+.ldsub{font-size:24px;opacity:.55;margin-top:-6px}
+.ldbar{width:min(320px,70vw);height:3px;background:rgba(255,255,255,.12);margin-top:18px;overflow:hidden;border-radius:2px}
+.ldbar i{display:block;height:100%;width:0;background:#b02a2a;box-shadow:0 0 10px rgba(176,42,42,.8)}
+#ldtxt{font-size:20px;opacity:.7;min-height:26px;max-width:80vw}#ldtxt.err{color:#d98;opacity:1}
+#ldtxt:not(:empty):not(.err)::after{content:'...';display:inline-block;width:1.2em;text-align:left;animation:ldd 1.2s steps(4,end) infinite;overflow:hidden;vertical-align:bottom}
+@keyframes ldd{0%{width:0}100%{width:1.2em}}
+#ldtip{font-size:18px;opacity:.4;position:absolute;bottom:7vh;padding:0 20px}
+html,body{margin:0;background:#000}
+</style></head>
 <body>
 <div id="loading"><div class="ldlogo">THE LONG<br>HALLS</div><div class="ldsub">the boiled one</div><div class="ldbar"><i id="ldfill"></i></div><div id="ldtxt">Loading</div><div id="ldtip"></div></div>
 <svg width="0" height="0" style="position:absolute"><filter id="rough"><feTurbulence baseFrequency=".05 .08" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="6"/></filter></svg>
@@ -30,7 +41,7 @@
 <div id="card" class="hidden"><h1>THE LONG<br>HALLS</h1><div>the boiled one</div></div>
 
 <div id="menu" class="screen">
-  <div id="ver">v4.2.0 · multiplayer</div>
+  <div id="ver">v4.3.0 · multiplayer</div>
   <div id="menuL">
     <button class="gb" id="start">Play</button>
     <button class="gb" id="mMP">Multiplayer</button>
@@ -99,18 +110,89 @@
 <div id="warn" class="screen hidden"><h2>⚠ WARNING</h2><p>This game contains <b>flashing lights</b>, strobing effects and sudden jump scares that may trigger seizures in people with photosensitive epilepsy. If you or anyone in your family has a history of seizures or epilepsy, consult a doctor before playing.</p><p>You can change this later in Options.</p><button class="gb sm" id="wSafe">Reduce flashing &amp; continue</button><button class="gb sm" id="wOk">I understand, continue</button></div>
 <div id="quit" class="screen hidden"><h2>There is no leaving.</h2></div>
 
-<script src="js/loader.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="js/vendor/firebase-app-compat.js"></script>
-<script src="js/vendor/firebase-database-compat.js"></script>
-<script src="js/model.js"></script>
-<script src="js/player.js"></script>
-<script src="js/avatar.js"></script>
-<script src="js/audio.js"></script>
-<script src="js/level.js"></script>
-<script src="js/props.js"></script>
-<script src="js/enemy.js"></script>
-<script src="js/net.js"></script>
-<script src="js/menu.js"></script>
-<script src="js/main.js"></script>
+<script>
+/* THE LONG HALLS: boot loader.
+   Fetches the game files, then injects them into the page in order, so the game launches from ANY host
+   (GitHub Pages, p5.js editor, a single pasted index.html, localhost). Source order per attempt:
+     1. files next to this page   2. raw.githubusercontent.com   3. cdn.jsdelivr.net (GitHub mirror)
+   A source is used only if ALL files load from it, so versions never get mixed. */
+(function(){
+ var USER='AniItsukiCoded',REPO='The-Long-Hall',BR='main';
+ var SOURCES=[
+  {n:'local',u:function(p){return new URL(p,document.baseURI).href}},
+  {n:'github raw',u:function(p){return 'https://raw.githubusercontent.com/'+USER+'/'+REPO+'/'+BR+'/'+p}},
+  {n:'jsdelivr',u:function(p){return 'https://cdn.jsdelivr.net/gh/'+USER+'/'+REPO+'@'+BR+'/'+p}}
+ ];
+ /* [path, approx bytes (for the progress bar), kind]  -  injected in this order */
+ var FILES=[
+  ['css/style.css',13000,'css'],
+  ['js/vendor/firebase-app-compat.js',32000],['js/vendor/firebase-database-compat.js',167000],
+  ['js/model.js',1690000],['js/player.js',140000],['js/avatar.js',7000],['js/audio.js',7000],['js/level.js',16000],
+  ['js/props.js',38000],['js/enemy.js',9000],['js/net.js',9000],['js/menu.js',3000],['js/main.js',42000]
+ ];
+ var THREE_URLS=['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js','https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'],THREE_SIZE=600000;
+ var TOTAL=THREE_SIZE;FILES.forEach(function(f){TOTAL+=f[1]});
+
+ /* ---------- loading screen ---------- */
+ var $=function(i){return document.getElementById(i)},el=$('loading'),bar=$('ldfill'),tx=$('ldtxt'),tip=$('ldtip');
+ var quick=false;try{quick=!!sessionStorage.getItem('lhrun')}catch(e){}
+ var TIPS=['Shut doors behind you.','Lockers are your only shelter.','Throw a bottle and he will go and look.','Crouch to stay quiet.','Spare batteries are used with R.','Sprinting is loud.'];
+ if(tip)tip.textContent=quick?'':TIPS[Math.random()*TIPS.length|0];
+ var MIN=quick?500:2000,t0=performance.now(),target=.04,shown=0,failed=false,fin=false;
+ function set(p,t){if(p>target)target=p;if(t&&!failed)tx.textContent=t}
+ function fail(msg){if(fin)return;failed=true;tx.textContent=msg;tx.className='err';bar.style.background='#7a1b1b';console.error('[Long Halls] '+msg)}
+ function finish(){if(fin)return;fin=true;el.classList.add('out');setTimeout(function(){el.classList.add('hidden');document.dispatchEvent(new Event('lhloaded'))},600)}
+ function tick(){if(failed)return;var lim=Math.min(target,(performance.now()-t0)/MIN);shown+=(lim-shown)*.2;
+  if(lim>=1&&shown>.995){bar.style.width='100%';finish();return}bar.style.width=(shown*100).toFixed(1)+'%';requestAnimationFrame(tick)}
+ requestAnimationFrame(tick);
+ window.addEventListener('error',function(e){if(!fin&&!failed)fail('Error: '+(e.message||'a script failed')+' (refresh to retry)')});
+
+ /* ---------- fetching ---------- */
+ var got=0;
+ function bump(n){got+=n;set(.04+.52*Math.min(1,got/TOTAL))}
+ function fetchText(url){
+  return fetch(url,{credentials:'omit'}).then(function(r){
+   if(!r.ok)throw new Error(r.status+' '+url);
+   if(!r.body||!r.body.getReader)return r.text().then(function(t){bump(t.length);return t});
+   var rd=r.body.getReader(),parts=[];
+   return (function pump(){return rd.read().then(function(x){if(x.done)return;parts.push(x.value);bump(x.value.length);return pump()})})().then(function(){
+    var len=0;parts.forEach(function(p){len+=p.length});var all=new Uint8Array(len),o=0;parts.forEach(function(p){all.set(p,o);o+=p.length});
+    return new TextDecoder('utf-8').decode(all)})
+  }).then(function(t){if(/^\s*</.test(t.slice(0,200)))throw new Error('got HTML instead of a file: '+url);return t})
+ }
+ function firstOk(urls){var i=0;return (function next(){if(i>=urls.length)return Promise.reject(new Error('could not load '+urls[0]));return fetchText(urls[i++]).catch(next)})()}
+ function loadSet(src){got=0;return Promise.all(FILES.map(function(f){return fetchText(src.u(f[0]))}))}
+ function loadAll(){
+  var i=0,last=null;
+  var threeP=firstOk(THREE_URLS);threeP.catch(function(){});
+  return (function tryNext(){
+   if(i>=SOURCES.length)return Promise.reject(last||new Error('no source worked'));
+   var s=SOURCES[i++];
+   if(i>1)set(.04,'Trying '+s.n);
+   return loadSet(s).then(function(files){return threeP.then(function(three){return {src:s,files:files,three:three}})}).catch(function(e){last=e;console.warn('[Long Halls] '+s.n+' failed: '+e.message);return tryNext()})
+  })();
+ }
+ function inject(kind,code,name){
+  if(kind==='css'){var st=document.createElement('style');st.id='lh-style';st.textContent=code;document.head.appendChild(st);return}
+  var s=document.createElement('script');s.textContent=code+'\n//# sourceURL='+name;document.head.appendChild(s);s.parentNode.removeChild(s)
+ }
+
+ /* ---------- boot ---------- */
+ window.LHBoot={run:function(fn){   /* called by main.js once it has been injected */
+  if(typeof THREE==='undefined')return fail('Could not load the 3D engine. Check your connection, then refresh.');
+  var fonts=document.fonts&&document.fonts.ready?Promise.race([document.fonts.ready,new Promise(function(r){setTimeout(r,2500)})]):Promise.resolve();
+  set(.6,'Loading fonts');
+  fonts.then(function(){set(.7,'Building the halls');
+   requestAnimationFrame(function(){requestAnimationFrame(function(){
+    try{fn()}catch(e){console.error(e);return fail('Something went wrong while loading. Refresh the page.')}
+    set(.92,'Waking up');requestAnimationFrame(function(){requestAnimationFrame(function(){set(1,'')})})})})})}};
+ set(.04,'Downloading');
+ loadAll().then(function(r){
+  set(.56,'Starting');
+  inject('js',r.three,'three.min.js');
+  FILES.forEach(function(f,i){inject(f[2]||'js',r.files[i],f[0])});   /* main.js is last: it calls LHBoot.run(init) */
+ }).catch(function(e){fail('Could not download the game files. Check your connection and refresh.');console.error(e)});
+ setTimeout(function(){if(!fin&&!failed&&target<.5)fail('This is taking too long. Check your connection and refresh.')},25000);
+})();
+</script>
 </body></html>

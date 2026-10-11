@@ -114,13 +114,3 @@ input[type=text],#mpNick,#mpCode{background:rgba(0,0,0,.45);border:2px solid var
 #pubList .pr button{font-size:22px;padding:2px 18px}
 #lobPub{font-size:20px;margin:-6px 0}
 
-#loading{position:fixed;inset:0;z-index:100;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;transition:opacity .55s ease;font-family:'IM Fell English',Georgia,serif;font-style:italic;color:#d9d2c3}
-#loading.out{opacity:0;pointer-events:none}
-.ldlogo{font-family:Rye,'IM Fell English',Georgia,serif;font-style:normal;font-size:clamp(40px,8vw,84px);line-height:1.05;letter-spacing:.08em;color:#f4f0e6;text-shadow:0 5px 0 #000,0 0 40px rgba(160,0,0,.45)}
-.ldsub{font-size:24px;opacity:.55;margin-top:-6px}
-.ldbar{width:min(320px,70vw);height:3px;background:rgba(255,255,255,.12);margin-top:18px;overflow:hidden;border-radius:2px}
-.ldbar i{display:block;height:100%;width:0;background:#b02a2a;box-shadow:0 0 10px rgba(176,42,42,.8)}
-#ldtxt{font-size:20px;opacity:.7;min-height:26px;max-width:80vw}#ldtxt.err{color:#d98;opacity:1}
-#ldtxt:not(:empty):not(.err)::after{content:'...';display:inline-block;width:1.2em;text-align:left;animation:ldd 1.2s steps(4,end) infinite;overflow:hidden;vertical-align:bottom}
-@keyframes ldd{0%{width:0}100%{width:1.2em}}
-#ldtip{font-size:18px;opacity:.4;position:absolute;bottom:7vh;padding:0 20px}
