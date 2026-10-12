@@ -20,7 +20,17 @@ anim(dt){this.t+=dt;const ch=this.state==='chase'||this.state==='scare';this.pv.
  /* heavy walking bob in time with his footsteps */
  this.pv.position.y=this.mv?Math.abs(Math.sin(this.acc/this.stride*Math.PI))*(ch?.1:.06):this.pv.position.y*.8;this.mv=false;
  this.light.intensity=this.fl!==this.pfl?0:Level.safe?.6:.4+Math.random()*.4;
- const gp=this.g.position,ty=Level.gy?Level.gy(gp.x,gp.z):0;gp.y+=(ty-gp.y)*Math.min(1,dt*12)}
+ const gp=this.g.position,ty=Level.fy(this.fl)+(Level.gy?Level.gy(gp.x,gp.z):0);gp.y+=(ty-gp.y)*Math.min(1,dt*12)}
+startClimb(un){const up=this.goF>this.fl,h=Level.FH/2,pts=up?[[7.5,0,0],[5.5,-.72,0],[5.1,-.72,0],[1.5,-.72,h],[1.0,-.72,h],[1.0,.72,h],[1.5,.72,h],[5.1,.72,2*h],[5.6,.72,2*h]]:[[7.5,0,0],[5.5,.72,0],[5.1,.72,0],[1.5,.72,-h],[1.0,.72,-h],[1.0,-.72,-h],[1.5,-.72,-h],[5.1,-.72,-2*h],[5.6,-.72,-2*h]],seg=[];let len=0;
+ for(let i=1;i<pts.length;i++){const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1],pts[i][2]-pts[i-1][2]);seg.push(d);len+=d}
+ this.cl={un,pts,seg,len,d:0,from:this.fl,to:up?this.fl+1:this.fl-1,sw:false};this.state='travel';this.T=null}
+climbStep(dt){const c=this.cl,un=c.un;this.anim(dt);c.d+=dt*2.7;let d=c.d,i=0;while(i<c.seg.length&&d>c.seg[i]){d-=c.seg[i];i++}
+ let a,b,k;if(i>=c.seg.length){a=b=c.pts[c.pts.length-1];k=0}else{a=c.pts[i];b=c.pts[i+1];k=d/c.seg[i]}
+ const u=a[0]+(b[0]-a[0])*k,t=a[1]+(b[1]-a[1])*k,y=a[2]+(b[2]-a[2])*k,x=un.O.x+un.inn[0]*u+un.tn[0]*t,z=un.O.z+un.inn[1]*u+un.tn[1]*t,gp=this.g.position,dx=x-gp.x,dz=z-gp.z;
+ if(dx*dx+dz*dz>1e-6)this.g.rotation.y=Math.atan2(dx,dz);gp.x=x;gp.z=z;gp.y=Level.fy(c.from)+y;this.mv=true;this.acc+=dt*2.7;
+ if(this.nextStep===undefined)this.nextStep=this.acc+this.stride;if(this.acc>=this.nextStep){this.nextStep=this.acc+this.stride;this.footstep()}
+ if(!c.sw&&c.d>c.len/2){c.sw=true;this.fl=c.to}
+ if(c.d>=c.len){this.cl=null;this.fl=c.to;if(this.onStairs)this.onStairs(un)}}
 get stride(){return this.state==='chase'?2:1.3}
 /* direct pursuit: once he can see you up close he walks straight at YOU, not at the middle of your cell (that is why corners used to be safe) */
 direct(dt,sp,P){const g=this.g.position,mx=P.x-g.x,mz=P.z-g.z,md=Math.hypot(mx,mz);if(md<.05||this.wait>0)return;
@@ -45,7 +55,7 @@ eval(P){const g=this.g.position,cf=this.cfg,vis=!P.hidden,d=Math.hypot(P.x-g.x,P
  const lo=vis&&d<sr+8&&Level.los(g.x,g.z,P.x,P.z),sees=lo&&d<sr&&(d<(ch0?9:4.5)||dot>(ch0?-.25:.42)),hears=vis&&P.noisy&&d<cf.hear*(lo?1:.6);return{d,lo,sees,hears}}
 cansee(P){return!!this.eval(P).sees}
 /* PL is one player, or a list of players (multiplayer): he hunts whichever he sees, else hears, else the nearest */
-update(dt,PL,keys){const list=Array.isArray(PL)?PL:[PL],g=this.g.position,cf=this.cfg;let P=list[0]||EDUMMY,E=null,bs=-1e9;
+update(dt,PL,keys){if(this.cl){this.climbStep(dt);return}const list=Array.isArray(PL)?PL:[PL],g=this.g.position,cf=this.cfg;let P=list[0]||EDUMMY,E=null,bs=-1e9;
  for(const q of list){const e=this.eval(q),sc=(e.sees?2000:e.hears?1000:0)-e.d;if(sc>bs){bs=sc;P=q;E=e}}if(!E)E=this.eval(P);
  const d=E.d,sees=E.sees,hears=E.hears,csp=(3.4+keys*.35)*cf.spd;this.pl=this.pl||P;this.tgt=P;this.dist=d;this.anim(dt);this.chaseStart=false;this.cool=Math.max(0,this.cool-dt);this.wait=Math.max(0,this.wait-dt);
  this.seen=sees;this.doors();
@@ -66,10 +76,10 @@ think(dt,P,keys,sees,hears,csp){const g=this.g.position,cf=this.cfg;
  if(sees||hears){if(this.state!=='chase')this.chaseStart=true;this.state='chase';this.lost=0;this.last=Level.cell(P.x,P.z);this.goF=null;this.noise=null}
  else if(this.state==='chase'){this.lost+=dt;if(this.lost>6){this.state='patrol';this.T=null}}
  if(this.state==='chase'&&P.hidden&&P.lk&&!this.cool&&Math.hypot(P.lk.cx-g.x,P.lk.cz-g.z)<5){this.check(P.lk,false);return}
- /* between floors: walk to the stairs and take them */
- if(this.goF!=null&&this.goF!==this.fl&&this.state!=='chase'){this.state='travel';const un=Level.stairs.find(s=>s.kind===(this.goF>this.fl?'up':'down'));
+ /* between floors: walk to the nearest stair shaft and climb the real flights */
+ if(this.goF!=null&&this.goF!==this.fl&&this.state!=='chase'){this.state='travel';const S=Level.S,un=Level.stairs.slice().sort((p,q)=>Math.hypot(p.entry[0]*S-g.x,p.entry[1]*S-g.z)-Math.hypot(q.entry[0]*S-g.x,q.entry[1]*S-g.z))[0];
   if(!un){this.goF=null;this.state='patrol';this.T=null}
-  else{this.T=un.cells[0];if(Math.hypot(g.x-un.cx*Level.S,g.z-un.cz*Level.S)<.6){this.state='patrol';this.T=null;if(this.onStairs)this.onStairs(un);return}this.go(dt,2.9*cf.spd);return}}
+  else{this.T=un.entry;if(Math.hypot(g.x-un.entry[0]*S,g.z-un.entry[1]*S)<.6){this.startClimb(un);return}this.go(dt,2.9*cf.spd);return}}
  else if(this.state==='travel'){this.state='patrol';this.T=null}
  if(this.state==='patrol'&&Level.nF>1){this.wf-=dt;if(this.wf<=0){this.wf=25+Math.random()*35;const fs=[];for(let i=0;i<Level.nF;i++)if(i!==this.fl)fs.push(i);if(Math.random()<.5)this.goF=this.pfl!==this.fl?this.pfl:fs[Math.random()*fs.length|0];else this.goF=fs[Math.random()*fs.length|0]}}
  const c=Level.cell(g.x,g.z);

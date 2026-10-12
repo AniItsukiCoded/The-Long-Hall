@@ -43,7 +43,7 @@ html,body{margin:0;background:#000}
 <div id="card" class="hidden"><h1>THE LONG<br>HALLS</h1><div>the boiled one</div></div>
 
 <div id="menu" class="screen">
-  <div id="ver">v5.1.0 · multiplayer</div>
+  <div id="ver">v5.3.0 · multiplayer</div>
   <div id="menuL">
     <button class="gb" id="start">Play</button>
     <button class="gb" id="mMP">Multiplayer</button>
@@ -58,7 +58,7 @@ html,body{margin:0;background:#000}
 <div id="how" class="screen hidden">
   <h2>How to play</h2>
   <div class="pan">
-    <p>You wake in a bed, and the power is out. You have <b>three days</b>. Every time he catches you, you wake up on the <b>next day</b> in the <b>same house</b>, and he gets faster. Get caught on day three and he drags you away for good. The house has <b>3 or 4 floors</b> joined by <b>stairs</b>, and he uses them too. The exit on the <b>ground floor</b> is sealed: find <b>4 fuses</b> spread through the house, then <b>open the exit</b> and walk into the light.</p>
+    <p>You wake in a bed, and the power is out. You have <b>three days</b>. Every time he catches you, you wake up on the <b>next day</b> in the <b>same house</b>, and he gets faster. Get caught on day three and he drags you away for good. The house has <b>3 or 4 floors</b> joined by two steel <b>stairwells</b> in opposite corners that you can really climb, and he uses them too. Watch the floor for rusty <b>bear traps</b>: they hold you still and the snap is loud. The exit on the <b>ground floor</b> is sealed: find <b>4 fuses</b> spread through the house, then <b>open the exit</b> and walk into the light.</p>
     <p>Close <b>doors</b> behind you. A shut door hides you from his eyes, and an open one you did not open means he has already been through.</p>
     <p>Your flashlight runs on <b>batteries</b>. Take <b>bottles</b> and throw one: he will go and look. You can only <b>carry one item at a time</b>. Pick it up with <b>E</b> and drop it with <b>SPACE</b> to free your hands. A <b>brass key</b> opens the room he never visits; spare <b>batteries</b> are used with <b>R</b>. Press <b>C</b> or <b>CTRL</b> to toggle crouch: you move slowly, but quietly and lower. <b>Vents</b> are screwed shut: carry a <b>screwdriver</b> to one and hold <b>E</b>, then crouch and crawl through. While you are inside a vent he cannot see you or catch you. Anything that makes noise (dropping or throwing things, unscrewing a vent) reaches him no matter how far away he is. <b>Notes</b> tell you what happened here.</p>
     <p><b>Lockers</b> are your only shelter. If he <b>sees you climb in</b>, he will drag you out. Sprinting is loud. Lights fail. Don't stop moving.</p>
@@ -138,7 +138,7 @@ html,body{margin:0;background:#000}
  /* ---------- loading screen ---------- */
  var $=function(i){return document.getElementById(i)},el=$('loading'),bar=$('ldfill'),tx=$('ldtxt'),tip=$('ldtip');
  var quick=false;try{quick=!!sessionStorage.getItem('lhrun')}catch(e){}
- var TIPS=['Shut doors behind you.','Lockers are your only shelter.','Anything that makes noise, he hears. Anywhere.','Toggle crouch with C. Small spaces are safe from him.','Vents are screwed shut. Find a screwdriver.','He uses the stairs too.','Sprinting is loud.'];
+ var TIPS=['Shut doors behind you.','Lockers are your only shelter.','Anything that makes noise, he hears. Anywhere.','Toggle crouch with C. Small spaces are safe from him.','Vents are screwed shut. Find a screwdriver.','He uses the stairs too.','Bear traps hide in the dark halls.','Sprinting is loud.'];
  if(tip)tip.textContent=quick?'':TIPS[Math.random()*TIPS.length|0];
  window.LHT={pend:0,total:0,fail:0};   /* every texture that has to decode registers here, so the loader can truly wait for them */
  var MIN=quick?300:900,t0=performance.now(),target=.02,shown=0,failed=false,fin=false;

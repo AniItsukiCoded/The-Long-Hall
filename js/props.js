@@ -55,9 +55,9 @@ lockGear(hg,d){const M=THREE.MeshStandardMaterial,G=new THREE.Group();hg.add(G);
 fixtures(scene){const S=Level.S,H=Level.H,R=Math.random,src=Level.src,gt=this.glow('rgba(255,190,110,'),gr=this.glow('rgba(255,50,40,'),geo=new THREE.BoxGeometry(.55,.07,.55),cw=new THREE.Color(0xffb070),cr=new THREE.Color(0xff2a20);
  const add=(x,z,mode)=>{const col=mode==='r'?cr:cw,mat=new THREE.MeshBasicMaterial({color:col.clone()}),mesh=new THREE.Mesh(geo,mat);mesh.position.set(x,H-.04,z);scene.add(mesh);
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:mode==='r'?gr:gt,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,transparent:true,opacity:.18}));sp.scale.set(1.6,1.6,1);sp.position.set(x,H-.4,z);scene.add(sp);
-  src.push({x,y:H-.45,z,mode,col,mat,sp,d:mode==='r'?6:7,i:mode==='r'?.42:.36,ph:R()*6,k:1,lk:-1,vis:true,I(){return mode==='d'?0:this.k*this.i}})};
- for(const a of[1,11,21])for(const s0 of[1,11])for(const o of[3,7]){const p=s0+o;[[a,p],[p,a]].forEach(([x,z])=>{if(Level.g[z][x]!==0)return;const near=Math.hypot(x-1,z-1)<11,r=R();add(x*S,z*S,near?'n':r<.06?'r':r<.46?'d':r<.62?'f':'n')})}
- Level.rooms.forEach(r=>{const x=(r.x0+r.x1)>>1,z=(r.z0+r.z1)>>1,q=R();add(x*S,z*S,r===Level.lockRoom?'r':q<.6?'d':q<.78?'f':'n')});
+  src.push({x,y:H-.45,z,mode,col,mat,sp,d:mode==='r'?6:8,i:mode==='r'?.5:.46,ph:R()*6,k:1,lk:-1,vis:true,I(){return mode==='d'?0:this.k*this.i}})};
+ for(const a of[1,11,21])for(const s0 of[1,11])for(const o of[3,7]){const p=s0+o;[[a,p],[p,a]].forEach(([x,z])=>{if(Level.g[z][x]!==0)return;const near=Math.hypot(x-1,z-1)<11,r=R();add(x*S,z*S,near?'n':r<.06?'r':r<.34?'d':r<.52?'f':'n')})}
+ Level.rooms.forEach(r=>{const x=(r.x0+r.x1)>>1,z=(r.z0+r.z1)>>1,q=R();add(x*S,z*S,r===Level.lockRoom?'r':q<.45?'d':q<.65?'f':'n')});
  add(Level.exit[0]*S,Level.exit[1]*S,'r')},
 pipes(scene){const S=Level.S,H=Level.H,g=Level.g,rs=Level.roomOf,A=[],B=[];
  for(let z=1;z<Level.D-1;z++)for(let x=1;x<Level.W-1;x++)if(g[z][x]===0&&rs[z][x]<0&&Math.random()<Level.theme.pipe){
@@ -113,7 +113,7 @@ items(scene){const M=THREE.MeshStandardMaterial,br=new M({color:0xb08a3a,metalne
  Level.mkf=this._mk;Level.items.forEach(it=>this._mk(it))},
 dropItem(t,x,z,nid){let it=nid===undefined?Level.items.find(i=>i.taken&&i.t===t):null;if(it){it.x=x;it.z=z;it.a=Math.random()*6.28;it.taken=false;it.g.position.set(x,0,z);it.g.rotation.y=it.a;it.sp.position.set(x,.24,z);it.g.visible=true;it.sp.visible=true}
  else{it={t,x,z,a:Math.random()*6.28,taken:false,i:Level.items.length};if(nid!==undefined){it.nid=nid;it.drop=true}Level.items.push(it);this._mk(it)}return it},
-build(scene){this.doors(scene);this.fusesExit(scene);this.lockers(scene);this.bed(scene);this.rooms(scene);this.fixtures(scene);this.pipes(scene);this.stains(scene);this.items(scene);this.stairsB(scene);this.ventsB(scene);this.ductB(scene)},
+build(scene){this.doors(scene);this.fusesExit(scene);this.lockers(scene);this.bed(scene);this.rooms(scene);this.fixtures(scene);this.pipes(scene);this.stains(scene);this.items(scene);this.stairsB(scene);this.ventsB(scene);this.ductB(scene);this.trapsB(scene)},
 fusesExit(scene){const S=Level.S,M=THREE.MeshStandardMaterial,gt=this.glow('rgba(255,170,60,');Level.fuses=[];
  const dark=new M({color:0x1d1b18,roughness:.9}),brass=new M({color:0xb08a3a,metalness:.9,roughness:.35});
  Level.keys.forEach((k,i)=>{const p=Level.wp(k),g=new THREE.Group(),duct=k[0]<-50;g.position.set(p.x,0,p.z);scene.add(g);
@@ -178,6 +178,7 @@ update(dt,t,P){Level.lockers.forEach(l=>{l.ang+=((l.open?-1.9:0)-l.ang)*Math.min
   const a=f.sp.geometry.attributes.position;for(let i=0;i<f.n;i++){const ph=i*1.7+f.i,r=.12+.1*((i%3)/2),y=((t*.25+i/f.n)%1);a.setXYZ(i,Math.cos(t*.8+ph)*r,1.0+y*.7,Math.sin(t*.8+ph)*r)}a.needsUpdate=true});
  const x=Level.xd;if(x&&x.open){x.t+=dt;x.glow.visible=true;x.door.position.y=Math.min(4,1.275+x.t*1.1)}
  Level.doors.forEach(d=>{d.o+=(d.target-d.o)*Math.min(1,dt*(d.rate||6));if(Math.abs(d.target-d.o)<.01)d.o=d.target;d.hg.rotation.y=d.o*d.sw*1.7;d.pc.off=d.o>.45;d.lm.visible=d.locked;if(d.locked&&d.lg)d.lg.forEach(q=>q.material.opacity=.45+.35*Math.sin(t*3.2+d.id))});
+ Level.traps.forEach(t=>{t.ang+=((t.armed?0:1.4)-t.ang)*Math.min(1,dt*20);if(t.jA){t.jA.rotation.x=-t.ang;t.jB.rotation.x=t.ang}});
  Level.vents.forEach(v=>{v.ang+=((v.open?1.45:0)-v.ang)*Math.min(1,dt*6);if(v.hg)v.hg.rotation.x=v.ang});
  Level.items.forEach(it=>{if(it.taken)return;it.sp.material.opacity=.3+.25*Math.sin(t*2.4+it.i*1.3)})}};
 
@@ -282,3 +283,31 @@ ductB(scene){if(!Level.fp.duct)return;const D=this.DUCT,M=THREE.MeshStandardMate
  [[-L/2+1.2,0xffb070],[L/2-1.2,0xffb070],[0,0x88aaff]].forEach(([x,c])=>Level.src.push({x:D.x+x,y:.95,z:D.z,col:new THREE.Color(c),d:6,I:()=>c===0xffb070?.55:.25}))}});
 
 {const _di=Props.dropItem;Props.dropItem=function(t,x,z,nid,fl){if(fl!==undefined&&fl!==Level.fi){const o=Level.fi;Level.use(fl);try{return _di.call(this,t,x,z,nid)}finally{Level.use(o)}}return _di.call(this,t,x,z,nid)}}
+
+Object.assign(Props,{trapsB(scene){if(!Level.traps.length)return;const M=THREE.MeshStandardMaterial,rust=new M({color:0x6a3a22,metalness:.7,roughness:.55}),dk=new M({color:0x2a2420,metalness:.6,roughness:.6}),bx=this.bxm;
+ for(const t of Level.traps){const g=new THREE.Group();g.position.set(t.x,.02,t.z);g.rotation.y=Math.random()*6.28;scene.add(g);bx(g,.5,.03,.16,0,0,0,dk);
+  const mk=s=>{const j=new THREE.Group();j.position.set(0,.02,s*.07);g.add(j);bx(j,.62,.025,.3,0,0,s*.15,rust);for(let k=-2;k<=2;k++)bx(j,.04,.09,.04,k*.12,.05,s*.29,dk);return j};t.jA=mk(1);t.jB=mk(-1)}}});
+
+/* hotel-style steel stair shaft: two flights per floor with a mid landing; the same shaft on every floor, so it truly connects them */
+Object.assign(Props,{stairsB(scene){if(!Level.stairs.length)return;const M=THREE.MeshStandardMaterial,FH=Level.FH,H=Level.H,h=FH/2,uL=1.5,uE=5.1,N=12,td=(uE-uL)/N,
+ steel=new M({map:this.noise(),color:0x7a838a,metalness:.85,roughness:.42}),dkm=new M({color:0x2a2f34,metalness:.7,roughness:.55}),rail=new M({color:0x424950,metalness:.8,roughness:.4}),conc=new M({color:0x6a665e,roughness:.95}),lamp=new M({color:0xffd9a0,emissive:0xffb060,emissiveIntensity:.8}),bx=this.bxm;
+ for(const un of Level.stairs){const up=un.up,dn=un.dn,g=new THREE.Group();g.position.set(un.O.x,0,un.O.z);g.rotation.y=Math.atan2(un.inn[0],un.inn[1]);scene.add(g);
+  const wp=(u,t)=>({x:un.O.x+un.inn[0]*u+un.tn[0]*t,z:un.O.z+un.inn[1]*u+un.tn[1]*t}),plate=(u0,u1,t0,t1,y,m)=>bx(g,t1-t0,.08,u1-u0,(t0+t1)/2,y-.04,(u0+u1)/2,m);
+  [-1.46,1.46].forEach(t=>bx(g,.12,FH,6,t,FH/2,3,conc));
+  plate(uE,6,-1.4,1.4,0,steel);
+  if(!dn)plate(0,uE,-1.4,1.4,0,steel);else if(!up)plate(0,uE,-1.4,-.05,0,steel);
+  if(!up)plate(0,6,-1.4,1.4,H+.04,dkm);else{plate(2.3,6,-1.4,-.05,H+.04,dkm);plate(uE,6,.05,1.4,H+.04,dkm)}
+  if(up){plate(0,uL,-1.4,1.4,h,steel);
+   for(let k=0;k<N;k++){const y=h*(k+1)/N;bx(g,1.26,.05,td,-.72,y-.025,uE-(k+.5)*td,steel);bx(g,1.26,.05,td,.72,h+y-.025,uL+(k+.5)*td,steel)}
+   const L=Math.hypot(uE-uL,h),ang=Math.atan2(h,uE-uL);
+   for(const t of[-1.38,-.08]){const b=bx(g,.06,.22,L,t,h/2-.1,(uL+uE)/2,dkm);b.rotation.x=ang}
+   for(const t of[.08,1.38]){const b=bx(g,.06,.22,L,t,1.5*h-.1,(uL+uE)/2,dkm);b.rotation.x=-ang}
+   [[-1.35,.1],[1.35,.1],[-1.35,uL-.1],[1.35,uL-.1]].forEach(([t,u])=>bx(g,.1,h,.1,t,h/2,u,dkm));
+   for(const t of[-1.3,-.12]){const b=bx(g,.05,.05,L,t,h/2+.95,(uL+uE)/2,rail);b.rotation.x=ang;for(let k=0;k<=N;k+=3)bx(g,.04,.9,.04,t,h*k/N+.45,uE-k*td,rail)}
+   for(const t of[.12,1.3]){const b=bx(g,.05,.05,L,t,1.5*h+.95,(uL+uE)/2,rail);b.rotation.x=-ang;for(let k=0;k<=N;k+=3)bx(g,.04,.9,.04,t,h+h*k/N+.45,uL+k*td,rail)}}
+  if(up||dn){bx(g,.05,.05,uE-uL,0,1.0,(uL+uE)/2,rail);for(let u=uL;u<=uE+.01;u+=.6)bx(g,.05,1.0,.05,0,.5,u,rail)}
+  const warm=new THREE.Color(0xffa860),lampAt=(u,t,y)=>{bx(g,.1,.16,.1,t,y,u,lamp);const p=wp(u,t);Level.src.push({x:p.x,y,z:p.z,col:warm,d:7,I:()=>.9})};
+  lampAt(4.2,1.3,2.4);if(up)lampAt(.9,1.3,h+1.6);if(dn)lampAt(.9,-1.3,-h+1.5);
+  const side=(t0,t1)=>{const a=[un.O.x+un.tn[0]*t0,un.O.z+un.tn[1]*t0],b=[un.O.x+un.inn[0]*6+un.tn[0]*t1,un.O.z+un.inn[1]*6+un.tn[1]*t1];Level.col.push({x0:Math.min(a[0],b[0]),x1:Math.max(a[0],b[0]),z0:Math.min(a[1],b[1]),z1:Math.max(a[1],b[1])})};
+  side(1.3,1.55);side(-1.55,-1.3);
+  if(up||dn){const a=wp(uL,-.06),b=wp(uE,.06);Level.col.push({x0:Math.min(a.x,b.x),x1:Math.max(a.x,b.x),z0:Math.min(a.z,b.z),z1:Math.max(a.z,b.z)})}}}});
