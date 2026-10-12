@@ -3,7 +3,7 @@
      m  {h host, s state 0 lobby/1 playing/2 finished, d day, sd seed, df difficulty, r result, pb 1 public/0 private}
      u/<pid> {n nickname, q "x,z,yaw,pitch,flags,locker", a 0 alive/1 dead/2 escaped, k kill signal}
      e  "day|x|z|rot|state|targetPid"     (written by the host only)
-     w  {f fuses, x exit, d doors, k unlocked doors, i items}   (cleared every new day)
+     w  {f fuses, x exit, d doors, k unlocked doors, i items}   (kept across days of a run; only the doors are shut again)
      ev {id: thrown bottle}               (auto removed after a few seconds)
    /pub/<CODE> {h host nickname, n players, s, d difficulty, t heartbeat}  public list entry, written by the host only
      while the party is public and waiting in the lobby; removed when it starts, goes private, or the host leaves.
@@ -63,7 +63,8 @@ const Net={
  /* ---------- lobby / day flow (host) ---------- */
  setDiff(i){if(this.isHost())this.ref.child('m/df').set(i)},
  start(df){if(!this.isHost())return;const up={'m/s':1,'m/d':1,'m/sd':(Math.random()*4294967295)>>>0,'m/df':df,'m/r':null,'w':null,'e':null};this.sorted().forEach(k=>{up['u/'+k+'/a']=0;up['u/'+k+'/q']=null;up['u/'+k+'/k']=null});this.ref.update(up)},
- nextDay(d){if(!this.isHost())return;const up={'m/d':d,'m/sd':(Math.random()*4294967295)>>>0,'w':null,'e':null};this.sorted().forEach(k=>{up['u/'+k+'/a']=0;up['u/'+k+'/q']=null;up['u/'+k+'/k']=null});this.ref.update(up)},
+ /* the house stays the same and everything the party achieved is kept (fuses, unlocked doors, dropped items); only the doors are shut again */
+ nextDay(d){if(!this.isHost())return;const up={'m/d':d,'w/d':null,'e':null};this.sorted().forEach(k=>{up['u/'+k+'/a']=0;up['u/'+k+'/q']=null;up['u/'+k+'/k']=null});this.ref.update(up)},
  finish(result){if(!this.isHost())return;this.ref.update({'m/s':2,'m/r':String(result).slice(0,120),'w':null,'e':null})},
  toLobby(){if(!this.isHost())return;const up={'m/s':0,'m/r':null,'w':null,'e':null};this.sorted().forEach(k=>{up['u/'+k+'/a']=0;up['u/'+k+'/q']=null;up['u/'+k+'/k']=null});this.ref.update(up)},
  /* ---------- player ---------- */

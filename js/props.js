@@ -280,3 +280,5 @@ ductB(scene){if(!Level.fp.duct)return;const D=this.DUCT,M=THREE.MeshStandardMate
  for(let x=-L/2+1;x<L/2;x+=1.5)bx(g,.1,Hd+.06,Wd+.06,x,Hd/2,0,dk);
  bx(g,.05,Hd,Wd,-L/2,Hd/2,0,dk);bx(g,.05,Hd,Wd,L/2,Hd/2,0,dk);
  [[-L/2+1.2,0xffb070],[L/2-1.2,0xffb070],[0,0x88aaff]].forEach(([x,c])=>Level.src.push({x:D.x+x,y:.95,z:D.z,col:new THREE.Color(c),d:6,I:()=>c===0xffb070?.55:.25}))}});
+
+{const _di=Props.dropItem;Props.dropItem=function(t,x,z,nid,fl){if(fl!==undefined&&fl!==Level.fi){const o=Level.fi;Level.use(fl);try{return _di.call(this,t,x,z,nid)}finally{Level.use(o)}}return _di.call(this,t,x,z,nid)}}

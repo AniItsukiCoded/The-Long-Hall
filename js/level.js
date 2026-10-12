@@ -128,8 +128,8 @@ los(ax,az,bx,bz){const d=Math.hypot(bx-ax,bz-az),n=Math.ceil(d/.5);for(let i=1;i
 FLK:['g','roomOf','rooms','doors','dmap','col','items','keys','lockRoom','start','dist','walk','exit','resv','enemyStart','src','lockers','fuses','lamps','xd','stairs','vents','theme','mkf','fp','wallMat'],
 save(f){const o=this.FL[f]={};for(const k of this.FLK)o[k]=this[k]},
 use(f){const o=this.FL[f];for(const k of this.FLK)this[k]=o[k];this.fi=f;Props._mk=this.mkf},
-unitAt(x,z){for(const u of this.stairs){const dx=x-u.O.x,dz=z-u.O.z,uu=dx*u.inn[0]+dz*u.inn[1],t=dx*u.tn[0]+dz*u.tn[1];if(uu>-.3&&uu<6.01&&Math.abs(t)<1.5)return{u:uu,t,un:u}}return null},
-gy(x,z){if(!this.stairs.length)return 0;const r=this.unitAt(x,z);if(!r)return 0;const{u,un}=r;if(u<3.6)return un.kind==='up'?un.H1:-un.H1;const q=Math.min(1,(u-3.6)/2.4),k=Math.min(7,Math.floor(q*8)),m=un.H1*(1-(k+1)/8);return un.kind==='up'?m:-m},
+unitAt(x,z,st){for(const u of (st||this.stairs)){const dx=x-u.O.x,dz=z-u.O.z,uu=dx*u.inn[0]+dz*u.inn[1],t=dx*u.tn[0]+dz*u.tn[1];if(uu>-.3&&uu<6.01&&Math.abs(t)<1.5)return{u:uu,t,un:u}}return null},
+gy(x,z,st){if(!(st||this.stairs).length)return 0;const r=this.unitAt(x,z,st);if(!r)return 0;const{u,un}=r;if(u<3.6)return un.kind==='up'?un.H1:-un.H1;const q=Math.min(1,(u-3.6)/2.4),k=Math.min(7,Math.floor(q*8)),m=un.H1*(1-(k+1)/8);return un.kind==='up'?m:-m},
 make(scene,seed,multi){const real=Math.random;if(seed!=null)Math.random=mulberry(seed);try{this.buildAll(scene,!!multi)}finally{Math.random=real}},
 buildAll(scene,multi){const R=Math.random;this.root=scene;this.pool=[];this.items=[];this.lockLight=null;this.FL=[];this.FG=[];
  const F=multi?(R()<.5?3:4):1,TH=F===1?['house']:F===3?['basement','house','attic']:['basement','house','house2','attic'],nF=Array(F).fill(F===1?4:1);
@@ -141,7 +141,7 @@ buildAll(scene,multi){const R=Math.random;this.root=scene;this.pool=[];this.item
  for(let i=0;i<5;i++){const l=new THREE.PointLight(0xffb070,0,12);scene.add(l);this.pool.push(l)}
  let fb=0;
  for(let f=0;f<F;f++){this.fi=f;this.fp=plan[f];let ok=false;for(let i=0;i<120&&!ok;i++)ok=this.gen(i>60);if(!ok)throw new Error('Level generation failed (floor '+f+')');
-  const grp=new THREE.Group();scene.add(grp);this.FG.push(grp);this.fuseBase=fb;fb+=this.keys.length;this.build(grp);this.save(f)}
+  this.doors.forEach(d=>{d.id+=f*100});const grp=new THREE.Group();scene.add(grp);this.FG.push(grp);this.fuseBase=fb;fb+=this.keys.length;this.build(grp);this.save(f)}
  for(let f=0;f<F;f++)for(const u of this.FL[f].stairs){u.to=u.kind==='up'?f+1:f-1;u.pn=this.FL[u.to].stairs.find(s=>s.kind===(u.kind==='up'?'down':'up'))}
  this.nF=F;this.sf=F-1;this.ef=F>1?(R()*(F-1)|0):0;this.exitFloor=exF;this.XD=this.FL[exF].xd;this.noteTotal=nt.reduce((a,b)=>a+b,0);this.FG.forEach((g,i)=>g.visible=i===this.sf);this.use(this.sf)},
 build(scene){const S=this.S,H=this.H,W=this.W,D=this.D,g=this.g,T=this.theme=THEMES[this.fp.theme];this.src=[];this.lockers=[];this.fuses=[];this.lamps=[];
@@ -165,3 +165,7 @@ updLights(px,pz,dt,black,t){const src=this.src,pool=this.pool;this._lt-=dt;const
  for(let i=0;i<pool.length;i++){const l=pool[i],s=cand[i];if(!s||(black>0&&!s.mat&&s.keep!==true&&false)){l.intensity=0;continue}l.position.set(s.x,s.y,s.z);l.color.copy(s.col);l.distance=s.d;l.intensity=s.I()}}};
 
 Level.paper=unseeded(Level.paper);Level.planks=unseeded(Level.planks);Level.tex=unseeded(Level.tex);
+
+/* helpers for code that has to touch another floor (multiplayer events) */
+Level.withFloor=function(f,fn){const o=this.fi;if(o===f)return fn();this.use(f);try{return fn()}finally{this.use(o)}};
+Level.doorById=function(id){const F=this.FL[Math.floor(id/100)];return F?F.doors.find(d=>d.id===id):null};
