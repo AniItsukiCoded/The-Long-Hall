@@ -8,8 +8,8 @@ const DIFF=[
 {n:'Hard',spd:1.15,hear:14,sight:42,amb:-.05,d:['Faster than your sprint once you hold all 4 fuses','Sprinting carries far','Darker halls']},
 {n:'Nightmare',spd:1.35,hear:18,sight:52,amb:-.1,d:['Faster than your sprint by the second fuse','He hears almost everything','Almost no light. Lockers are your only friend']}];
 let scene,cam,ren,clock,en,amb,fl,keys=0,state='menu',started=false,stam=1,yaw=0,pitch=0,bob=0,stepT=0,beatT=0,eStep=0,eventT=15,blackout=0,msgT=0,time=0,H=null,hideT=0,wasCh=false,scareT=0,from='menu',grace=0,lockTry=0,mxn=0,myn=0,bat=1,bot=0,hasKey=false,bats=0,sel='bottle',crouch=0,fovK=1,day=1,RUN=null,wakeT=0,W0=.5,wk=0,HELD={},kick=0,SC=null,nNotes=0,proj=[],noteT=0,dust=null,fon=true,NT=6,MP=false,mpPlay=false,dead=false,escd=false,paused=false,av={},specId=null,dying={},ending=false,poseT=0,enT=0,chkT=0,pendKill=false,enNet=null,WOFF={x:0,z:0},lastEStr='',fovCur=72,lastLock=0,visYaw=0,visPitch=0,snapT=0,vp={x:0,y:0,z:0},prMax=1,prCur=1,lastESent=0,enS={buf:null,off:null,lastTs:null,sp:80};
-const FY=()=>Level.fy(P.fl);
-let trapT=0,scT=30,wReady=0,SEED=0,autoT=0,crouchOn=false,V=null,hasSD=false,py=0,stairFx=null,ventSnd=0;const newSeed=()=>((Math._r||Math.random)()*4294967296)>>>0,ORD=['FIRST','SECOND','THIRD','FOURTH','FIFTH'];
+const FY=()=>Level.fy(P.fl),bodies=[];
+let exh=0,vfade=0,VIN=null,VOUT=null,VO=new Set(),trapT=0,scT=30,wReady=0,SEED=0,autoT=0,crouchOn=false,V=null,hasSD=false,py=0,stairFx=null,ventSnd=0;const newSeed=()=>((Math._r||Math.random)()*4294967296)>>>0,ORD=['FIRST','SECOND','THIRD','FOURTH','FIFTH'];
 const _e={};function ws(id,p,v){const e=_e[id]||(_e[id]=document.getElementById(id));if(e.style[p]!==v)e.style[p]=v}
 const P={x:0,z:0,noisy:false,hidden:false,lk:null,yaw:0,pid:null,fl:0},KEYS={};
 const RK='lhrun',loadRun=()=>{try{return JSON.parse(sessionStorage.getItem(RK))}catch(e){return null}},saveRun=r=>{try{r?sessionStorage.setItem(RK,JSON.stringify(r)):sessionStorage.removeItem(RK)}catch(e){}};
@@ -33,7 +33,7 @@ function init(){
  ren=new THREE.WebGLRenderer({canvas:$('gl'),antialias:true});prMax=prCur=Math.min(devicePixelRatio||1,1.5);ren.setPixelRatio(prCur);ren.setSize(innerWidth,innerHeight);
  amb=new THREE.AmbientLight(0x3a2c22,.14);
  fl=new THREE.SpotLight(0xffe2b0,2.1,24,.52,.62,1.4);cam.add(fl);fl.position.set(0,0,0);const tg=new THREE.Object3D();tg.position.set(0,0,-1);cam.add(tg);fl.target=tg;
- {const r0=loadRun();SEED=r0&&r0.seed!=null?r0.seed:newSeed()}mkWorld(SEED,true);HELD=Props.held();for(const k in HELD){HELD[k].visible=false;HELD[k].position.set(.27,-.27,-.52);cam.add(HELD[k])}clock=new THREE.Clock();Menu3D.init();buildOpts();apply();
+ {const r0=loadRun();SEED=r0&&r0.seed!=null?r0.seed:newSeed();if(r0&&r0.vo)VO=new Set(r0.vo)}mkWorld(SEED,true);HELD=Props.held();for(const k in HELD){HELD[k].visible=false;HELD[k].position.set(.27,-.27,-.52);cam.add(HELD[k])}clock=new THREE.Clock();Menu3D.init();buildOpts();apply();
  addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});
  addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT')return;KEYS[e.code]=1;if(e.code==='Escape'&&(state==='pause'||paused)&&!$('pause').classList.contains('hidden'))return resume();if(state==='spec'&&!paused){if(e.code==='ArrowRight'||e.code==='KeyD')specNext(1);if(e.code==='ArrowLeft'||e.code==='KeyA')specNext(-1)}if(state!=='play'||paused)return;
   if(e.code==='KeyF'&&!H){fon=!fon;Aud.tone(fon&&bat>0?1200:700,.05,'square',.1)}if(e.code==='KeyG'&&!H&&!V)throwHeld();if(e.code==='KeyE')interact();if((e.code==='KeyC'||e.code==='ControlLeft')&&!e.repeat&&!H&&!V)crouchOn=!crouchOn;if((e.code==='KeyQ'||e.code==='Space')&&!H){e.preventDefault();if(!V)dropItem()}if(e.code==='KeyR'&&!H)useBattery();if(e.code==='Digit1')selItem('bottle');if(e.code==='Digit2')selItem('battery');if(e.code==='Digit3')selItem('key');if(e.code==='ControlLeft'||e.code==='ControlRight')e.preventDefault();if(e.code==='KeyP')pause()});
@@ -55,7 +55,7 @@ function init(){
  let seen=false;try{seen=!!localStorage.getItem('lhw')}catch(e){}if(!seen)try{seen=!!sessionStorage.getItem('lhw')}catch(e){}show('warn');
  const wok=()=>{try{localStorage.setItem('lhw','1')}catch(e){}try{sessionStorage.setItem('lhw','1')}catch(e){}hide_('warn')};$('wOk').onclick=wok;$('wSafe').onclick=()=>{SET.safe=true;save();buildOpts();apply();wok()};
  window.LHHook={compile:()=>{ren.compile(scene,cam);ren.render(scene,cam);if(Menu3D.scene)ren.compile(Menu3D.scene,Menu3D.cam)}};
- bindMP();loop()}
+ bindMP();window.__loopOn=true;loop()}
 function openSet(f){from=f;hide_(f);show('settings')}
 function lock(){try{const p=ren.domElement.requestPointerLock();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
 function begin(){if(!Aud.ctx){Aud.init();apply()}Aud.fade(true);Aud.level(1);hide_('menu');hide_('dayscr');hide_('lobby');hide_('mpmenu');show('hud');show('lids');started=true;state='wake';wakeT=0;wk=0;W0=(MP?day>1:RUN)?.6:2.8;WOFF=MP?spawnOff():{x:0,z:0};grace=performance.now()+9000;fon=true;fl.intensity=0;
@@ -90,7 +90,7 @@ function target(){if(H)return null;let best=null,bs=99;const fx=-Math.sin(yaw),f
  const tr=(k,o,x,z,lim,fac,label)=>{const dx=x-P.x,dz=z-P.z,d=Math.hypot(dx,dz);if(d>lim)return;const dot=d>.01?(dx*fx+dz*fz)/d:1;if(fac&&dot<.25&&d>1.1)return;const s=d-dot*.8;if(s<bs){bs=s;best={k,o,label}}};
  for(const f of Level.fuses)if(!f.taken)tr('fuse',f,f.x,f.z,1.9,0,'[E] TAKE FUSE');
  if(V)return best;
- for(const it of Level.items)if(!it.taken)tr('item',it,it.x,it.z,1.7,1,it.t==='note'?'[E] READ NOTE':carrying()>0?'HANDS FULL · SPACE TO DROP':it.t==='key'?'[E] TAKE BRASS KEY':it.t==='battery'?'[E] TAKE BATTERY':it.t==='screwdriver'?'[E] TAKE SCREWDRIVER':'[E] TAKE BOTTLE');
+ for(const it of Level.items)if(!it.taken)tr('item',it,it.x,it.z,1.7,1,it.t==='note'?'[E] READ NOTE':it.t==='fuse'?'[E] TAKE FUSE':carrying()>0?'HANDS FULL · SPACE TO DROP':it.t==='key'?'[E] TAKE BRASS KEY':it.t==='battery'?'[E] TAKE BATTERY':it.t==='screwdriver'?'[E] TAKE SCREWDRIVER':'[E] TAKE BOTTLE');
  const x=Level.xd;if(x&&!x.open)tr('exit',x,x.x,x.z,2.4,0,keys>=4?'[E] OPEN EXIT':`EXIT SEALED (${keys}/4)`);
  for(const l of Level.lockers)if(!lockerBusy(l))tr('locker',l,l.cx,l.cz,1.9,0,'[E] HIDE');
  /* doors and vents only react while you are actually LOOKING at them */
@@ -107,16 +107,26 @@ function hud(){const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};set('botc'
  [['botn','bottle'],['batn','battery'],['keyn','key'],['sdn','screwdriver']].forEach(([id,t])=>{const e=$(id);if(!e)return;e.classList.toggle('hidden',cnt(t)<=0);e.classList.toggle('sel',sel===t)})}
 function selItem(t){if(cnt(t)>0){sel=t;hud()}}
 function useBattery(){if(state!=='play'||H)return;if(bats<=0){say('You have no spare batteries.',2000);return}if(bat>.92){say('Your flashlight is already full.',2200);return}bats--;bat=Math.min(1,bat+.55);Aud.battery();say('Fresh batteries.',2000);hud()}
+function trapHit(x,z,fl){const F=Level.FL[fl];if(!F)return;for(const t of F.traps)if(t.armed&&Math.hypot(x-t.x,z-t.z)<.6){t.armed=false;if(fl===P.fl){Aud.bang();say('Something set off the trap.',1600)}}}
+function spawnBody(t,x,y,z,vx,vy,vz){const mt=new THREE.Mesh(t==='key'?new THREE.BoxGeometry(.16,.03,.05):t==='battery'?new THREE.CylinderGeometry(.03,.03,.12,10):new THREE.CylinderGeometry(.02,.02,.2,8),new THREE.MeshStandardMaterial({color:t==='key'?0xb08a3a:t==='battery'?0x333333:0xd8a020,metalness:.6,roughness:.4}));mt.position.set(x,y,z);scene.add(mt);bodies.push({m:mt,t,vx,vy,vz,rx:6+R()*8,rz:4+R()*8,rest:0,fl:P.fl})}
+function commitItem(b,x,z){const t=b.t;if(MP)Net.drop([{nid:Net.nid(),t:netT(t,b.fl),x,z}]);else{Props.dropItem(t,x,z,undefined,b.fl);trapHit(x,z,b.fl);noiseAt(x,z,b.fl)}Aud.tone(150,.08,'square',.1)}
+function stepBodies(dt){for(let i=bodies.length-1;i>=0;i--){const b=bodies[i],q=b.m,ox=q.position.x,oz=q.position.z;b.vy-=16*dt;let nx=ox+b.vx*dt,nz=oz+b.vz*dt,ny=q.position.y+b.vy*dt;
+ if(Level.wall(nx,nz)||Level.hitCol(nx,nz)){if(Level.wall(nx,oz)||Level.hitCol(nx,oz))b.vx*=-.35;if(Level.wall(ox,nz)||Level.hitCol(ox,nz))b.vz*=-.35;nx=ox;nz=oz}
+ const fl=Level.fy(b.fl)+Level.gy(nx,nz,undefined,ny-Level.fy(b.fl)-.2);let ground=false;if(ny<fl+.05){ny=fl+.05;ground=true;if(b.vy<-2){Aud.tone(110+R()*70,.06,'square',.08);b.vy=-b.vy*.34}else b.vy=0;b.vx*=1-Math.min(1,dt*9);b.vz*=1-Math.min(1,dt*9)}
+ q.position.set(nx,ny,nz);const sp=Math.hypot(b.vx,b.vz);q.rotation.x+=b.rx*dt*Math.min(1,sp/3+(ground?0:1));q.rotation.z+=b.rz*dt*Math.min(1,sp/3+(ground?0:1));
+ if(ground&&sp<.35&&Math.abs(b.vy)<.6){b.rest+=dt;if(b.rest>.25){scene.remove(q);bodies.splice(i,1);commitItem(b,nx,nz)}}else b.rest=0}}
 function dropItem(){if(state!=='play'||H)return;let t=heldType();if(!t){say('You are not carrying anything to drop.',2000);return}
  const fx=-Math.sin(yaw),fz=-Math.cos(yaw);let x=P.x,z=P.z;for(const d of[.9,.65,.4,.15]){const nx=P.x+fx*d,nz=P.z+fz*d;if(!Level.blocked(nx,nz,.15)&&Level.los(P.x,P.z,nx,nz)){x=nx;z=nz;break}}
  if(t==='bottle')bot--;else if(t==='battery')bats--;else if(t==='key')hasKey=false;else hasSD=false;
- if(MP)Net.drop([{nid:Net.nid(),t:netT(t,P.fl),x,z}]);else{Props.dropItem(t,x,z);noiseAt(x,z)}kick=1;Aud.tone(180,.08,'sine',.12);say('Dropped '+(t==='bottle'?'the bottle':t==='battery'?'the battery':t==='key'?'the brass key':'the screwdriver')+'. That was loud.',1800);hud()}
+ spawnBody(t,x,FY()+py+1.0,z,fx*1.3,.5,fz*1.3);kick=1;Aud.tone(180,.08,'sine',.12);say('Dropped '+(t==='bottle'?'the bottle':t==='battery'?'the battery':t==='key'?'the brass key':'the screwdriver')+'. That was loud.',1800);hud()}
 function showNote(i){const L=['Day 41. The boiler never stopped. We stopped hearing it. That was the first mistake.','They sent the night watchman down to check the pipes. Nobody saw him come back up. Something did.','Do not run. He hears running. He does not hear breathing, so breathe slowly.','The lockers are safe only because he dislikes the smell. Do not let him watch you climb in.','Four fuses, one for each valve. Someone hid them in the rooms. I think it was me.','The green light means the exit is ready. I never saw green.','If a door is open and you did not open it, he has already been through it.','Throw something. He will go and look. He always goes to look.'],t=L[i%L.length];
  const n=$('note');n.querySelector('p').textContent=t;n.classList.remove('hidden');noteT=Math.min(9,3.5+t.length*.045)}
-function takeItem(it){if(it.t!=='note'&&carrying()>0){say('Your hands are full. Drop what you are holding first (SPACE).',2600);Aud.tone(110,.12,'square',.1);return}if(MP&&it.t!=='note'){Net.take(it.nid,!!it.drop,ok=>{if(ok)gotItem(it);else say('Someone else grabbed it.',1800)});return}gotItem(it)}
+function addFuse(q,who){keys++;if(!q)Aud.pickup();document.querySelectorAll('#fuses i').forEach((e,i)=>e.classList.toggle('on',i<keys));if(!q)say(who&&who!==Net.pid?`${nickOf(who)} found a loose fuse. (${keys}/4)`:keys<4?'A loose fuse. It hums.':'Four fuses. The exit is waiting.');if(keys===4){Level.XD.lt.color.set(0x33ff66);Level.XD.sg.material.color.set(0x66ff88);$('obj').textContent=Level.nF>1?'FIND THE EXIT ON THE GROUND FLOOR':'REACH THE EXIT'}}
+function takeItem(it){if(it.t!=='note'&&it.t!=='fuse'&&carrying()>0){say('Your hands are full. Drop what you are holding first (SPACE).',2600);Aud.tone(110,.12,'square',.1);return}if(MP&&it.t!=='note'){it.mine=true;Net.take(it.nid,!!it.drop,ok=>{if(ok)gotItem(it);else{it.mine=false;say('Someone else grabbed it.',1800)}});return}gotItem(it)}
 function gotItem(it){if(it.t==='battery'){if(bats>=3){say("You can't carry any more batteries.",2200);return}bats++;sel='battery';Aud.battery();say('A spare battery. R use · G throw · SPACE drop.',3000)}
  else if(it.t==='bottle'){if(bot>=5){say("You can't carry any more.",2200);return}bot++;sel='bottle';Aud.pickup();say('A bottle. G throw · SPACE drop.',3000)}
  else if(it.t==='key'){hasKey=true;sel='key';Aud.keyget();say('A brass key. Something is locked. G throw · SPACE drop.',3200)}
+ else if(it.t==='fuse'){addFuse(false)}
  else if(it.t==='screwdriver'){hasSD=true;sel='screwdriver';Aud.pickup();say('A screwdriver. Hold E at a vent that is screwed shut.',3400)}
  else{nNotes++;Aud.paper();showNote(it.i)}
  it.taken=true;it.g.visible=false;it.sp.visible=false;if(it.drop)rmItem(it);hud()}
@@ -126,12 +136,12 @@ function interact(){if(state!=='play')return;if(H){if(hideT>.8)leave();return}
  else if(t.k==='item')takeItem(t.o);
  else if(t.k==='exit'){const x=t.o;if(keys>=4){openExit();if(MP)Net.exit()}else{say(`It needs power. ${keys}/4 fuses.`);Aud.tone(90,.3,'square',.1)}}
  else if(t.k==='locker')hide(t.o);
- else if(t.k==='vent'){const v=t.o;if(v.open){if(crouchOn)enterVent(v);else say('Too low to walk into. Crouch first (C).',2000)}else if(!hasSD)say('Screwed shut. You need a screwdriver.',2200)}
+ else if(t.k==='vent'){const v=t.o;if(v.open){if(crouchOn)startVent(v);else say('Too low to walk into. Crouch first (C).',2000)}else if(!hasSD)say('Screwed shut. You need a screwdriver.',2200)}
  else if(t.k==='door'){const d=t.o;if(d.locked){if(hasKey){hasKey=false;noiseAt(d.wx,d.wz);Level.unlock(d);d.target=1;if(MP){Net.unlock(d.id);Net.door(d.id,1)}Aud.keyget();Aud.dopen();say('The lock gives.',2500);hud()}else{Aud.locked();say('Locked. There must be a key somewhere.',2800)}return}
   d.target=d.target?0:1;if(MP)Net.door(d.id,d.target);d.target?Aud.dopen():Aud.dclose()}}
 function throwHeld(){if(state!=='play'||H||V)return;const t=heldType();if(!t)return;if(t==='bottle'){throwBottle();return}
  kick=1;const cp=Math.cos(pitch),f=[-Math.sin(yaw)*cp,Math.sin(pitch),-Math.cos(yaw)*cp];if(t==='battery')bats--;else if(t==='key')hasKey=false;else hasSD=false;
- const mt=new THREE.Mesh(new THREE.BoxGeometry(.14,.06,.06),new THREE.MeshStandardMaterial({color:t==='key'?0xb08a3a:t==='battery'?0x333333:0xd8a020,metalness:.5,roughness:.5}));mt.position.set(P.x+f[0]*.4,FY()+1.5+py,P.z+f[2]*.4);scene.add(mt);proj.push({m:mt,vx:f[0]*10,vy:f[1]*10+1.4,vz:f[2]*10,item:t});Aud.tone(300,.1,'sine',.1,200);hud()}
+ spawnBody(t,P.x+f[0]*.4,FY()+1.45+py,P.z+f[2]*.4,f[0]*9.5,f[1]*9.5+1.8,f[2]*9.5);Aud.tone(300,.1,'sine',.1,200);hud()}
 function throwBottle(){if(state!=='play'||H||V||bot<=0)return;bot--;kick=1;const cp=Math.cos(pitch),f=[-Math.sin(yaw)*cp,Math.sin(pitch),-Math.cos(yaw)*cp];
  const bx=P.x+f[0]*.4,bz=P.z+f[2]*.4,vx=f[0]*12,vy=f[1]*12+1.6,vz=f[2]*12;spawnBottle(bx,1.5,bz,vx,vy,vz);if(MP){const r=n=>Math.round(n*100)/100;Net.throwB({k:1,u:Net.pid,x:r(bx),y:1.5,z:r(bz),a:r(vx),b:r(vy),c:r(vz),f:P.fl})}Aud.tone(300,.1,'sine',.1,200);hud()}
 function spawnBottle(x,y,z,vx,vy,vz){const mt=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,.22,8),new THREE.MeshStandardMaterial({color:0x4a7a4a,transparent:true,opacity:.8,roughness:.2}));mt.position.set(x,y+FY(),z);scene.add(mt);proj.push({m:mt,vx,vy,vz})}
@@ -141,24 +151,29 @@ function initDust(){const n=220,pg=new THREE.BufferGeometry(),a=new Float32Array
  dust=new THREE.Points(pg,new THREE.PointsMaterial({map:Props.dot(),color:0xccbbaa,size:.035,transparent:true,opacity:.5,depthWrite:false}));dust.frustumCulled=false;scene.add(dust)}
 function updDust(dt){const a=dust.geometry.attributes.position;for(let i=0;i<a.count;i++){let x=a.getX(i),y=a.getY(i)+dt*.05,z=a.getZ(i);const dx=x-P.x,dz=z-P.z;if(dx>8)x-=16;else if(dx<-8)x+=16;if(dz>8)z-=16;else if(dz<-8)z+=16;const fy=FY();if(y>fy+3||y<fy)y=fy+R()*.3;a.setXYZ(i,x,y,z)}a.needsUpdate=true}
 function springTrap(t){t.armed=false;trapT=2.6;kick=1;Aud.bang();Aud.tone(90,.3,'square',.2);say('A BEAR TRAP.',2200);noiseAt(t.x,t.z);if(MP)Net.door(8000+P.fl*10+t.i,1)}
-function enterVent(v){const D=Props.DUCT,from=v===Level.vents[0]?0:1;V={v,from,u:from?D.L-.4:.4,y0:from?Math.PI/2:-Math.PI/2};crouchOn=true;P.crouch=true;P.hidden=true;yaw=V.y0;pitch=0;snapT=.3;P.x=D.x-D.L/2+V.u;P.z=D.z;Aud.locker();say('Nothing can see you in here.',2400)}
-function leaveVent(end){const v=Level.vents[end];V=null;P.hidden=false;if(!v.open&&MP)Net.door(9000+P.fl*10+v.i,1);v.open=true;P.x=v.fx;P.z=v.fz;yaw=Math.atan2(v.s[0],v.s[1]);pitch=0;snapT=.3;crouchOn=true;Aud.locker()}
+function ventOpened(v){const k=P.fl*10+v.i;VO.add(k);if(MP)Net.unlock(9000+k)}
+function startVent(v){const s=v.s;VIN={v,t:0,x0:P.x,z0:P.z,x1:v.wx-s[0]*.38,z1:v.wz-s[1]*.38};crouchOn=true;yaw=Math.atan2(s[0],s[1])+Math.PI;pitch=-.25;Aud.locker()}
+function enterVent(v){const D=Props.DUCT,from=v===Level.vents[0]?0:1,p=D.pts,a=from?p[p.length-1]:p[0],b=from?p[p.length-2]:p[1],dx=b[0]-a[0],dz=b[1]-a[1],n=Math.hypot(dx,dz);V={v,from};P.x=a[0]+dx/n*.8;P.z=a[1]+dz/n*.8;crouchOn=true;P.crouch=true;P.hidden=true;yaw=Math.atan2(-dx,-dz);pitch=0;snapT=.3;vfade=1;Aud.locker();say('Nothing can see you in here.',2400)}
+function leaveVent(end){const v=Level.vents[end],s=v.s;V=null;P.hidden=false;if(!v.open){v.open=true;ventOpened(v)}P.x=v.wx-s[0]*.38;P.z=v.wz-s[1]*.38;VOUT={v,t:0};yaw=Math.atan2(s[0],s[1]);pitch=-.2;snapT=.3;crouchOn=true;vfade=1;Aud.locker()}
 function unscrew(v,dt){v.prog=Math.min(1,v.prog+dt/2.6);ventSnd-=dt;if(ventSnd<=0){ventSnd=.55;Aud.tone(850+R()*350,.09,'sawtooth',.08,650);noiseAt(v.x,v.z)}
- if(v.prog>=1){v.open=true;if(MP)Net.door(9000+P.fl*10+v.i,1);Aud.tone(120,.3,'square',.16);noiseAt(v.x,v.z);say('The grate comes loose. Crouch (C) and crawl in.',3600)}}
+ if(v.prog>=1){v.open=true;ventOpened(v);Aud.tone(120,.3,'square',.16);noiseAt(v.x,v.z);say('The grate comes loose. Crouch (C) and crawl in.',3600)}}
 function floorLook(){const T=Level.theme;if(scene&&scene.fog)scene.fog.density=T.fog;const e=$('dayl');if(e)e.textContent='DAY '+day+(Level.nF>1?' · '+T.name:'')}
 function swFloor(dir){const old=P.fl,to=old+dir;Level.use(to);P.fl=to;py-=dir*Level.FH;floorLook();Level.updVis(P.x,P.z,P.fl);
  if(!MP&&en.fl===old&&!en.cl&&(en.state==='chase'||(en.seen&&en.dist<22))){en.goF=to;en.state='travel';en.follow=true}}
 function update(dt){
- time+=dt;const K=paused?{}:KEYS;let mx=(K.KeyD?1:0)-(K.KeyA?1:0),mz=(K.KeyS?1:0)-(K.KeyW?1:0),mv=!H&&!V&&(mx||mz),run=false;setCfg();P.yaw=yaw;if(trapT>0){trapT-=dt;mx=0;mz=0;mv=false;K.ShiftLeft=0}
+ time+=dt;const K=paused?{}:KEYS;let mx=(K.KeyD?1:0)-(K.KeyA?1:0),mz=(K.KeyS?1:0)-(K.KeyW?1:0),mv=!H&&!V&&(mx||mz),run=false;setCfg();P.yaw=yaw;if(VIN){VIN.t+=dt;const k=ease(VIN.t/.55);P.x=VIN.x0+(VIN.x1-VIN.x0)*k;P.z=VIN.z0+(VIN.z1-VIN.z0)*k;mx=0;mz=0;mv=false;if(VIN.t>.3){const fe=$('flash');fe.style.background='#000';fe.style.opacity=String(+Math.min(1,(VIN.t-.3)/.25).toFixed(3))}if(VIN.t>=.55){const v=VIN.v;VIN=null;enterVent(v)}}
+ if(VOUT){VOUT.t+=dt;const v=VOUT.v,s=v.s,k=ease(VOUT.t/.55);P.x=v.wx-s[0]*.38+(v.fx-(v.wx-s[0]*.38))*k;P.z=v.wz-s[1]*.38+(v.fz-(v.wz-s[1]*.38))*k;mx=0;mz=0;mv=false;if(VOUT.t>=.55)VOUT=null}
+ if(vfade>0){vfade=Math.max(0,vfade-dt*2.2);const fe=$('flash');fe.style.background='#000';fe.style.opacity=String(+Math.min(1,vfade).toFixed(3))}if(trapT>0){trapT-=dt;mx=0;mz=0;mv=false;K.ShiftLeft=0}
  P.hidden=!!H||!!V;P.lk=H;if(H){P.crouch=false;crouch=0}else if(V){P.crouch=true}
  if(H){hideT+=dt;yaw=H.yaw+Math.max(-.35,Math.min(.35,yaw-H.yaw));pitch=Math.max(-.22,Math.min(.22,pitch))}
- else if(V){const D=Props.DUCT,c=Math.cos(yaw),s=Math.sin(yaw),vx=((mx||0)*c+(mz||0)*s)*1.2*dt;V.u=Math.max(-.01,Math.min(D.L+.01,V.u+vx));yaw=V.y0+Math.max(-.7,Math.min(.7,yaw-V.y0));pitch=Math.max(-.5,Math.min(.5,pitch));
-  if(mx||mz)bob+=dt*5;P.x=D.x-D.L/2+V.u;P.z=D.z;stam=Math.min(1,stam+.2*dt);if(V.u<=0)leaveVent(0);else if(V.u>=D.L)leaveVent(1)}
- else{if(K.ShiftLeft&&crouchOn&&mv)crouchOn=false;const cr=crouchOn;P.crouch=cr;crouch+=((cr?1:0)-crouch)*Math.min(1,dt*10);run=!cr&&K.ShiftLeft&&mv&&stam>0;stam=Math.max(0,Math.min(1,stam+(run?-.15:.2)*dt));if(stam<=0)K.ShiftLeft=0;const sp=cr?1.6:run?5.2:3.1;
+ else if(V){const D=Props.DUCT,l=Math.hypot(mx||0,mz||0)||1,mxx=(mx||0)/l,mzz=(mz||0)/l,c=Math.cos(yaw),s=Math.sin(yaw),vx=(mxx*c+mzz*s)*1.3*dt,vz=(-mxx*s+mzz*c)*1.3*dt;
+  if(mx||mz){if(Props.ductOk(P.x+vx,P.z))P.x+=vx;if(Props.ductOk(P.x,P.z+vz))P.z+=vz;bob+=dt*5}pitch=Math.max(-.9,Math.min(.9,pitch));stam=Math.min(1,stam+.2*dt);
+  const pa=D.pts[0],pb=D.pts[D.pts.length-1];if(Math.hypot(P.x-pa[0],P.z-pa[1])<.45)leaveVent(0);else if(Math.hypot(P.x-pb[0],P.z-pb[1])<.45)leaveVent(1)}
+ else{if(K.ShiftLeft&&crouchOn&&mv)crouchOn=false;const cr=crouchOn;P.crouch=cr;crouch+=((cr?1:0)-crouch)*Math.min(1,dt*10);if(exh>0)exh-=dt;run=!cr&&K.ShiftLeft&&mv&&stam>0&&exh<=0;if(exh<=0)stam=Math.max(0,Math.min(1,stam+(run?-.15:.2)*dt));if(stam<=0&&exh<=0){exh=2.6;K.ShiftLeft=0;Aud.tone(170,.6,'sine',.07,110);say('OUT OF BREATH',1600)}const sp=(cr?1.6:run?5.2:3.1)*(exh>0?.8:1);
   if(mv){const l=Math.hypot(mx,mz);mx/=l;mz/=l;const c=Math.cos(yaw),s=Math.sin(yaw),vx=(mx*c+mz*s)*sp*dt,vz=(-mx*s+mz*c)*sp*dt;
    const stuck=Level.blocked(P.x,P.z,.4);if(stuck||!Level.blocked(P.x+vx,P.z,.4))P.x+=vx;if(stuck||!Level.blocked(P.x,P.z+vz,.4))P.z+=vz;bob+=dt*(run?13:cr?5:8);stepT-=dt;if(stepT<=0){if(!cr)Aud.step(run);stepT=run?.3:cr?.7:.5}}}
  if(!H&&!V){const us=Level.unitAt(P.x,P.z);if(us&&us.t>.05){const q=Level.FH/4;if(us.u>1.5&&py>q&&P.fl<Level.nF-1)swFloor(1);else if(us.u<1.5&&py<-q&&P.fl>0)swFloor(-1)}}
- py+=((V||H?0:Level.gy(P.x,P.z))-py)*Math.min(1,dt*14);if(V||H)py=0;
+ py+=((V||H?0:Level.gy(P.x,P.z,undefined,py))-py)*Math.min(1,dt*14);if(V||H)py=0;
  if(!H&&!V&&trapT<=0)for(const t of Level.traps)if(t.armed&&Math.hypot(P.x-t.x,P.z-t.z)<.5){springTrap(t)}
  P.noisy=!!(mv&&run);enemyTick(dt);Props.update(dt,time,P);
  scT-=dt;if(scT<=0&&!V){scT=28+R()*40;if(!chaseOn()){const k=R()*4|0;if(k===0)Aud.creak();else if(k===1)Aud.dclose(.35);else if(k===2)Aud.noise(1.8,.06,900,'bandpass');else[0,.28,.56].forEach(t=>setTimeout(()=>Aud.thud(.3),t*1000))}}
@@ -178,8 +193,9 @@ function update(dt){
  if(H)Level.lockLight.intensity=blackout>0?0:.3+fear*.3*(R()<.3?1:.4);
  Level.updLights(P.x,P.z,dt,blackout,time);updDust(dt);updHeld(dt,mv,run);
  for(let i=proj.length-1;i>=0;i--){const p=proj[i],q=p.m;p.vy-=14*dt;const nx=q.position.x+p.vx*dt,ny=q.position.y+p.vy*dt,nz=q.position.z+p.vz*dt;if(ny-FY()<.06+py||ny-FY()>Level.H||Level.wall(nx,nz)||Level.hitCol(nx,nz)){if(p.item){const lx=q.position.x,lz=q.position.z;if(MP)Net.drop([{nid:Net.nid(),t:netT(p.item,P.fl),x:lx,z:lz}]);else{Props.dropItem(p.item,lx,lz);noiseAt(lx,lz)}Aud.tone(140,.12,'square',.14)}else shatter(q.position.x,Math.max(FY()+.06,q.position.y),q.position.z);scene.remove(q);proj.splice(i,1);continue}q.position.set(nx,ny,nz);q.rotation.x+=dt*14;q.rotation.z+=dt*9}
+ stepBodies(dt);
  if(noteT>0){noteT-=dt;if(noteT<=0)$('note').classList.add('hidden')}
- ws('batfill','width',Math.round(bat*1000)/10+'%');ws('batfill','background',bat<.2?'#a31616':'');
+ ws('stamfill','background',exh>0?'#a31616':'');ws('batfill','width',Math.round(bat*1000)/10+'%');ws('batfill','background',bat<.2?'#a31616':'');
  beatT-=dt;if(fear>.15&&beatT<=0){Aud.beat(Math.min(1,fear*1.4));beatT=1.1-fear*.7}Aud.setHum(fear*.35,fear);
  ws('vig','opacity',String(+(.75+fear*.25).toFixed(2)));ws('chasefx','opacity',String(ch?+(.55+Math.sin(time*(SET.safe?3:9))*(SET.safe?.1:.25)).toFixed(2):0));
  eventT-=dt;if(eventT<=0){eventT=15+R()*25;if(R()<.5&&!SET.safe){blackout=1.2;Aud.bang()}else Aud.creak()}
@@ -245,7 +261,7 @@ function over(w){if(MP&&!w){mpDie();return}state=w?'won':'dead';const fin=!w&&da
 function disposeScene(sc){sc.traverse(o=>{if(o.geometry&&o.geometry.dispose)o.geometry.dispose();const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];for(const m of ms){for(const k in m){const v=m[k];if(v&&v.isTexture)v.dispose()}m.dispose()}})}
 function mkWorld(seed,multi){if(scene){scene.remove(cam);scene.remove(amb);disposeScene(scene)}
  scene=new THREE.Scene();scene.background=new THREE.Color(0x020101);scene.fog=new THREE.FogExp2(0x010100,.12);scene.add(amb);scene.add(cam);
- Level.make(scene,seed,multi);Level.FL.forEach((F,f)=>F.items.forEach(it=>it.nid=f+'_'+it.i));NT=Level.noteTotal;
+ Level.make(scene,seed,multi);Level.FL.forEach((F,f)=>F.items.forEach(it=>it.nid=f+'_'+it.i));NT=Level.noteTotal;VO.forEach(k=>{const F=Level.FL[Math.floor(k/10)],vt=F&&F.vents[k%10];if(vt){vt.open=true;vt.ang=1.45}});bodies.length=0;
  const st=Level.start;P.x=st.x;P.z=st.z;P.fl=Level.sf;py=0;V=null;crouchOn=false;stairFx=null;yaw=st.yaw;pitch=0;
  en=new Enemy(scene,Level.FL[Level.ef].enemyStart);en.fl=Level.ef;en.pfl=P.fl;en.g.position.y=Level.fy(en.fl);en.pv.visible=en.fl===P.fl;en.onDoor=d=>{if(MP&&Net.isHost())Net.door(d.id,1)};
  en.onStairs=un=>{const to=en.fl;en.wait=.6;en.T=null;en.seen=false;
@@ -253,7 +269,7 @@ function mkWorld(seed,multi){if(scene){scene.remove(cam);scene.remove(amb);dispo
   if(P.fl===to)Aud.thud(.4)};
  floorLook();initDust();proj.length=0}
 /* ================= MULTIPLAYER ================= */
-const ES=['patrol','chase','investigate','check','stare','scare','travel'],TC={bottle:'bo',battery:'ba',key:'ke',screwdriver:'sd',note:'no'},TI={bo:'bottle',ba:'battery',ke:'key',sd:'screwdriver',no:'note'},netT=(t,f)=>TC[t]+(f|0),r2=n=>Math.round(n*100)/100,hx=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ES=['patrol','chase','investigate','check','stare','scare','travel'],TC={bottle:'bo',battery:'ba',key:'ke',screwdriver:'sd',note:'no',fuse:'fu'},TI={bo:'bottle',ba:'battery',ke:'key',sd:'screwdriver',no:'note',fu:'fuse'},HI={bottle:1,battery:2,key:3,screwdriver:4},HKN=[null,'bottle','battery','key','screwdriver'],netT=(t,f)=>TC[t]+(f|0),r2=n=>Math.round(n*100)/100,hx=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function curDiff(){return MP&&Net.m?Net.m.df:SET.diff}
 function nickOf(pid){const p=Net.players[pid];return p?p.n:'Someone'}
 function lockerBusy(l){if(!MP)return false;for(const k in av){const T=av[k].T;if(T.live&&T.hidden&&T.lk===l)return true}return false}
@@ -270,27 +286,27 @@ function rmItemF(it,f){it.taken=true;it.g.visible=false;it.sp.visible=false;cons
 function findItem(nid){for(let f=0;f<Level.nF;f++){const it=Level.FL[f].items.find(i=>i.nid===nid);if(it)return[it,f]}return[null,0]}
 const wLive=()=>performance.now()>wReady;
 function netItem(nid,v){const[it,f]=findItem(nid);
- if(v===null||v===0){if(it){if(it.drop)rmItemF(it,f);else{it.taken=true;it.g.visible=false;it.sp.visible=false}}return}
- if(typeof v==='object'&&!it){const s=String(v.t),t=TI[s.slice(0,2)]||'bottle',fl=Math.max(0,Math.min(Level.nF-1,+s.slice(2)|0));Props.dropItem(t,v.x,v.z,nid,fl);if(wLive()&&Net.isHost()&&en)en.hearNoise(v.x,v.z,fl)}}
+ if(v===null||v===0){if(it){if(it.t==='fuse'&&!it.taken&&!it.mine)addFuse(!wLive(),'remote');if(it.drop)rmItemF(it,f);else{it.taken=true;it.g.visible=false;it.sp.visible=false}}return}
+ if(typeof v==='object'&&!it){const s=String(v.t),t=TI[s.slice(0,2)]||'bottle',fl=Math.max(0,Math.min(Level.nF-1,+s.slice(2)|0));Props.dropItem(t,v.x,v.z,nid,fl);trapHit(v.x,v.z,fl);if(wLive()&&Net.isHost()&&en)en.hearNoise(v.x,v.z,fl)}}
 const WH={fuse:(i,v)=>{for(const F of Level.FL){const f=F.fuses.find(q=>q.i===i);if(f){fuseGot(f,v,!wLive());return}}},exit:()=>openExit(!wLive()),
  door:(id,v)=>{if(id>=8000&&id<9000){const fl=Math.floor((id-8000)/10),tp=Level.FL[fl]&&Level.FL[fl].traps[(id-8000)%10];if(tp)tp.armed=false;return}if(id>=9000){const fl=Math.floor((id-9000)/10),vt=Level.FL[fl]&&Level.FL[fl].vents[(id-9000)%10];if(vt)vt.open=!!v;return}
   const d=Level.doorById(id);if(!d||d.target===v)return;d.target=v;d.rate=undefined;const fl=Math.floor(id/100);if(fl===P.fl){const dd=Math.hypot(d.wx-P.x,d.wz-P.z);if(dd<26){const vol=Math.max(.15,1-dd/26);v?Aud.dopen(vol):Aud.dclose(vol)}}},
- unlock:id=>{const fl=Math.floor(id/100),d=Level.doorById(id);if(d&&d.locked)Level.withFloor(fl,()=>Level.unlock(d))},item:netItem};
+ unlock:id=>{if(id>=9000){const k=id-9000,F=Level.FL[Math.floor(k/10)],vt=F&&F.vents[k%10];if(vt){vt.open=true;vt.ang=1.45}return}const fl=Math.floor(id/100),d=Level.doorById(id);if(d&&d.locked)Level.withFloor(fl,()=>Level.unlock(d))},item:netItem};
 /* ----- avatars of the other players ----- */
 function mkAv(pid){if(pid===Net.pid||av[pid])return;const p=Net.players[pid],a=new Avatar(p?p.n:'?',Net.slot(pid),scene);
- a.T={pid,x:0,z:0,px:0,pz:0,hidden:false,lk:null,noisy:false,crouch:false,yaw:0,live:false,fl:0};a.fl=0;a.lit=false;
+ a.T={pid,x:0,z:0,px:0,pz:0,hidden:false,lk:null,noisy:false,crouch:false,yaw:0,live:false,fl:0,held:null};try{a.held=Props.held();for(const k in a.held){const g=a.held[k];g.visible=false;g.position.set(.22,1.0,.32);a.g.add(g)}}catch(e){}a.fl=0;a.lit=false;
  a.src={x:0,y:1.4,z:0,col:new THREE.Color(0xffdfae),d:9,I:()=>a.lit&&a.g.visible?.8:0};a.srcFl=0;Level.FL[0].src.push(a.src);av[pid]=a;if(p&&p.q&&p.a===0)parseQ(pid,p.q)}
 function rmAv(pid){const a=av[pid];if(!a)return;if(a.g.parent)a.g.parent.remove(a.g);try{a.tag.material.map.dispose();a.tag.material.dispose();a.m.mat.dispose()}catch(e){}const F=Level.FL[a.srcFl],i=F?F.src.indexOf(a.src):-1;if(i>=0)F.src.splice(i,1);delete av[pid];if(specId===pid)specId=null}
-function parseQ(pid,q){const a=av[pid];if(!a)return;const p=q.split(','),x=+p[0],z=+p[1],yw=+p[2],pt=+p[3],fx=+p[4]|0,lk=+p[5],T=a.T,wasH=T.hidden,f=Math.max(0,Math.min(Level.nF-1,fx>>4)),fl=fx&15;
+function parseQ(pid,q){const a=av[pid];if(!a)return;const p=q.split(','),x=+p[0],z=+p[1],yw=+p[2],pt=+p[3],fx=+p[4]|0,lk=+p[5],T=a.T,wasH=T.hidden,f=Math.max(0,Math.min(Level.nF-1,(fx>>4)&3)),fl=fx&15;T.held=HKN[(fx>>6)&7]||null;
  T.fl=f;a.fl=f;T.hidden=!!(fl&8);T.crouch=!!(fl&1);T.noisy=!!(fl&2);T.lk=lk>=0?(Level.FL[f].lockers[lk]||null):null;T.yaw=yw;if(!T.hidden){T.px=x;T.pz=z}
  if(!wasH&&T.hidden&&T.lk&&Net.isHost()&&en&&en.fl===f&&Level.withFloor(f,()=>en.cansee({x:T.px,z:T.pz,hidden:false,crouch:T.crouch})))en.check(T.lk,true);
  T.x=x;T.z=z;T.live=true;a.lit=!!(fl&4);a.snap(x,z,yw,pt,fl&1,fl&2,+p[6])}
 function avFrame(dt){for(const pid in av){const a=av[pid],pl=Net.players[pid],al=pl&&pl.a===0&&a.T.live,f=a.T.fl|0;
  if(a.srcFl!==f&&Level.FL[f]){const o=Level.FL[a.srcFl],i=o?o.src.indexOf(a.src):-1;if(i>=0)o.src.splice(i,1);Level.FL[f].src.push(a.src);a.srcFl=f}
- a.vis(!!(al&&!a.T.hidden&&f===P.fl&&!(state==='spec'&&specId===pid)));a.update(dt,P.x,P.z);a.g.position.y=Level.fy(f)+Level.gy(a.x,a.z,Level.FL[f].stairs);if(a.has){a.src.x=a.x-Math.sin(a.yaw)*1.4;a.src.z=a.z-Math.cos(a.yaw)*1.4}}}
+ a.vis(!!(al&&!a.T.hidden&&Level.FG[f]&&Level.FG[f].visible&&!(state==='spec'&&specId===pid)));if(a.held)for(const k in a.held)a.held[k].visible=a.T.held===k;a.update(dt,P.x,P.z);a.g.position.y=Level.fy(f)+Level.gy(a.x,a.z,Level.FL[f].stairs);if(a.has){a.src.x=a.x-Math.sin(a.yaw)*1.4;a.src.z=a.z-Math.cos(a.yaw)*1.4}}}
 /* ----- sync tick ----- */
 function netTick(dt){poseT-=dt;
- if(poseT<=0){poseT=.08;if(state==='play'&&!dead&&!escd){const fl=(P.crouch?1:0)|(P.noisy?2:0)|(fon&&bat>0&&!H&&!V?4:0)|((H||V)?8:0)|(P.fl<<4);Net.pose(`${r2(P.x)},${r2(P.z)},${r2(Math.atan2(Math.sin(yaw),Math.cos(yaw)))},${r2(pitch)},${fl},${H?Level.lockers.indexOf(H):-1}`)}}
+ if(poseT<=0){poseT=.08;if(state==='play'&&!dead&&!escd){const fl=(P.crouch?1:0)|(P.noisy?2:0)|(fon&&bat>0&&!H&&!V?4:0)|((H||V)?8:0)|(P.fl<<4)|((HI[heldType()]||0)<<6);Net.pose(`${r2(P.x)},${r2(P.z)},${r2(Math.atan2(Math.sin(yaw),Math.cos(yaw)))},${r2(pitch)},${fl},${H?Level.lockers.indexOf(H):-1}`)}}
  if(Net.isHost()){enT-=dt;if(enT<=0){enT=.08;const g=en.g.position,s=`${day}|${r2(g.x)}|${r2(g.z)}|${r2(en.g.rotation.y)}|${Math.max(0,ES.indexOf(en.state))+10*en.fl}|${en.tgtPid||''}`;const nw=performance.now();if(s!==lastEStr||nw-lastESent>1500){lastEStr=s;lastESent=nw;Net.sendEnemy(s)}}}
  chkT-=dt;if(chkT<=0){chkT=.6;dayCheck();Net.watchdog()}}
 function dayCheck(){if(!Net.isHost()||!mpPlay||ending||!Net.m||Net.m.s!==1)return;const ks=Object.keys(Net.players);if(!ks.length||!ks.every(k=>Net.players[k].a>0))return;ending=true;
@@ -313,7 +329,7 @@ function alivePids(){return Object.keys(av).filter(k=>{const p=Net.players[k];re
 function pickSpec(){const l=alivePids();if(!l.length){specId=null;return}if(!l.includes(specId))specId=l[0]}
 function specNext(d){const l=alivePids();if(!l.length)return;const i=l.indexOf(specId);specId=l[i<0?0:(i+d+l.length)%l.length]}
 function updSpec(dt){pickSpec();time+=dt;const a=specId&&av[specId];
- if(a&&a.has){if((a.T.fl|0)!==P.fl){const f=a.T.fl|0;Level.FG[P.fl].visible=false;P.fl=f;Level.FG[f].visible=true;Level.use(f);floorLook()}cam.position.set(a.x,FY()+(a.T.hidden?1.55:1.65-.6*a.crouch)+Level.gy(a.x,a.z),a.z);cam.rotation.set(a.spitch||0,a.yaw,0);P.x=a.x;P.z=a.z;P.yaw=a.yaw;P.hidden=a.T.hidden;fl.intensity=a.lit&&!a.T.hidden?2.1:0;cam.fov=SET.fov;cam.updateProjectionMatrix();$('specname').textContent=a.nick}
+ if(a&&a.has){if((a.T.fl|0)!==P.fl){const f=a.T.fl|0;Level.FG[P.fl].visible=false;P.fl=f;Level.FG[f].visible=true;Level.use(f);floorLook()}cam.position.set(a.x,FY()+(a.T.hidden?1.55:1.65-.6*a.crouch)+Level.gy(a.x,a.z),a.z);{const ht=a.T.held;for(const k in HELD)HELD[k].visible=k===ht;if(ht){const h=HELD[ht];h.position.set(.27,-.27,-.52);h.rotation.set(-.35,.5,.15)}}cam.rotation.set(a.spitch||0,a.yaw,0);P.x=a.x;P.z=a.z;P.yaw=a.yaw;P.hidden=a.T.hidden;fl.intensity=a.lit&&!a.T.hidden?2.1:0;cam.fov=SET.fov;cam.updateProjectionMatrix();$('specname').textContent=a.nick}
  else{fl.intensity=0;$('specname').textContent='nobody'}
  Level.updLights(P.x,P.z,dt,0,time);updDust(dt);Props.update(dt,time,P);Aud.setHum(0,0);
  const d=en.dist,ch=chaseOn();if(d<16){eStep-=dt;if(eStep<=0){Aud.thud(1-d/16);eStep=ch?.4:.8}}}
@@ -324,7 +340,7 @@ function mpDie(){const d=[];let k=0;const put=t=>{const ang=k*2.4,r=.35+.1*k++;l
  if(H){const l=H;H=null;setTimeout(()=>{l.open=false},2500)}dead=true;P.hidden=false;P.lk=null;Net.setA(1);en.state='patrol';en.T=null;en.wait=0;en.cool=3;enterSpec('You were caught.')}
 function mpEscape(){escd=true;if(H)H=null;Net.setA(2);enterSpec('YOU ESCAPED.');say('YOU ESCAPED.',6000)}
 /* ----- day / party flow ----- */
-function resetRun(){keys=0;bat=1;bot=0;hasKey=false;hasSD=false;crouchOn=false;V=null;py=0;stairFx=null;bats=0;sel='bottle';nNotes=0;stam=1;H=null;fon=true;blackout=0;crouch=0;dead=false;escd=false;paused=false;pendKill=false;dying={};ending=false;wasCh=false;noteT=0;eventT=15;enNet=null;enS.buf=null;enS.off=null;enS.lastTs=null;lastESent=0;lastEStr='';
+function resetRun(){VIN=null;VOUT=null;exh=0;vfade=0;bodies.length=0;keys=0;bat=1;bot=0;hasKey=false;hasSD=false;crouchOn=false;V=null;py=0;stairFx=null;bats=0;sel='bottle';nNotes=0;stam=1;H=null;fon=true;blackout=0;crouch=0;dead=false;escd=false;paused=false;pendKill=false;dying={};ending=false;wasCh=false;noteT=0;eventT=15;enNet=null;enS.buf=null;enS.off=null;enS.lastTs=null;lastESent=0;lastEStr='';
  P.hidden=false;P.lk=null;P.crouch=false;P.noisy=false;P.pid=Net.pid;for(const k in KEYS)KEYS[k]=0;Net.resetPose();
  document.querySelectorAll('#fuses i').forEach(e=>e.classList.remove('on'));$('obj').textContent='FIND THE FUSES';$('note').classList.add('hidden');$('hud').classList.remove('spec');
  ['spec','over','pause','killfx','lockerfx'].forEach(hide_);ren.domElement.style.filter='';$('flash').style.opacity=0;$('chasefx').style.opacity=0;Aud.setHum(0,0);hud()}
@@ -341,7 +357,11 @@ function mpEnd(m){mpPlay=false;state='over';document.exitPointerLock();['hud','s
  $('overT').textContent=won?(iEsc?'YOU ESCAPED':'THEY GOT OUT'):'THE '+ORD[MAXD-1]+' DAY IS OVER';$('overP').textContent=won?`${names} escaped on day ${m.d}. The halls fall silent. For now.`:MAXD+' days. He has you all now.';
  $('overS').textContent=`DAY ${m.d} · TIME ${fmt(time)}`;const b=$('overBtn'),host=Net.isHost();b.textContent=host?'Back to lobby':'Waiting for the host…';b.disabled=!host;b.onclick=()=>Net.toLobby();$('overLeave').classList.remove('hidden');show('over')}
 function mpToLobby(){mpPlay=false;started=false;state='menu';Net.unwatch();for(const k in av)rmAv(k);document.exitPointerLock();['hud','spec','over','lids','killfx','lockerfx','pause','dayscr','card'].forEach(hide_);$('overLeave').classList.add('hidden');ren.domElement.style.filter='';$('flash').style.opacity=0;Aud.chase(false);Aud.setHum(0,0);Aud.level(.6);show('lobby');lobRender()}
-function mpLeave(){try{Net.leave()}catch(e){}toMenu()}
+function mpLeaveNow(){try{Net.leave()}catch(e){}toMenu()}
+function askConfirm(msg,yes){if($('cfm'))return;const d=document.createElement('div');d.id='cfm';d.style.cssText='position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.72)';
+ d.innerHTML='<div style="background:#14100d;border:1px solid #6b5a42;padding:26px 34px;text-align:center;font-family:inherit;color:#e8dcc4;max-width:340px"><p style="margin:0 0 18px;font-size:20px"></p><button class="gb sm" id="cfmN" style="margin:0 8px">Stay</button><button class="gb sm" id="cfmY" style="margin:0 8px">Leave</button></div>';
+ d.querySelector('p').textContent=msg;document.body.appendChild(d);const close=()=>{if(d.parentNode)d.parentNode.removeChild(d)};d.querySelector('#cfmN').onclick=e=>{e.stopPropagation();close()};d.querySelector('#cfmY').onclick=e=>{e.stopPropagation();close();yes()};d.onclick=e=>e.stopPropagation()}
+function mpLeave(){askConfirm('Leave the party?',mpLeaveNow)}
 /* ----- soft resets: the page is NEVER reloaded (reloading breaks about:blank launches) ----- */
 function showDay(r,auto){RUN=r;day=r.day;time=r.time||0;hide_('menu');$('dayT').textContent='DAY '+day;const left=MAXD-day+1;$('dayP').textContent=(r.died?`It found you. ${left} ${left===1?'day':'days'} left. `:'')+DAYT[day-1];$('dayGo').classList.toggle('hidden',!!auto);$('dayNew').classList.toggle('hidden',!!auto);show('dayscr');
  clearTimeout(autoT);if(auto)autoT=setTimeout(()=>{if(state==='menu'&&!MP&&!started&&!$('dayscr').classList.contains('hidden'))begin()},3200)}
@@ -350,8 +370,8 @@ function softWorld(keep){clearTimeout(autoT);if(!keep)document.exitPointerLock()
  ['menu','hud','spec','over','pause','killfx','lockerfx','lids','dayscr','daydone','card','settings','how','mpmenu','lobby','quit'].forEach(hide_);$('overLeave').classList.add('hidden');
  ren.domElement.style.filter='';$('flash').style.opacity=0;Aud.chase(false);Aud.setHum(0,0);Aud.muffle(false);Aud.level(1);
  mkWorld(SEED,true);resetRun()}
-function spNextDay(){const r={day:day+1,time,died:1,seed:SEED};saveRun(r);softWorld(true);showDay(r,true)}
-function toMenu(){saveRun(null);RUN=null;MP=false;day=1;time=0;SEED=newSeed();softWorld();$('dayGo').classList.remove('hidden');$('dayNew').classList.remove('hidden');show('menu')}
+function spNextDay(){const r={day:day+1,time,died:1,seed:SEED,vo:[...VO]};saveRun(r);softWorld(true);showDay(r,true)}
+function toMenu(){saveRun(null);RUN=null;MP=false;day=1;time=0;VO.clear();SEED=newSeed();softWorld();$('dayGo').classList.remove('hidden');$('dayNew').classList.remove('hidden');show('menu')}
 /* ----- UI ----- */
 function tint(slot){return'#'+PModel.TINT[slot%PModel.TINT.length].toString(16).padStart(6,'0')}
 function lobRender(){if($('lobby').classList.contains('hidden'))return;const m=Net.m,host=Net.isHost();$('lobCode').textContent=Net.code||'';
@@ -365,7 +385,7 @@ function wireNet(){Net.cb={meta:onMeta,
   if(ev!=='chg'||!old||!v||old.a!==v.a||old.n!==v.n){plistRender();lobRender()}},
  enemy:s=>{const p=s.split('|');if(enNet&&enNet.day!==+p[0]){enS.buf=null;enS.off=null;enS.lastTs=null}enNet={day:+p[0],x:+p[1],z:+p[2],r:+p[3],s:ES[(+p[4])%10]||'patrol',fl:Math.floor((+p[4])/10),pid:p[5]||''};pushSample(enS,{x:enNet.x,z:enNet.z,yaw:enNet.r},+p[6])},
  event:e=>{if(!mpPlay||!e||e.u===Net.pid)return;if(e.k===3)return;if(e.k===2){if(Net.isHost()&&en)en.hearNoise(e.x,e.z,e.f|0);return}if(e.k!==1)return;const ef=e.f|0;if(ef!==P.fl){if(Net.isHost()&&en)en.hearNoise(e.x,e.z,ef);return}spawnBottle(e.x,e.y,e.z,e.a,e.b,e.c)},
- gone:()=>{say('The party was closed.',3000);mpLeave()}}}
+ gone:()=>{say('The party was closed.',3000);mpLeaveNow()}}}
 function pubRefresh(quiet){const e=$('pubList');if(!e)return;if(!quiet)e.innerHTML='<div class="pe">Looking for parties…</div>';
  Net.listPublic((err,l)=>{if(err){e.innerHTML=`<div class="pe">${hx(err)}</div>`;return}
   e.innerHTML=l.length?l.map(p=>`<div class="pr"><span>${hx(p.h)}'s party</span><em>${p.n}/${Net.MAXP} · ${hx(DIFF[p.d]?DIFF[p.d].n:'')}</em><button class="gb sm" data-code="${hx(p.code)}">Join</button></div>`).join(''):'<div class="pe">No public parties right now. Create one!</div>'})}
@@ -390,9 +410,13 @@ function setPR(v){prCur=v;ren.setPixelRatio(v);ren.setSize(innerWidth,innerHeigh
 function perf(ms){if(ms>250||document.hidden||state==='pause'||paused)return;fAcc+=ms;fN++;if(fAcc<1500)return;const avg=fAcc/fN;fAcc=0;fN=0;
  if(avg>24&&prCur>.7&&!noGain){if(lastRed&&avg>lastAvg*.93){setPR(lastPR);noGain=true;lastRed=false}else{lastAvg=avg;lastPR=prCur;lastRed=true;failPR=prCur;okT=0;setPR(Math.max(.7,prCur*.85))}}
  else if(avg<=24){lastRed=false;if(avg<18.5&&prCur<prMax){okT+=1.5;if(okT>=9){okT=0;const n=Math.min(prMax,failPR-.01,prCur+.1);if(n>prCur+.01)setPR(n)}}else okT=0}}
+function tickGame(dt,render){
+ if(!started){if(render){Menu3D.update(dt,mxn,myn);ren.render(Menu3D.scene,Menu3D.cam)}}
+ else{if(state==='play')update(dt);else if(state==='scare')updScare(dt);else if(state==='wake')updWake(dt);else if(state==='spec')updSpec(dt);if(MP&&mpPlay){if(state==='wake'||state==='spec')enemyTick(dt);avFrame(dt);netTick(dt)}Level.updVis(P.x,P.z,P.fl);if(render)ren.render(scene,cam)}}
 function loop(){requestAnimationFrame(loop);const now=performance.now(),raw=now-lastF;if(raw<11.5)return;lastF=now;perf(raw);/* cap at ~80fps on very fast displays */
- const dt=Math.min(clock.getDelta(),.05);
- if(!started){Menu3D.update(dt,mxn,myn);ren.render(Menu3D.scene,Menu3D.cam)}
- else{if(state==='play')update(dt);else if(state==='scare')updScare(dt);else if(state==='wake')updWake(dt);else if(state==='spec')updSpec(dt);if(MP&&mpPlay){if(state==='wake'||state==='spec')enemyTick(dt);avFrame(dt);netTick(dt)}Level.updVis(P.x,P.z,P.fl);ren.render(scene,cam)}}
+ const dt=Math.min(clock.getDelta(),.05);tickGame(dt,true)}
+/* browsers stop animation frames in a background tab, so a worker timer keeps the simulation (and the party) alive */
+function bgTick(){const now=performance.now();if(now-lastF<130||!window.__loopOn)return;let el=Math.min((now-lastF)/1000,1.5);lastF=now;try{clock.getDelta()}catch(e){}while(el>1e-4){const s=Math.min(el,.05);tickGame(s,false);el-=s}}
+try{const w=new Worker(URL.createObjectURL(new Blob(['setInterval(function(){postMessage(1)},50)'],{type:'text/javascript'})));w.onmessage=bgTick}catch(e){setInterval(bgTick,200)}
 window.LHBoot?LHBoot.run(init):init();
 })();

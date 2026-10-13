@@ -58,7 +58,7 @@ cansee(P){return!!this.eval(P).sees}
 update(dt,PL,keys){if(this.cl){this.climbStep(dt);return}const list=Array.isArray(PL)?PL:[PL],g=this.g.position,cf=this.cfg;let P=list[0]||EDUMMY,E=null,bs=-1e9;
  for(const q of list){const e=this.eval(q),sc=(e.sees?2000:e.hears?1000:0)-e.d;if(sc>bs){bs=sc;P=q;E=e}}if(!E)E=this.eval(P);
  const d=E.d,sees=E.sees,hears=E.hears,csp=(3.4+keys*.35)*cf.spd;this.pl=this.pl||P;this.tgt=P;this.dist=d;this.anim(dt);this.chaseStart=false;this.cool=Math.max(0,this.cool-dt);this.wait=Math.max(0,this.wait-dt);
- this.seen=sees;this.doors();
+ this.seen=sees;this.lo=E.lo;this.doors();
  const a0=this.acc;
  this.think(dt,P,keys,sees,hears,csp);
  if(this.acc>a0&&this.acc>=this.nextStep){this.nextStep=this.acc+this.stride;this.footstep()}else if(this.nextStep===undefined)this.nextStep=this.acc+this.stride}
@@ -73,7 +73,8 @@ think(dt,P,keys,sees,hears,csp){const g=this.g.position,cf=this.cfg;
   if(sees){this.state='chase';this.last=Level.cell(P.x,P.z);this.chaseStart=true}
   else if(this.state==='check'){this.T=[l.gx,l.gz];if(Math.hypot(l.px-g.x,l.pz-g.z)<.4){this.state='stare';this.st=0}else{this.go(dt,csp*.8);return}}
   if(this.state==='stare'){this.face(l.cx,l.cz,Math.min(1,dt*5));this.st+=dt;if(this.kill){if(this.st>.9)this.found=true}else if(this.st>5){this.state='patrol';this.T=null;this.cool=10}return}}
- if(sees||hears){if(this.state!=='chase')this.chaseStart=true;this.state='chase';this.lost=0;this.last=Level.cell(P.x,P.z);this.goF=null;this.noise=null}
+ if(sees||(hears&&this.lo)){if(this.state!=='chase')this.chaseStart=true;this.state='chase';this.lost=0;this.last=Level.cell(P.x,P.z);this.goF=null;this.noise=null}
+ else if(hears&&this.state!=='chase'&&this.state!=='check'&&this.state!=='stare'){this.state='investigate';this.T=Level.cell(P.x,P.z);this.inv=0;this.it=0;this.goF=null}
  else if(this.state==='chase'){this.lost+=dt;if(this.lost>6){this.state='patrol';this.T=null}}
  if(this.state==='chase'&&P.hidden&&P.lk&&!this.cool&&Math.hypot(P.lk.cx-g.x,P.lk.cz-g.z)<5){this.check(P.lk,false);return}
  /* between floors: walk to the nearest stair shaft and climb the real flights */

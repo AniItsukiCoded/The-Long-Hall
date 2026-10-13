@@ -97,14 +97,15 @@ gen(nocut){const W=this.W=23,D=this.D=23,S=this.S,R=Math.random,P=this.fp,g=this
  this.walk=[];for(let z=0;z<D;z++)for(let x=0;x<W;x++)if(dist[z][x]>=0)this.walk.push([x,z]);
  let far=null,fd=0;for(const[x,z]of fl)if(dist[z][x]>fd&&Props.side([x,z])&&rs[z][x]<0&&!sset.has(x+','+z)){fd=dist[z][x];far=[x,z]}
  if(!far)return false;this.exit=far;
- const keys=this.keys=[];if(P.duct)keys.push([-100,0]);if(this.lockRoom){const r=this.lockRoom;keys.push([(r.x0+r.x1)>>1,(r.z0+r.z1)>>1])}
+ const keys=this.keys=[];if(P.duct)keys.push([-99,1]);if(this.lockRoom){const r=this.lockRoom;keys.push([(r.x0+r.x1)>>1,(r.z0+r.z1)>>1])}
  const sp=P.nF>3?5:6,pool=fl.filter(c=>dist[c[1]][c[0]]>3&&!(c[0]===sx&&c[1]===sz)&&Math.abs(far[0]-c[0])+Math.abs(far[1]-c[1])>3&&!nd(c[0],c[1])&&!sset.has(c.join())).shuf(),rp=pool.filter(c=>rs[c[1]][c[0]]>=0);
  for(const c of rp.concat(pool)){if(keys.length>=P.nF)break;if(keys.every(k=>k[0]<-50||Math.abs(k[0]-c[0])+Math.abs(k[1]-c[1])>sp))keys.push(c)}
  if(keys.length<P.nF)return false;
  const used=this.resv=new Set([...keys.map(k=>k.join()),far.join(),[sx,sz].join(),...sset]),free=fl.filter(c=>dist[c[1]][c[0]]>3&&!nd(c[0],c[1])).shuf();
  const take=(pref,minD)=>{const w=R()<pref;for(const m of[w,!w])for(let i=0;i<free.length;i++){const c=free[i];if((rs[c[1]][c[0]]>=0)===m&&dist[c[1]][c[0]]>=(minD||0)&&!used.has(c.join())){used.add(c.join());free.splice(i,1);return c}}return null};
  const place=(t,c)=>{if(!c)return;const s=Props.side(c);let x=c[0]*S+(R()-.5)*.8,z=c[1]*S+(R()-.5)*.8;if(s){x=c[0]*S+s[0]*1.05+(s[0]?0:(R()-.5)*1.2);z=c[1]*S+s[1]*1.05+(s[1]?0:(R()-.5)*1.2)}this.items.push({t,x,z,a:R()*6.28,taken:false,i:this.items.length})};
- if(this.lockRoom)place('key',take(1,4));
+ if(this.lockRoom){const ld=this.lockRoom.doors[0],ki=free.findIndex(c=>rs[c[1]][c[0]]<0&&Math.abs(c[0]-ld.gx)+Math.abs(c[1]-ld.gz)<=6&&!used.has(c.join()));if(ki>=0){const c=free.splice(ki,1)[0];used.add(c.join());place('key',c)}else place('key',take(1,4))}
+ for(let i=0;i<(P.loose|0);i++)place('fuse',take(.6,3));
  if(P.vent)place('screwdriver',take(.5,2));
  for(let i=0;i<P.notes;i++)place('note',take(.85,3));for(let i=0;i<P.bats;i++)place('battery',take(.65));for(let i=0;i<P.bots;i++)place('bottle',take(.5));
  if(P.vent){const vc=fl.filter(c=>!nd(c[0],c[1])&&!used.has(c.join())&&Props.side(c)&&dist[c[1]][c[0]]>2).shuf();const A=vc[0];let B=null;if(!A)return false;for(const c of vc)if(Math.abs(c[0]-A[0])+Math.abs(c[1]-A[1])>=9){B=c;break}if(!B)return false;
@@ -124,13 +125,15 @@ hitCol(x,z){for(const c of this.col)if(!c.off&&x>c.x0&&x<c.x1&&z>c.z0&&z<c.z1)re
 blocked(x,z,r){if((this.lockers||[]).some(l=>Math.hypot(x-l.cx,z-l.cz)<.55+r*.3))return true;const q=r*.75;for(const c of this.col)if(!c.off&&x>c.x0-q&&x<c.x1+q&&z>c.z0-q&&z<c.z1+q)return true;
  return this.wall(x+r,z+r)||this.wall(x-r,z+r)||this.wall(x+r,z-r)||this.wall(x-r,z-r)},
 los(ax,az,bx,bz){const d=Math.hypot(bx-ax,bz-az),n=Math.ceil(d/.5);for(let i=1;i<n;i++){const t=i/n;if(this.wall(ax+(bx-ax)*t,az+(bz-az)*t))return false}
+ for(const c of this.col){if(!c.tall)continue;let t0=0,t1=1;const dx=bx-ax,dz=bz-az,P=[-dx,dx,-dz,dz],Q=[ax-c.x0,c.x1-ax,az-c.z0,c.z1-az];let hit=true;for(let k=0;k<4;k++){if(P[k]===0){if(Q[k]<0){hit=false;break}}else{const r=Q[k]/P[k];if(P[k]<0){if(r>t1){hit=false;break}if(r>t0)t0=r}else{if(r<t0){hit=false;break}if(r<t1)t1=r}}}if(hit&&t0<=t1)return false}
  for(const dr of this.doors){if(dr.o>.4)continue;const X=dr.axis==='x',a=X?ax:az,b=X?bx:bz,p=X?dr.wx:dr.wz;if((a-p)*(b-p)<0){const t=(p-a)/(b-a),lat=X?az+(bz-az)*t:ax+(bx-ax)*t;if(Math.abs(lat-(X?dr.wz:dr.wx))<1.5)return false}}return true},
 FLK:['g','roomOf','rooms','doors','dmap','col','items','keys','lockRoom','start','dist','walk','exit','resv','enemyStart','src','lockers','fuses','lamps','xd','stairs','vents','traps','chunks','theme','mkf','fp','wallMat'],
 save(f){const o=this.FL[f]={};for(const k of this.FLK)o[k]=this[k]},
 use(f){const o=this.FL[f];for(const k of this.FLK)this[k]=o[k];this.fi=f;Props._mk=this.mkf},
 unitAt(x,z,st){for(const u of (st||this.stairs)){const dx=x-u.O.x,dz=z-u.O.z,uu=dx*u.inn[0]+dz*u.inn[1],t=dx*u.tn[0]+dz*u.tn[1];if(uu>-.3&&uu<6.01&&Math.abs(t)<1.5)return{u:uu,t,un:u}}return null},
-gy(x,z,st){const SS=st||this.stairs;if(!SS.length)return 0;const r=this.unitAt(x,z,SS);if(!r)return 0;const{u,t,un}=r,h=this.FH/2,uL=1.5,uE=5.1;
+gy(x,z,st,py){const SS=st||this.stairs;if(!SS.length)return 0;const r=this.unitAt(x,z,SS);if(!r)return 0;const{u,t,un}=r,h=this.FH/2,uL=1.5,uE=5.1;
  if(u>=uE)return 0;
+ if(u<=uL&&!un.dn&&py!==undefined&&py<h*.55)return 0;
  if(t<=0){if(!un.up)return 0;if(u<=uL)return h;const k=Math.min(11,Math.floor((uE-u)/(uE-uL)*12));return h*(k+1)/12}
  if(u<=uL)return un.up?h:-h;if(!un.dn)return 0;const k=Math.min(11,Math.floor((u-uL)/(uE-uL)*12));return -h*(1-(k+1)/12)},
 make(scene,seed,multi){const real=Math.random;if(seed!=null)Math.random=mulberry(seed);try{this.buildAll(scene,!!multi)}finally{Math.random=real}},
@@ -140,7 +143,7 @@ buildAll(scene,multi){const R=Math.random;this.root=scene;this.pool=[];this.item
  const vf=new Set();if(F>1){const idx=[...Array(F).keys()].shuf(),nv=F>=4?2:1;for(let i=0;i<nv;i++)vf.add(idx[i])}
  const nt=Array(F).fill(Math.floor(6/F)),rem=6-nt.reduce((a,b)=>a+b,0);for(let i=0;i<rem;i++)nt[R()*F|0]++;
  const exF=F===1?0:1,plan=[];
- for(let f=0;f<F;f++)plan.push({theme:TH[f],nF:nF[f],duct:vf.has(f),vent:vf.has(f),lock:nF[f]-(vf.has(f)?1:0)>=1&&R()<.55,shafts:F>1,up:f<F-1,down:f>0,traps:3,start:f===F-1,exit:f===exF,notes:nt[f],bats:F===1?9:3,bots:F===1?7:3});
+ for(let f=0;f<F;f++)plan.push({theme:TH[f],nF:nF[f],duct:vf.has(f),vent:vf.has(f),lock:nF[f]-(vf.has(f)?1:0)>=1&&R()<.3,loose:1,shafts:F>1,up:f<F-1,down:f>0,traps:3,start:f===F-1,exit:f===exF,notes:nt[f],bats:F===1?9:3,bots:F===1?7:3});
  for(let i=0;i<5;i++){const l=new THREE.PointLight(0xffb070,0,12);scene.add(l);this.pool.push(l)}
  let fb=0;
  for(let f=0;f<F;f++){this.fi=f;this.fp=plan[f];let ok=false;for(let i=0;i<120&&!ok;i++)ok=this.gen(i>60);if(!ok)throw new Error('Level generation failed (floor '+f+')');
@@ -158,12 +161,13 @@ build(scene){const S=this.S,H=this.H,FH=this.FH,W=this.W,D=this.D,g=this.g,T=thi
  for(let z=0;z<D;z++)for(let x=0;x<W;x++){if(g[z][x]===1){let nb=false;for(let a=-1;a<=1&&!nb;a++)for(let b=-1;b<=1;b++){const r=g[z+b];if(r&&r[x+a]!==undefined&&r[x+a]!==1){nb=true;break}}if(nb)(walls[ck(x,z)]=walls[ck(x,z)]||[]).push([x,z])}
   else if(!sh.has(x+','+z)){const k=ck(x,z);(floors[k]=floors[k]||[]).push([x,z]);(ceils[k]=ceils[k]||[]).push([x,z])}}
  const mkInst=(base,mat,list,key,y)=>{const geo=base.clone(),p=key.split(',').map(Number);geo.boundingSphere=new THREE.Sphere(new THREE.Vector3((p[0]+.5)*CK,y,(p[1]+.5)*CK),9);const q=new THREE.InstancedMesh(geo,mat,list.length),m4=new THREE.Matrix4();list.forEach(([x,z],i)=>{m4.setPosition(x*S,y,z*S);q.setMatrixAt(i,m4)});chunk(key).add(q)};
- const wgeo=new THREE.BoxGeometry(S,FH,S),fg=new THREE.PlaneGeometry(S,S),cg=new THREE.PlaneGeometry(S,S);fg.rotateX(-Math.PI/2);cg.rotateX(Math.PI/2);
- for(const k in walls)mkInst(wgeo,this.wallMat,walls[k],k,FH/2);for(const k in floors)mkInst(fg,fm,floors[k],k,0);for(const k in ceils)mkInst(cg,cm,ceils[k],k,H);
+ const WH=FH-.05,wgeo=new THREE.BoxGeometry(S,WH,S),fg=new THREE.PlaneGeometry(S,S),cg=new THREE.PlaneGeometry(S,S);fg.rotateX(-Math.PI/2);cg.rotateX(Math.PI/2);
+ for(const k in walls)mkInst(wgeo,this.wallMat,walls[k],k,WH/2);for(const k in floors)mkInst(fg,fm,floors[k],k,0);for(const k in ceils)mkInst(cg,cm,ceils[k],k,H);
  Props.build(scene);
  for(const c of scene.children.slice()){if(c.userData&&c.userData.chunk)continue;if(c.isLight)continue;let hasL=false;c.traverse(o=>{if(o.isLight)hasL=true});if(hasL)continue;
   if(c.isInstancedMesh){c.frustumCulled=false;continue}if(!c.position.x&&!c.position.z)continue;
-  scene.remove(c);chunk(Math.floor(c.position.x/CK)+','+Math.floor(c.position.z/CK)).add(c)}},
+  scene.remove(c);chunk(Math.floor(c.position.x/CK)+','+Math.floor(c.position.z/CK)).add(c)}
+ if(scene.updateMatrixWorld&&THREE.Vector3){scene.updateMatrixWorld(true);const v=new THREE.Vector3(),fy=this.fy(this.fi),warm=new THREE.Color(0xffa850);scene.traverse(o=>{if(o.userData&&o.userData.flame&&o.getWorldPosition){o.getWorldPosition(v);const ph=Math.random()*6,L=this;this.src.push({x:v.x,y:v.y-fy,z:v.z,col:warm,d:7,I:()=>L.safe?.55:.55+.14*Math.sin(performance.now()/1000*6+ph)})}})}},
 /* which floors / chunks are drawn this frame */
 updVis(px,pz,pf){for(let f=0;f<this.nF;f++){let v=f===pf;if(!v&&Math.abs(f-pf)===1)for(const u of this.FL[pf].stairs)if(Math.hypot(px-(u.O.x+u.inn[0]*3),pz-(u.O.z+u.inn[1]*3))<14){v=true;break}this.FG[f].visible=v}
  for(let f=0;f<this.nF;f++){if(!this.FG[f].visible)continue;const ch=this.FL[f].chunks;for(const k in ch){const c=ch[k],dx=c.userData.cx-px,dz=c.userData.cz-pz;c.visible=dx*dx+dz*dz<1156}}},

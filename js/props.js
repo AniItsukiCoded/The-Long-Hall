@@ -98,7 +98,7 @@ rooms(scene){const S=Level.S,g=Level.g,R=Math.random,M=THREE.MeshStandardMateria
    if(k!=='chair'){const hx=s[0]?d/2:w/2,hz=s[0]?w/2:d/2;Level.col.push({x0:px-hx,x1:px+hx,z0:pz-hz,z1:pz+hz})}}
   if((tn==='study'||tn==='bedroom'||tn==='parlor'||tn==='cells')&&!r.stair&&R()<.8){const cx=(r.x0+r.x1)>>1,cz=(r.z0+r.z1)>>1;if(!Level.resv.has(cx+','+cz)){const m=new THREE.Mesh(new THREE.PlaneGeometry(2.4,1.8),rm);m.rotation.set(-Math.PI/2,0,(R()<.5?0:Math.PI/2));m.position.set(cx*S,.012,cz*S);scene.add(m)}}});
  this.hall(scene,K,rm)},
-items(scene){const M=THREE.MeshStandardMaterial,br=new M({color:0xb08a3a,metalness:.9,roughness:.35}),gl={battery:this.glow('rgba(170,255,120,'),bottle:this.glow('rgba(150,255,210,'),key:this.glow('rgba(255,205,90,'),note:this.glow('rgba(255,250,225,'),screwdriver:this.glow('rgba(255,150,90,')},
+items(scene){const M=THREE.MeshStandardMaterial,br=new M({color:0xb08a3a,metalness:.9,roughness:.35}),gl={battery:this.glow('rgba(170,255,120,'),bottle:this.glow('rgba(150,255,210,'),key:this.glow('rgba(255,205,90,'),note:this.glow('rgba(255,250,225,'),screwdriver:this.glow('rgba(255,150,90,'),fuse:this.glow('rgba(255,210,90,')},
  note=this.cv(64,80,(x,w,h)=>{x.fillStyle='#b9b08e';x.fillRect(0,0,w,h);x.fillStyle='rgba(30,25,15,.55)';for(let i=0;i<9;i++)x.fillRect(8,10+i*7,w-16-(i%3)*10,1.5)}),gm=new M({color:0x3f7a46,transparent:true,opacity:.8,roughness:.2}),
  bm=new M({color:0x1c1c1c,roughness:.5,metalness:.5}),bc=new M({color:0xd8a020,roughness:.5}),nm=new M({map:note,roughness:1,side:THREE.DoubleSide});
  const cyl=(g,r1,r2,h,m,x,y)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,10),m);o.rotation.z=Math.PI/2;o.position.set(x,y,0);g.add(o)};
@@ -107,6 +107,7 @@ items(scene){const M=THREE.MeshStandardMaterial,br=new M({color:0xb08a3a,metalne
   if(it.t==='battery'){cyl(g,.04,.04,.15,bm,0,.045);cyl(g,.042,.042,.07,bc,0,.045);cyl(g,.015,.015,.03,br,.09,.045)}
   else if(it.t==='bottle'){cyl(g,.036,.04,.17,gm,0,.04);cyl(g,.014,.025,.09,gm,.12,.04)}
   else if(it.t==='key'){const r=new THREE.Mesh(new THREE.TorusGeometry(.035,.01,6,12),br);r.rotation.x=Math.PI/2;r.position.set(-.08,.02,0);g.add(r);const s=new THREE.Mesh(new THREE.BoxGeometry(.14,.012,.012),br);s.position.set(.02,.02,0);g.add(s);[.06,.085].forEach(x=>{const t=new THREE.Mesh(new THREE.BoxGeometry(.012,.012,.03),br);t.position.set(x,.02,.012);g.add(t)})}
+  else if(it.t==='fuse'){const c=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,.13,10),new M({color:0xd8b040,metalness:.8,roughness:.3,emissive:0x553300}));c.rotation.z=Math.PI/2;g.add(c);const cp=new THREE.Mesh(new THREE.CylinderGeometry(.034,.034,.025,10),new M({color:0x999999,metalness:.9,roughness:.3}));cp.rotation.z=Math.PI/2;cp.position.x=.07;g.add(cp)}
   else if(it.t==='screwdriver'){const h=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.11,8),bc);h.rotation.z=Math.PI/2;h.position.set(-.05,.03,0);g.add(h);const sh=new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,.12,6),new M({color:0xaaaaaa,metalness:.9,roughness:.3}));sh.rotation.z=Math.PI/2;sh.position.set(.07,.03,0);g.add(sh)}
   else{const p=new THREE.Mesh(new THREE.PlaneGeometry(.26,.32),nm);p.rotation.x=-Math.PI/2;p.position.y=.012;g.add(p)}
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:gl[it.t],blending:THREE.AdditiveBlending,depthWrite:false,fog:false,transparent:true,opacity:.5}));sp.scale.set(.6,.6,1);sp.position.set(it.x,.24,it.z);scene.add(sp);it.g=g;it.sp=sp};
@@ -186,6 +187,7 @@ Object.assign(Props,{
 extra(c){const{bx,cy,wood,dm,cloth,M,R}=c,P=this,mah=new M({map:this.wood(),color:0xb89070,roughness:.75}),gold=new M({color:0x9a7424,metalness:.9,roughness:.35}),pap=new M({color:0x8a8470,roughness:1}),
  bk=[0x4a1c1c,0x1c2a44,0x2c3a22,0x4a3a1c,0x2a2a2a,0x5a2a3a].map(h=>new M({color:h,roughness:.9})),vase=new M({color:0x3a4a44,roughness:.3});
  return{
+  lantern(){const g=new THREE.Group();cy(g,.12,.03,0,.015,0,dm,8);bx(g,.2,.02,.2,0,.28,0,dm);[[-.09,-.09],[.09,-.09],[-.09,.09],[.09,.09]].forEach(([a,b])=>bx(g,.015,.26,.015,a,.15,b,dm));bx(g,.16,.22,.16,0,.15,0,new M({color:0xffd9a0,transparent:true,opacity:.35,emissive:0xffa040,emissiveIntensity:.5}));P.flame(g,0,.15,0);cy(g,.012,.14,0,.34,0,dm,6);return{g,w:.4,d:.4}},
   table(){const g=new THREE.Group();bx(g,1.1,.06,.8,0,.74,0,mah);[-.48,.48].forEach(x=>[-.33,.33].forEach(z=>bx(g,.06,.72,.06,x,.36,z,mah)));bx(g,.5,.004,.4,(R()-.5)*.3,.775,(R()-.5)*.2,pap).rotation.y=R();
    cy(g,.03,.14,.3,.85,0,pap,8);P.flame(g,.3,.95,0);return{g,w:1.1,d:.8}},
   trunk(){const g=new THREE.Group();bx(g,.95,.42,.55,0,.21,0,wood);bx(g,.98,.1,.58,0,.46,0,mah);[-.3,.3].forEach(x=>bx(g,.05,.46,.6,x,.23,0,dm));bx(g,.08,.1,.02,0,.38,.29,gold);return{g,w:.98,d:.6}},
@@ -205,7 +207,7 @@ extra(c){const{bx,cy,wood,dm,cloth,M,R}=c,P=this,mah=new M({map:this.wood(),colo
   armchair(){const g=new THREE.Group(),c=cloth[R()*4|0];bx(g,.85,.35,.8,0,.3,0,c);bx(g,.85,.8,.22,0,.75,-.3,c);[-.4,.4].forEach(x=>bx(g,.14,.3,.7,x,.55,.02,c));[-.38,.38].forEach(x=>[-.35,.35].forEach(z=>bx(g,.06,.12,.06,x,.06,z,wood)));return{g,w:.9,d:.85}},
   bed(){const g=new THREE.Group(),c=cloth[R()*4|0];[-.95,.95].forEach(x=>[-.4,.4].forEach(z=>bx(g,.06,.3,.06,x,.15,z,mah)));bx(g,2.0,.12,.9,0,.36,0,mah);bx(g,1.9,.2,.82,0,.5,0,pap);bx(g,1.2,.08,.84,.3,.62,0,c);bx(g,.4,.12,.55,-.7,.66,0,pap);bx(g,.06,.9,.95,-1.0,.6,0,mah);bx(g,.06,.55,.95,1.0,.45,0,mah);return{g,w:2.05,d:.95}},
   plant(){const g=new THREE.Group();cy(g,.2,.35,0,.17,0,new M({color:0x5a3a28,roughness:.9}),10);for(let i=0;i<7;i++){const s=bx(g,.015,.5+R()*.5,.015,0,.6,0,dm);s.position.set((R()-.5)*.1,.55+R()*.1,(R()-.5)*.1);s.rotation.set((R()-.5)*.9,0,(R()-.5)*.9)}return{g,w:.45,d:.45}}}},
-flame(g,x,y,z){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:this._cg||(this._cg=this.glow('rgba(255,160,70,')),blending:THREE.AdditiveBlending,depthWrite:false,fog:false,transparent:true,opacity:.6}));s.scale.set(.42,.42,1);s.position.set(x,y,z);g.add(s)},
+flame(g,x,y,z){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:this._cg||(this._cg=this.glow('rgba(255,160,70,')),blending:THREE.AdditiveBlending,depthWrite:false,fog:false,transparent:true,opacity:.6}));s.scale.set(.42,.42,1);s.position.set(x,y,z);s.userData.flame=true;g.add(s)},
 portrait(k){return this.cv(128,160,(x,w,h)=>{x.fillStyle=['#3a3224','#2a2e2a','#3a2a2a','#2e2a36'][k%4];x.fillRect(0,0,w,h);const g=x.createRadialGradient(64,70,10,64,80,90);g.addColorStop(0,'rgba(120,100,70,.5)');g.addColorStop(1,'rgba(0,0,0,.7)');x.fillStyle=g;x.fillRect(0,0,w,h);
  if(k%4!==3){x.fillStyle='#14100c';x.beginPath();x.ellipse(64,64,24,32,0,0,6.3);x.fill();x.fillRect(30,100,68,60);x.fillStyle='rgba(120,100,70,.18)';x.beginPath();x.ellipse(64,64,20,28,0,0,6.3);x.fill();
   x.fillStyle='#050403';[54,74].forEach(X=>{x.beginPath();x.ellipse(X,60,4,6,0,0,6.3);x.fill()})}
@@ -216,7 +218,7 @@ web(){return this._web||(this._web=this.cv(128,128,(x)=>{x.strokeStyle='rgba(210
 smear(){return this._sm||(this._sm=this.cv(64,128,(x,w,h)=>{x.fillStyle='rgba(90,6,4,.8)';for(let i=0;i<5;i++){const px=8+Math.random()*48,l=30+Math.random()*90;x.fillRect(px,6,2+Math.random()*4,l);x.beginPath();x.arc(px+1,6+l,3+Math.random()*3,0,6.3);x.fill()}
  const gr=x.createRadialGradient(32,14,0,32,14,28);gr.addColorStop(0,'rgba(90,6,4,.85)');gr.addColorStop(1,'rgba(90,6,4,0)');x.fillStyle=gr;x.fillRect(0,0,w,40)}))},
 hall(scene,K,rm){const S=Level.S,H=Level.H,g=Level.g,rs=Level.roomOf,R=Math.random,D4=[[1,0],[-1,0],[0,1],[0,-1]],M=THREE.MeshStandardMaterial,occ=this._occ,
- HK=Level.theme.hk||['sidetable','clock','dresser','plant','armchair','bookcase','sidetable','dresser','table','trunk','candles','wardrobe','bucket','stool','table'],
+ HK=Level.theme.hk||['lantern','sidetable','clock','dresser','plant','armchair','bookcase','sidetable','dresser','table','trunk','candles','wardrobe','bucket','stool','table'],
  bad=(x,z)=>Level.resv.has(x+','+z)||Level.lockers.some(l=>l.gx===x&&l.gz===z)||D4.some(([a,b])=>g[z+b][x+a]===2)||Level.items.some(it=>Math.hypot(it.x-x*S,it.z-z*S)<2.4),
  cells=[];for(let z=1;z<Level.D-1;z++)for(let x=1;x<Level.W-1;x++)if(g[z][x]===0){const sd=D4.filter(([a,b])=>g[z+b][x+a]===1);if(sd.length)cells.push([x,z,sd])}
  const face=s=>Math.atan2(-s[0],-s[1]),tg=s=>[-s[1],s[0]];
@@ -253,7 +255,8 @@ hall(scene,K,rm){const S=Level.S,H=Level.H,g=Level.g,rs=Level.roomOf,R=Math.rand
 
 Props.cv=unseeded(Props.cv);
 
-Object.assign(Props,{DUCT:{x:-300,z:0,L:12},
+Object.assign(Props,{DUCT:{x:-300,z:0,pts:[[-303,0],[-297,0],[-297,6],[-291,6]],w:1.3,h:1.25},
+ductOk(x,z){const D=this.DUCT,m=D.w/2-.3,p=D.pts;for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i];if(x>=Math.min(a[0],b[0])-m&&x<=Math.max(a[0],b[0])+m&&z>=Math.min(a[1],b[1])-m&&z<=Math.max(a[1],b[1])+m)return true}return false},
 bxm(g,w,h,d,x,y,z,m){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);g.add(o);return o},
 stairsB(scene){if(!Level.stairs.length)return;const M=THREE.MeshStandardMaterial,wd=this.wood(),dk=new M({map:wd,color:0x4a3624,roughness:.9}),mh=new M({map:wd,color:0x9a7a58,roughness:.7}),gold=new M({color:0x9a7424,metalness:.9,roughness:.35}),blk=new THREE.MeshBasicMaterial({color:0x000000}),pf=new M({map:wd,color:0x30221a,roughness:.95}),bx=this.bxm;
  for(const un of Level.stairs){const up=un.kind==='up',H1=un.H1,g=new THREE.Group();g.position.set(un.O.x,0,un.O.z);g.rotation.y=Math.atan2(un.inn[0],un.inn[1]);scene.add(g);
@@ -274,13 +277,16 @@ stairsB(scene){if(!Level.stairs.length)return;const M=THREE.MeshStandardMaterial
 ventsB(scene){if(!Level.vents.length)return;const M=THREE.MeshStandardMaterial,gt=this.cv(128,96,(x,w,h)=>{x.fillStyle='#74786f';x.fillRect(0,0,w,8);x.fillRect(0,h-8,w,8);x.fillRect(0,0,8,h);x.fillRect(w-8,0,8,h);for(let y=16;y<h-10;y+=12)x.fillRect(8,y,w-16,6);[[14,14],[w-14,14],[14,h-14],[w-14,h-14]].forEach(([a,b])=>{x.fillStyle='#2a2d2a';x.beginPath();x.arc(a,b,5,0,6.3);x.fill();x.fillStyle='#9a9f9a';x.fillRect(a-4,b-1,8,2)})}),
  gm=new M({map:gt,transparent:true,alphaTest:.4,side:THREE.DoubleSide,roughness:.5,metalness:.7}),dk=new M({color:0x151615,roughness:.8}),blk=new THREE.MeshBasicMaterial({color:0}),bx=this.bxm;
  for(const v of Level.vents){const g=new THREE.Group();g.position.set(v.wx,0,v.wz);g.rotation.y=Math.atan2(-v.s[0],-v.s[1]);scene.add(g);
-  bx(g,1.02,.74,.03,0,.45,.015,dk);const bp=new THREE.Mesh(new THREE.PlaneGeometry(.9,.62),blk);bp.position.set(0,.45,.032);g.add(bp);
-  const hg=new THREE.Group();hg.position.set(0,.14,.045);g.add(hg);const gr=new THREE.Mesh(new THREE.PlaneGeometry(.9,.62),gm);gr.position.set(0,.31,0);hg.add(gr);v.hg=hg}},
-ductB(scene){if(!Level.fp.duct)return;const D=this.DUCT,M=THREE.MeshStandardMaterial,m=new M({map:this.noise(),color:0x6a726e,roughness:.5,metalness:.7}),dk=new M({color:0x1a1c1b,roughness:.8,metalness:.5}),bx=this.bxm,g=new THREE.Group(),L=D.L,Wd=1.3,Hd=1.25;g.position.set(D.x,0,D.z);scene.add(g);
- bx(g,L,.06,Wd,0,0,0,m);bx(g,L,.06,Wd,0,Hd,0,m);bx(g,L,Hd,.06,0,Hd/2,-Wd/2,m);bx(g,L,Hd,.06,0,Hd/2,Wd/2,m);
- for(let x=-L/2+1;x<L/2;x+=1.5)bx(g,.1,Hd+.06,Wd+.06,x,Hd/2,0,dk);
- bx(g,.05,Hd,Wd,-L/2,Hd/2,0,dk);bx(g,.05,Hd,Wd,L/2,Hd/2,0,dk);
- [[-L/2+1.2,0xffb070],[L/2-1.2,0xffb070],[0,0x88aaff]].forEach(([x,c])=>Level.src.push({x:D.x+x,y:.95,z:D.z,col:new THREE.Color(c),d:6,I:()=>c===0xffb070?.55:.25}))}});
+  const dep=.34;bx(g,1.02,.74,.03,0,.45,.015,dk);bx(g,1.02,.05,dep,0,.45+.395,dep/2,dk);bx(g,1.02,.05,dep,0,.45-.395,dep/2,dk);bx(g,.05,.74,dep,-.485,.45,dep/2,dk);bx(g,.05,.74,dep,.485,.45,dep/2,dk);
+  const bp=new THREE.Mesh(new THREE.PlaneGeometry(.9,.62),blk);bp.position.set(0,.45,.032);g.add(bp);
+  const hg=new THREE.Group();hg.position.set(0,.14,dep+.01);g.add(hg);const gr=new THREE.Mesh(new THREE.PlaneGeometry(.9,.62),gm);gr.position.set(0,.31,0);hg.add(gr);v.hg=hg}},
+ductB(scene){if(!Level.fp.duct)return;const D=this.DUCT,M=THREE.MeshStandardMaterial,m=new M({map:this.noise(),color:0x8a928e,metalness:.7,roughness:.5}),dk=new M({color:0x1a1c1b,roughness:.8,metalness:.5}),bx=this.bxm,g=new THREE.Group(),Wd=D.w,Hd=D.h,P=D.pts,warm=new THREE.Color(0xffb070);g.position.set(0,0,0);scene.add(g);
+ for(let i=1;i<P.length;i++){const a=P[i-1],b=P[i],alongX=a[1]===b[1],len=Math.hypot(b[0]-a[0],b[1]-a[1]),cx=(a[0]+b[0])/2,cz=(a[1]+b[1])/2,w=len+Wd;
+  if(alongX){bx(g,w,.06,Wd,cx,0,cz,m);bx(g,w,.06,Wd,cx,Hd,cz,m);bx(g,w,Hd,.06,cx,Hd/2,cz-Wd/2,m);bx(g,w,Hd,.06,cx,Hd/2,cz+Wd/2,m);for(let k=-len/2;k<=len/2;k+=1.5)bx(g,.1,Hd+.06,Wd+.06,cx+k,Hd/2,cz,dk)}
+  else{bx(g,Wd,.06,w,cx,0,cz,m);bx(g,Wd,.06,w,cx,Hd,cz,m);bx(g,.06,Hd,w,cx-Wd/2,Hd/2,cz,m);bx(g,.06,Hd,w,cx+Wd/2,Hd/2,cz,m);for(let k=-len/2;k<=len/2;k+=1.5)bx(g,Wd+.06,Hd+.06,.1,cx,Hd/2,cz+k,dk)}
+  Level.src.push({x:cx,y:.95,z:cz,col:warm,d:6,I:()=>.6})}
+ const e0=P[0],e1=P[P.length-1];bx(g,.05,Hd,Wd,e0[0]-Wd/2,Hd/2,e0[1],dk);bx(g,.05,Hd,Wd,e1[0]+Wd/2,Hd/2,e1[1],dk);
+ bx(g,.1,Hd+.06,Wd+.06,P[1][0]-Wd/2,Hd/2,P[1][1],dk);bx(g,Wd,Hd,.05,P[1][0],Hd/2,P[1][1]-Wd/2,dk)}});
 
 {const _di=Props.dropItem;Props.dropItem=function(t,x,z,nid,fl){if(fl!==undefined&&fl!==Level.fi){const o=Level.fi;Level.use(fl);try{return _di.call(this,t,x,z,nid)}finally{Level.use(o)}}return _di.call(this,t,x,z,nid)}}
 
@@ -290,10 +296,10 @@ Object.assign(Props,{trapsB(scene){if(!Level.traps.length)return;const M=THREE.M
 
 /* hotel-style steel stair shaft: two flights per floor with a mid landing; the same shaft on every floor, so it truly connects them */
 Object.assign(Props,{stairsB(scene){if(!Level.stairs.length)return;const M=THREE.MeshStandardMaterial,FH=Level.FH,H=Level.H,h=FH/2,uL=1.5,uE=5.1,N=12,td=(uE-uL)/N,
- steel=new M({map:this.noise(),color:0x7a838a,metalness:.85,roughness:.42}),dkm=new M({color:0x2a2f34,metalness:.7,roughness:.55}),rail=new M({color:0x424950,metalness:.8,roughness:.4}),conc=new M({color:0x6a665e,roughness:.95}),lamp=new M({color:0xffd9a0,emissive:0xffb060,emissiveIntensity:.8}),bx=this.bxm;
+ steel=new M({map:(()=>{const t=this.noise().clone();t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,2);t.needsUpdate=true;return t})(),color:0x9aa3aa,metalness:.6,roughness:.5}),dkm=new M({color:0x2a2f34,metalness:.7,roughness:.55}),rail=new M({color:0x424950,metalness:.8,roughness:.4}),conc=(()=>{const wm=Level.wallMat.clone();if(Level.wallMat.map){wm.map=Level.wallMat.map.clone();wm.map.repeat.set(2,1.2);wm.map.needsUpdate=true}return wm})(),lamp=new M({color:0xffd9a0,emissive:0xffb060,emissiveIntensity:.8}),bx=this.bxm;
  for(const un of Level.stairs){const up=un.up,dn=un.dn,g=new THREE.Group();g.position.set(un.O.x,0,un.O.z);g.rotation.y=Math.atan2(un.inn[0],un.inn[1]);scene.add(g);
   const wp=(u,t)=>({x:un.O.x+un.inn[0]*u+un.tn[0]*t,z:un.O.z+un.inn[1]*u+un.tn[1]*t}),plate=(u0,u1,t0,t1,y,m)=>bx(g,t1-t0,.08,u1-u0,(t0+t1)/2,y-.04,(u0+u1)/2,m);
-  [-1.46,1.46].forEach(t=>bx(g,.12,FH,6,t,FH/2,3,conc));
+  [-1.46,1.46].forEach(t=>bx(g,.12,FH-.05,6,t,(FH-.05)/2,3,conc));
   plate(uE,6,-1.4,1.4,0,steel);
   if(!dn)plate(0,uE,-1.4,1.4,0,steel);else if(!up)plate(0,uE,-1.4,-.05,0,steel);
   if(!up)plate(0,6,-1.4,1.4,H+.04,dkm);else{plate(2.3,6,-1.4,-.05,H+.04,dkm);plate(uE,6,.05,1.4,H+.04,dkm)}
@@ -308,6 +314,6 @@ Object.assign(Props,{stairsB(scene){if(!Level.stairs.length)return;const M=THREE
   if(up||dn){bx(g,.05,.05,uE-uL,0,1.0,(uL+uE)/2,rail);for(let u=uL;u<=uE+.01;u+=.6)bx(g,.05,1.0,.05,0,.5,u,rail)}
   const warm=new THREE.Color(0xffa860),lampAt=(u,t,y)=>{bx(g,.1,.16,.1,t,y,u,lamp);const p=wp(u,t);Level.src.push({x:p.x,y,z:p.z,col:warm,d:7,I:()=>.9})};
   lampAt(4.2,1.3,2.4);if(up)lampAt(.9,1.3,h+1.6);if(dn)lampAt(.9,-1.3,-h+1.5);
-  const side=(t0,t1)=>{const a=[un.O.x+un.tn[0]*t0,un.O.z+un.tn[1]*t0],b=[un.O.x+un.inn[0]*6+un.tn[0]*t1,un.O.z+un.inn[1]*6+un.tn[1]*t1];Level.col.push({x0:Math.min(a[0],b[0]),x1:Math.max(a[0],b[0]),z0:Math.min(a[1],b[1]),z1:Math.max(a[1],b[1])})};
+  const side=(t0,t1)=>{const a=[un.O.x+un.tn[0]*t0,un.O.z+un.tn[1]*t0],b=[un.O.x+un.inn[0]*6+un.tn[0]*t1,un.O.z+un.inn[1]*6+un.tn[1]*t1];Level.col.push({tall:true,x0:Math.min(a[0],b[0]),x1:Math.max(a[0],b[0]),z0:Math.min(a[1],b[1]),z1:Math.max(a[1],b[1])})};
   side(1.3,1.55);side(-1.55,-1.3);
   if(up||dn){const a=wp(uL,-.06),b=wp(uE,.06);Level.col.push({x0:Math.min(a.x,b.x),x1:Math.max(a.x,b.x),z0:Math.min(a.z,b.z),z1:Math.max(a.z,b.z)})}}}});

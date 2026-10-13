@@ -43,7 +43,7 @@ html,body{margin:0;background:#000}
 <div id="card" class="hidden"><h1>THE LONG<br>HALLS</h1><div>the boiled one</div></div>
 
 <div id="menu" class="screen">
-  <div id="ver">v5.3.0 · multiplayer</div>
+  <div id="ver">v5.5.0 · multiplayer</div>
   <div id="menuL">
     <button class="gb" id="start">Play</button>
     <button class="gb" id="mMP">Multiplayer</button>
@@ -58,7 +58,7 @@ html,body{margin:0;background:#000}
 <div id="how" class="screen hidden">
   <h2>How to play</h2>
   <div class="pan">
-    <p>You wake in a bed, and the power is out. You have <b>three days</b>. Every time he catches you, you wake up on the <b>next day</b> in the <b>same house</b>, and he gets faster. Get caught on day three and he drags you away for good. The house has <b>3 or 4 floors</b> joined by two steel <b>stairwells</b> in opposite corners that you can really climb, and he uses them too. Watch the floor for rusty <b>bear traps</b>: they hold you still and the snap is loud. The exit on the <b>ground floor</b> is sealed: find <b>4 fuses</b> spread through the house, then <b>open the exit</b> and walk into the light.</p>
+    <p>You wake in a bed, and the power is out. You have <b>three days</b>. Every time he catches you, you wake up on the <b>next day</b> in the <b>same house</b>, and he gets faster. Get caught on day three and he drags you away for good. The house has <b>3 or 4 floors</b> joined by two steel <b>stairwells</b> in opposite corners that you can really climb, and he uses them too. Watch the floor for rusty <b>bear traps</b>: they hold you still and the snap is loud. The exit on the <b>ground floor</b> is sealed: find <b>4 fuses</b>: they sit on pedestals, hide in vents, or just lie around loose, then <b>open the exit</b> and walk into the light.</p>
     <p>Close <b>doors</b> behind you. A shut door hides you from his eyes, and an open one you did not open means he has already been through.</p>
     <p>Your flashlight runs on <b>batteries</b>. Take <b>bottles</b> and throw one: he will go and look. You can only <b>carry one item at a time</b>. Pick it up with <b>E</b> and drop it with <b>SPACE</b> to free your hands. A <b>brass key</b> opens the room he never visits; spare <b>batteries</b> are used with <b>R</b>. Press <b>C</b> or <b>CTRL</b> to toggle crouch: you move slowly, but quietly and lower. <b>Vents</b> are screwed shut: carry a <b>screwdriver</b> to one and hold <b>E</b>, then crouch and crawl through. While you are inside a vent he cannot see you or catch you. Anything that makes noise (dropping or throwing things, unscrewing a vent) reaches him no matter how far away he is. <b>Notes</b> tell you what happened here.</p>
     <p><b>Lockers</b> are your only shelter. If he <b>sees you climb in</b>, he will drag you out. Sprinting is loud. Lights fail. Don't stop moving.</p>
@@ -141,6 +141,7 @@ html,body{margin:0;background:#000}
  var TIPS=['Shut doors behind you.','Lockers are your only shelter.','Anything that makes noise, he hears. Anywhere.','Toggle crouch with C. Small spaces are safe from him.','Vents are screwed shut. Find a screwdriver.','He uses the stairs too.','Bear traps hide in the dark halls.','Sprinting is loud.'];
  if(tip)tip.textContent=quick?'':TIPS[Math.random()*TIPS.length|0];
  window.LHT={pend:0,total:0,fail:0};   /* every texture that has to decode registers here, so the loader can truly wait for them */
+ function later(f){var d=false;function g(){if(!d){d=true;f()}}requestAnimationFrame(g);setTimeout(g,150)}   /* a hidden tab never gets animation frames */
  var MIN=quick?300:900,t0=performance.now(),target=.02,shown=0,failed=false,fin=false;
  function set(p,t){if(p>target)target=p;if(t&&!failed)tx.textContent=t}
  var ST=[['files','Game files',.5],['engine','3D engine',.04],['fonts','Fonts',.04],['world','Building the floors',.14],['assets','Models and textures',.16],['shaders','Compiling shaders',.12]],SP={},list=$('ldlist');
@@ -190,14 +191,14 @@ html,body{margin:0;background:#000}
   stage('engine',1,'3D engine ready');
   var fonts=document.fonts&&document.fonts.ready?Promise.race([document.fonts.ready,new Promise(function(r){setTimeout(r,2500)})]):Promise.resolve();
   fonts.then(function(){stage('fonts',1,'Fonts ready');stage('world',.15,'Building the floors');
-   requestAnimationFrame(function(){requestAnimationFrame(function(){
+   later(function(){later(function(){
     try{fn()}catch(e){console.error(e);return fail('Something went wrong while loading. Refresh the page.')}
     stage('world',1,'Floors built');var T=window.LHT,t1=performance.now();
     (function waitA(){if(failed)return;var pr=T.total?1-T.pend/T.total:1;stage('assets',Math.min(.99,pr),'Loading models and textures');
      if(T.fail)return fail('A model texture failed to load. Refresh the page.');
      if(T.pend>0){if(performance.now()-t1>25000)return fail('Textures are taking too long. Refresh the page.');return setTimeout(waitA,50)}
      stage('assets',1,'Textures ready');stage('shaders',.2,'Compiling shaders');
-     requestAnimationFrame(function(){try{if(window.LHHook)window.LHHook.compile()}catch(e){console.warn(e)}stage('shaders',1,'Ready')})})()
+     later(function(){try{if(window.LHHook)window.LHHook.compile()}catch(e){console.warn(e)}stage('shaders',1,'Ready')})})()
    })})})}};
  stage('files',0.01,'Downloading');
  loadAll().then(function(r){
