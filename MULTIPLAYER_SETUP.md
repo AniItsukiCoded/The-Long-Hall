@@ -57,3 +57,16 @@ The database URL is already in `js/net.js` (`FB_CONFIG`).
 - Other players and the Boiled One are now drawn with snapshot interpolation: every position packet carries the sender's clock, and the game plays them back ~0.12-0.2 s in the past, tweening between two real samples. This removes rubber-banding, stutter and teleporting.
 - Position packets go out ~12 times a second (only when something changed), enemy packets ~12/s plus a 1.5 s heartbeat so a standing enemy no longer looks like a dead host.
 - Yaw is sent wrapped to +-pi; the host timeline is reset when the host changes or a new day starts.
+
+## v6.2.0: device picker, tablet mode, in-game options
+- **First visit device picker.** Before the warning screen, desktop browsers are asked "PC or Chromebook?" and phones/tablets are asked "Phone or Tablet?". It is saved in this browser (`localStorage`, key `lhdev`) and keeps showing until a choice has been confirmed, including for players who already had other settings saved. The device can still be changed any time in Options.
+- **Tablet mode.** New Device option: touch controls like Phone, but larger buttons, a bigger joystick and bigger HUD text. Fullscreen and landscape lock work as on Phone.
+- **Touch button size** slider in Options (touch devices only).
+- **Options from the pause menu.** Everything except difficulty can be changed mid-run. "Reset to defaults" in-game keeps your difficulty and device. ESC closes Options and returns to the pause menu.
+
+## v6.3.0: brightness, more difficulties, more options
+- **Re-publish `database.rules.json`** (Realtime Database, Rules tab, Publish): party difficulty now goes up to 6 instead of 3. Until you do, nobody can pick the new difficulties in a party.
+- **Brightness** 50-300% in Options. 100% is each device's own normal brightness (PC, Chromebook, Phone and Tablet keep their different baselines); the slider scales on top of that for every device.
+- **Difficulties** are now Story, Easy, Normal, Hard, Extreme, Hell and Impossible. The flashlight battery also drains faster or slower per difficulty. Saved difficulties are converted automatically, so a saved Normal stays Normal.
+- **New options:** render resolution, vignette strength, chase zoom on/off, crosshair dot, FPS counter, toggle sprint (keyboard), left-handed layout (touch). Sliders now show their value.
+- **Fog & darkness** can be switched off in Options for brighter halls with no fog. At **Extreme and above** they are forced on. In multiplayer this follows the party's difficulty, so everyone in an Extreme+ party gets them. It is derived from the difficulty already stored in the party (`m/df`), so **the database rules need no change** (they already allow difficulty 0-6); note that Firebase rules cannot stop a modified client from ignoring it.

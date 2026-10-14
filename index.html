@@ -20,7 +20,7 @@ html,body{margin:0;background:#000}
 <div id="loading"><div class="ldlogo">THE LONG<br>HALLS</div><div class="ldsub">the boiled one</div><div class="ldbar"><i id="ldfill"></i></div><div id="ldtxt">Loading</div><div id="ldlist"></div><div id="ldtip"></div></div>
 <svg width="0" height="0" style="position:absolute"><filter id="rough"><feTurbulence baseFrequency=".05 .08" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="6"/></filter></svg>
 <canvas id="gl"></canvas>
-<div id="chasefx"></div><div id="vig"></div><div id="lockerfx" class="hidden"></div><div id="grain"></div><div id="flash"></div><div id="killfx" class="hidden"></div>
+<div id="fps" class="hidden"></div><div id="chasefx"></div><div id="vig"></div><div id="lockerfx" class="hidden"></div><div id="grain"></div><div id="flash"></div><div id="killfx" class="hidden"></div>
 
 <div id="lids" class="hidden"><i></i><i></i></div><div id="daybn"></div>
 <div id="hud" class="hidden">
@@ -49,11 +49,11 @@ html,body{margin:0;background:#000}
     <button class="tb run" data-k="ShiftLeft">SPRINT</button>
   </div>
 </div>
-<div id="rot">Turn your phone sideways to play.</div>
+<div id="rot">Turn your device sideways to play.</div>
 <div id="card" class="hidden"><h1>THE LONG<br>HALLS</h1><div>the boiled one</div></div>
 
 <div id="menu" class="screen">
-  <div id="ver">v6.1.0 · multiplayer</div><button class="rs" id="mDev"></button>
+  <div id="ver">v6.3.0 · multiplayer</div><button class="rs" id="mDev"></button>
   <div id="menuL">
     <button class="gb" id="start">Play</button>
     <button class="gb" id="mMP">Multiplayer</button>
@@ -71,6 +71,7 @@ html,body{margin:0;background:#000}
     <p>You wake in a bed, and the power is out. You have <b>three days</b>. Every time he catches you, you wake up on the <b>next day</b> in the <b>same house</b>, and he gets faster. Get caught on day three and he drags you away for good. The house has <b>3 or 4 floors</b> joined by two rusted steel <b>stairwells</b> built onto the outside of the house, behind green-lit fire doors in the east and west walls. You can really climb them, and he uses them too. Watch the floor for rusty <b>bear traps</b>: they hold you still and the snap is loud. The exit on the <b>ground floor</b> is sealed: find <b>4 fuses</b>: they sit on pedestals, hide deep inside vent tunnels, or just lie around loose, then <b>open the exit</b> and walk into the light.</p>
     <p>Close <b>doors</b> behind you. A shut door hides you from his eyes, and an open one you did not open means he has already been through.</p>
     <p>Your flashlight runs on <b>batteries</b>. Take <b>bottles</b> and throw one: he will go and look. You can only <b>carry one item at a time</b>. Pick it up with <b>E</b> and drop it with <b>SPACE</b> to free your hands. A <b>brass key</b> opens the room he never visits; spare <b>batteries</b> are used with <b>R</b>. Press <b>C</b> or <b>CTRL</b> to toggle crouch: you move slowly, but quietly and lower. <b>Vents</b> are real tunnels inside the thick walls. Each cover is held by <b>4 screws</b>: carry a <b>screwdriver</b> to one, aim at a screw and press <b>E</b>; each screw drops out at once, and the last one lets the cover fall open with a clang. It <b>stays open</b>. From <b>inside</b> a vent you can push the cover out with <b>E</b>, no screwdriver needed. Crouch (<b>C</b>) and simply walk in. The tunnels join other rooms and halls, and a <b>fuse</b> sometimes hides deep inside. While you are in the walls he cannot see you or catch you, even if he watched you climb in. Anything that makes noise (dropping or throwing things, unscrewing a vent) reaches him no matter how far away he is. <b>Notes</b> tell you what happened here.</p>
+    <p>In <b>Options</b> you can turn <b>fog and darkness</b> off for brighter halls. From <b>Extreme</b> up they are <b>always on</b>, for everyone in the party.</p>
     <p><b>Lockers</b> are your only shelter. If he <b>sees you climb in</b>, he will drag you out. Sprinting is loud. Lights fail. Don't stop moving.</p>
     <div class="keys tc">TOUCH: left thumb drag = move &nbsp;·&nbsp; right thumb drag = look &nbsp;·&nbsp; USE = E (open, take, hide, unscrew vents) &nbsp;·&nbsp; SPRINT = tap to toggle (stops when out of breath) &nbsp;·&nbsp; LIGHT = flashlight &nbsp;·&nbsp; THROW = G &nbsp;·&nbsp; DROP = SPACE &nbsp;·&nbsp; BATT = R &nbsp;·&nbsp; CROUCH = C &nbsp;·&nbsp; II = pause</div><div class="keys kb">WASD move &nbsp;·&nbsp; SHIFT sprint &nbsp;·&nbsp; MOUSE look &nbsp;·&nbsp; look at a door + E open / close &nbsp;·&nbsp; F flashlight &nbsp;·&nbsp; G throw item &nbsp;·&nbsp; C / CTRL toggle crouch &nbsp;·&nbsp; SPACE drop item &nbsp;·&nbsp; R use battery &nbsp;·&nbsp; ESC pause</div>
   </div>
@@ -80,7 +81,7 @@ html,body{margin:0;background:#000}
 <div id="pause" class="screen hidden">
   <h2>Paused</h2>
   <div class="stats"><span id="pFuses"></span><span id="pTime"></span></div>
-  <div class="col1"><button class="gb" id="pRes">Resume</button><button class="gb" id="pAb">Abandon run</button></div>
+  <div class="col1"><button class="gb" id="pRes">Resume</button><button class="gb" id="pOpt">Options</button><button class="gb" id="pAb">Abandon run</button></div>
   <div class="keys">ESC or click Resume to continue</div>
 </div>
 
@@ -111,7 +112,7 @@ html,body{margin:0;background:#000}
   <div id="lobCode"></div><button class="rs" id="lobCopy">Copy code</button>
   <button class="rs" id="lobPub"></button>
   <ul id="lobList"></ul>
-  <div class="sl lobd"><span id="lobDName"></span><input type="range" id="lobDiff" min="0" max="3" step="1" value="1"></div>
+  <div class="sl lobd"><span id="lobDName"></span><input type="range" id="lobDiff" min="0" max="6" step="1" value="2"></div>
   <button class="gb" id="lobStart">Start</button><div id="lobWait" class="keys hidden">Waiting for the host to start…</div>
   <button class="rs" id="lobLeave">Leave party</button>
 </div>
@@ -119,6 +120,7 @@ html,body{margin:0;background:#000}
 
 <div id="dayscr" class="screen hidden"><h1 id="dayT"></h1><p id="dayP"></p><button class="gb" id="dayGo">Wake up</button><button class="rs" id="dayNew">Start over</button></div>
 <div id="daydone" class="screen hidden"><h1 id="ddT"></h1><p id="ddP"></p><div class="keys" id="ddS"></div><button class="gb" id="ddGo">Sleep</button></div>
+<div id="setup" class="screen hidden"><div class="sw"><div class="sk">before you begin</div><h2>Your device</h2><p class="sq" id="setupQ"></p><div id="setupCards"></div><button class="gb sm" id="setupGo" disabled>Continue</button><div class="keys">Saved in this browser. You can change it any time in Options.</div></div></div>
 <div id="warn" class="screen hidden"><h2>⚠ WARNING</h2><p>This game contains <b>flickering and failing lights</b>, screen shake, film grain, very dark scenes and sudden jump scares. These can trigger seizures in people with <b>photosensitive epilepsy</b>. If you or anyone in your family has a history of seizures or epilepsy, consult a doctor before playing, and stop immediately if you feel dizzy, disoriented or unwell.</p><p><b>Reduce flashing</b> is on by default and calms the flickering lights and grain. You can change it later in Options.</p><button class="gb sm" id="wSafe">Reduce flashing &amp; continue</button><button class="gb sm" id="wOk">I understand, continue</button></div>
 <div id="quit" class="screen hidden"><h2>There is no leaving.</h2></div>
 
