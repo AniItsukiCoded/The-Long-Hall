@@ -1,17 +1,29 @@
 const Aud={ctx:null,vol:.8,cOn:false,n:0,
-init(){const c=this.ctx=new(window.AudioContext||window.webkitAudioContext)(),mk=(t,f)=>{const o=c.createOscillator();o.type=t;o.frequency.value=f;return o};
+init(){if(this.ctx)return;const c=this.ctx=new(window.AudioContext||window.webkitAudioContext)(),mk=(t,f)=>{const o=c.createOscillator();o.type=t;o.frequency.value=f;return o};
  this.out=c.createGain();this.out.gain.value=this.vol;this.mf=c.createBiquadFilter();this.mf.type='lowpass';this.mf.frequency.value=22000;this.m=c.createGain();this.m.connect(this.mf);this.mf.connect(this.out);this.out.connect(c.destination);
  const b=c.createBuffer(1,c.sampleRate*2,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;this.nb=b;
- const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=140;const dg=c.createGain();dg.gain.value=.22;lp.connect(dg);dg.connect(this.m);
+ const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=140;const dg=this.dg=c.createGain();dg.gain.value=0;lp.connect(dg);dg.connect(this.m);
  [41,43.2,61.5].forEach(f=>{const o=mk('sawtooth',f);o.connect(lp);o.start()});
  const l=mk('sine',.07),lg=c.createGain();lg.gain.value=60;l.connect(lg);lg.connect(lp.frequency);l.start();
  this.hum=c.createGain();this.hum.gain.value=0;const ho=this.ho=mk('triangle',82),hf=c.createBiquadFilter();hf.type='bandpass';hf.frequency.value=300;ho.connect(hf);hf.connect(this.hum);this.hum.connect(this.m);ho.start();
  // chase layer
  this.cg=c.createGain();this.cg.gain.value=0;const cl=c.createBiquadFilter();cl.type='lowpass';cl.frequency.value=1500;cl.connect(this.cg);this.cg.connect(this.m);
  [['sawtooth',110,.5],['sawtooth',116.5,.5],['square',233,.1],['sawtooth',880,.05]].forEach(([t,f,v],i)=>{const o=mk(t,f),g=c.createGain();g.gain.value=v;o.connect(g);g.connect(cl);o.start();if(i===3){const lf=mk('sine',5.5),lg2=c.createGain();lg2.gain.value=40;lf.connect(lg2);lg2.connect(o.frequency);lf.start()}});
- setInterval(()=>this.tick(),330)},
+ setInterval(()=>this.tick(),330);
+ /* custom audio: menu music (straight to the master), in game ambience (through the muffle filter), flashlight click */
+ this.mus=c.createGain();this.mus.gain.value=0;this.mus.connect(this.out);this.ab=c.createGain();this.ab.gain.value=0;this.ab.connect(this.m);
+ this.B={};this.L={};this.G={flash:1.6,menu:.5,amb:.9};
+ this.load('flash','audio/flashlight_toggle.mp3');this.load('menu','audio/Main_Menu.mp3');this.load('amb','audio/Ingame_Ambience.mp3');this._sync()},
+fetchBuf(p){const urls=window.LHU?window.LHU(p):[p];let i=0;const next=()=>{if(i>=urls.length)return Promise.reject(new Error('could not load '+p));return fetch(urls[i++],{credentials:'omit'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()}).catch(next)};return next()},
+load(k,p){this.fetchBuf(p).then(ab=>new Promise((ok,no)=>{const r=this.ctx.decodeAudioData(ab,ok,no);if(r&&r.catch)r.catch(no)})).then(b=>{this.B[k]=b;if(k!=='flash'){const s=this.ctx.createBufferSource();s.buffer=b;s.loop=true;s.connect(k==='menu'?this.mus:this.ab);s.start(0);this.L[k]=s}this._sync()}).catch(e=>console.warn('[Long Halls] audio '+k+': '+(e&&e.message||e)+' (the built in sound is used instead)'))},
+scene(s){this.sc=s;this._sync()},
+_sync(){const c=this.ctx;if(!c||!this.mus)return;const t=c.currentTime,g=this.sc==='game',B=this.B,G=this.G;
+ this.mus.gain.setTargetAtTime(g?0:G.menu,t,g?.5:1.2);
+ this.ab.gain.setTargetAtTime(g&&B.amb?G.amb*(this.cOn?.5:1):0,t,g?1.2:.6);
+ this.dg.gain.setTargetAtTime(g&&!B.amb?.22:0,t,.4)},
+sfx(k){const b=this.B&&this.B[k];if(!b||!this.ctx||this.ctx.state!=='running')return false;try{if(this._fs){try{this._fs.stop()}catch(e){}}const s=this.ctx.createBufferSource(),g=this.ctx.createGain();s.buffer=b;g.gain.value=this.G[k]||1;s.connect(g);g.connect(this.m);s.start();this._fs=s;return true}catch(e){return false}},
 tick(){if(!this.cOn||this.ctx.state!=='running')return;this.n++;this.tone(62,.2,'sine',.9,36);if(this.n%2)this.noise(.08,.25,3000,'highpass');if(this.n%4===3)this.tone(300+Math.random()*50,.25,'sawtooth',.06,160)},
-chase(on){on=on&&this.cm!==false;this.cOn=on;const t=this.ctx.currentTime;this.cg.gain.setTargetAtTime(on?.38:0,t,on?.15:1.2);if(on){this.tone(95,.9,'sawtooth',.4,320);this.noise(.7,.8,2800,'bandpass')}},
+chase(on){on=on&&this.cm!==false;this.cOn=on;const t=this.ctx.currentTime;this.cg.gain.setTargetAtTime(on?.38:0,t,on?.15:1.2);if(on){this.tone(95,.9,'sawtooth',.4,320);this.noise(.7,.8,2800,'bandpass')}this._sync()},
 muffle(on){this.mf.frequency.setTargetAtTime(on?600:22000,this.ctx.currentTime,.12)},
 level(k){this.k=k;if(this.ctx)this.out.gain.setTargetAtTime(this.vol*k,this.ctx.currentTime,.15)},
 fade(on){if(!this.ctx)return;const c=this.ctx;clearTimeout(this.sus);if(on){c.resume();this.out.gain.setTargetAtTime(this.vol*(this.k||1),c.currentTime,.4)}else{this.out.gain.setTargetAtTime(0,c.currentTime,.25);this.sus=setTimeout(()=>c.suspend(),900)}},
