@@ -114,3 +114,87 @@ input[type=text],#mpNick,#mpCode{background:rgba(0,0,0,.45);border:2px solid var
 #pubList .pr button{font-size:22px;padding:2px 18px}
 #lobPub{font-size:20px;margin:-6px 0}
 
+
+/* ===== device modes: PC (default) / Chromebook / Mobile ===== */
+.devs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.dv{background:rgba(0,0,0,.35);border:2px solid rgba(236,230,216,.5);color:var(--c);font:italic 22px 'IM Fell English',Georgia,serif;padding:6px 16px;border-radius:3px;cursor:pointer}
+.dv.on{background:var(--c);color:#111;border-color:var(--c)}
+#devNote{font-size:17px;opacity:.7;text-align:center;min-height:46px;margin-bottom:6px}
+#mDev{position:absolute;left:6%;bottom:6%;font-size:26px;text-shadow:0 2px 0 #000}
+.tc{display:none}
+#touch,#rot{display:none}
+
+/* Chromebook + Mobile: sizes follow screen HEIGHT, panels scroll instead of clipping */
+body.dev-chromebook .screen,body.dev-mobile .screen{overflow-y:auto;justify-content:center;justify-content:safe center;padding:16px 22px;gap:12px}
+body.dev-chromebook #menu,body.dev-mobile #menu{overflow:hidden}
+body.dev-chromebook .gb,body.dev-mobile .gb{font-size:clamp(28px,8vh,50px)}
+body.dev-chromebook .gb.sm,body.dev-mobile .gb.sm{font-size:clamp(22px,5.6vh,32px)}
+body.dev-chromebook .col1 .gb,body.dev-mobile .col1 .gb{font-size:clamp(28px,8vh,46px)}
+body.dev-chromebook h2,body.dev-mobile h2{font-size:clamp(30px,8vh,56px);text-underline-offset:6px}
+body.dev-chromebook h3,body.dev-mobile h3{font-size:clamp(22px,4.8vh,30px)}
+body.dev-chromebook .pan,body.dev-mobile .pan{font-size:clamp(15px,2.8vh,18px);line-height:1.4;gap:8px;max-width:min(680px,92vw)}
+body.dev-chromebook .keys,body.dev-mobile .keys{font-size:clamp(11px,2.2vh,14px);letter-spacing:.06em}
+body.dev-chromebook #menuL,body.dev-mobile #menuL{top:30%;gap:2px}
+body.dev-chromebook #logo h1,body.dev-mobile #logo h1{font-size:clamp(34px,15vh,96px)}
+body.dev-chromebook .leg,body.dev-mobile .leg{font-size:clamp(20px,6vh,40px)}
+body.dev-chromebook #ns,body.dev-mobile #ns{font-size:clamp(20px,4.5vh,28px)}
+body.dev-chromebook #mDev,body.dev-mobile #mDev{font-size:clamp(18px,3.8vh,24px);bottom:5%}
+body.dev-chromebook #optBox,body.dev-mobile #optBox{gap:3vw;max-width:96vw}
+body.dev-chromebook .col,body.dev-mobile .col{min-width:min(280px,88vw);gap:10px}
+body.dev-chromebook .cb,body.dev-mobile .cb,body.dev-chromebook .sl,body.dev-mobile .sl{font-size:clamp(16px,3.2vh,20px)}
+body.dev-chromebook .cb i,body.dev-mobile .cb i{width:28px;height:28px;line-height:28px;font-size:22px}
+body.dev-chromebook #dBox,body.dev-mobile #dBox{font-size:clamp(15px,3vh,19px);padding:10px 14px;border-width:3px}
+body.dev-chromebook #dBox h4,body.dev-mobile #dBox h4{font-size:clamp(22px,4.5vh,30px)}
+body.dev-chromebook #dName,body.dev-mobile #dName{font-size:clamp(20px,4vh,28px)}
+body.dev-chromebook .gb.bx,body.dev-mobile .gb.bx{position:static;align-self:center;padding:3px 16px}
+body.dev-chromebook .screen>*,body.dev-mobile .screen>*{flex-shrink:0}
+body.dev-chromebook #menu>*,body.dev-mobile #menu>*{flex-shrink:1}
+body.dev-chromebook #warn h2,body.dev-mobile #warn h2{font-size:clamp(30px,8vh,48px)}
+body.dev-chromebook #warn p,body.dev-mobile #warn p{font-size:clamp(15px,3.2vh,21px)}
+body.dev-chromebook #dayscr p,body.dev-mobile #dayscr p,body.dev-chromebook #daydone p,body.dev-mobile #daydone p,body.dev-chromebook #over p,body.dev-mobile #over p{font-size:clamp(16px,3.4vh,24px)}
+body.dev-chromebook #lobList,body.dev-mobile #lobList{font-size:clamp(20px,4.5vh,28px)}
+body.dev-chromebook input[type=text],body.dev-mobile input[type=text],body.dev-chromebook #mpNick,body.dev-mobile #mpNick,body.dev-chromebook #mpCode,body.dev-mobile #mpCode{font-size:clamp(20px,4.5vh,28px)}
+body.dev-chromebook #pubList,body.dev-mobile #pubList{max-height:22vh}
+/* in-game HUD scales down too */
+body.dev-chromebook #hud,body.dev-mobile #hud{font-size:15px}
+body.dev-chromebook #fuses,body.dev-mobile #fuses{top:12px;left:16px}
+body.dev-chromebook #dayl,body.dev-mobile #dayl{top:12px;right:16px;font-size:17px}
+body.dev-chromebook #plist,body.dev-mobile #plist{top:40px;right:16px;font-size:15px}
+body.dev-chromebook #obj,body.dev-mobile #obj{font-size:16px}
+body.dev-chromebook #inv,body.dev-mobile #inv{left:16px;bottom:16px;gap:6px;font-size:15px}
+body.dev-chromebook #inv em,body.dev-mobile #inv em{font-size:12px}
+body.dev-chromebook #inv span,body.dev-mobile #inv span{min-width:80px}
+body.dev-chromebook #prompt,body.dev-mobile #prompt{font-size:clamp(17px,3.6vh,22px)}
+body.dev-chromebook #msg,body.dev-mobile #msg{font-size:clamp(20px,4.6vh,28px)}
+body.dev-chromebook #note,body.dev-mobile #note{font-size:clamp(15px,3vh,19px);padding:16px 20px;bottom:10%}
+body.dev-chromebook #daybn,body.dev-mobile #daybn{font-size:clamp(34px,12vh,90px)}
+body.dev-chromebook #spec,body.dev-mobile #spec{font-size:16px;bottom:12px;gap:12px}
+/* Chromebook: lighter picture on dim screens */
+body.dev-chromebook #grain{opacity:.045}
+body.dev-chromebook #lockerfx{background:radial-gradient(ellipse 80% 65% at 50% 48%,transparent 40%,rgba(0,0,0,.7) 100%)}
+body.dev-chromebook #chasefx{background:radial-gradient(ellipse at center,transparent 50%,rgba(160,0,0,.45) 100%)}
+
+/* Mobile */
+body.dev-mobile{touch-action:none;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+body.dev-mobile .screen{touch-action:pan-y}
+body.dev-mobile #lockhint,body.dev-mobile #inv em,body.dev-mobile .kb,body.dev-mobile #dot{display:none!important}
+body.dev-mobile .tc{display:block}
+body.dev-mobile #inv{left:16px;bottom:auto;top:46px}
+body.dev-mobile #stam{bottom:10px}
+body.dev-mobile #grain{opacity:.05}
+body.dev-mobile #touch{display:block;position:fixed;inset:0;z-index:2;pointer-events:none;touch-action:none}
+body.dev-mobile #touch.hidden{display:none!important}
+#joyz{position:absolute;left:0;top:0;bottom:0;width:42%;pointer-events:auto;touch-action:none}
+#lookz{position:absolute;right:0;top:0;bottom:0;width:58%;pointer-events:auto;touch-action:none}
+#joy{position:absolute;width:112px;height:112px;margin:-56px 0 0 -56px;border:2px solid rgba(236,230,216,.4);border-radius:50%;background:rgba(0,0,0,.28);pointer-events:none;opacity:0;transition:opacity .15s}
+#joy.on{opacity:1}
+#joyk{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:rgba(236,230,216,.42);border:2px solid rgba(236,230,216,.75)}
+#tbtns{position:absolute;right:max(14px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,auto);grid-auto-flow:row;gap:8px;align-items:center;justify-items:center;pointer-events:none}
+.tb{pointer-events:auto;touch-action:none;width:56px;height:56px;border-radius:50%;background:rgba(0,0,0,.5);border:2px solid rgba(236,230,216,.55);color:var(--c);font:italic 12px 'IM Fell English',Georgia,serif;letter-spacing:.03em;padding:0;-webkit-user-select:none;user-select:none;text-shadow:0 1px 0 #000}
+.tb.big{width:84px;height:84px;font-size:19px;grid-row:1/3;grid-column:3;border-color:#fff}
+.tb.on{background:rgba(236,230,216,.4);color:#fff}
+.tb.run{grid-column:2/4;border-radius:28px;width:100%}
+#tpause{position:absolute;top:max(10px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));width:44px;height:44px;font-size:16px;font-style:normal}
+#rot{position:fixed;inset:0;z-index:50;background:#000;align-items:center;justify-content:center;text-align:center;font-size:28px;padding:30px}
+@media(orientation:portrait){body.dev-mobile #rot{display:flex}}
+@media(hover:none){.gb:hover{transform:none}}
