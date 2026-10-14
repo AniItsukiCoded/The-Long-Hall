@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><title>THE LONG HALLS</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Rye&display=swap" rel="stylesheet">
 <style id="lh-boot-css">#loading{position:fixed;inset:0;z-index:100;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;transition:opacity .55s ease;font-family:'IM Fell English',Georgia,serif;font-style:italic;color:#d9d2c3}
@@ -40,10 +40,20 @@ html,body{margin:0;background:#000}
   <div id="prompt"></div><div id="msg"></div><div id="lockhint" class="hidden">CLICK TO LOOK AROUND</div>
 </div>
 
+<div id="touch" class="hidden">
+  <div id="joyz"></div><div id="joy"><i id="joyk"></i></div><div id="lookz"></div>
+  <button class="tb" id="tpause">II</button>
+  <div id="tbtns">
+    <button class="tb" data-k="KeyF">LIGHT</button><button class="tb" data-k="KeyG">THROW</button><button class="tb big" data-k="KeyE">USE</button>
+    <button class="tb" data-k="Space">DROP</button><button class="tb" data-k="KeyR">BATT</button><button class="tb" data-k="KeyC">CROUCH</button>
+    <button class="tb run" data-k="ShiftLeft">RUN</button>
+  </div>
+</div>
+<div id="rot">Turn your phone sideways to play.</div>
 <div id="card" class="hidden"><h1>THE LONG<br>HALLS</h1><div>the boiled one</div></div>
 
 <div id="menu" class="screen">
-  <div id="ver">v5.5.0 · multiplayer</div>
+  <div id="ver">v5.7.0 · multiplayer</div><button class="rs" id="mDev"></button>
   <div id="menuL">
     <button class="gb" id="start">Play</button>
     <button class="gb" id="mMP">Multiplayer</button>
@@ -58,11 +68,11 @@ html,body{margin:0;background:#000}
 <div id="how" class="screen hidden">
   <h2>How to play</h2>
   <div class="pan">
-    <p>You wake in a bed, and the power is out. You have <b>three days</b>. Every time he catches you, you wake up on the <b>next day</b> in the <b>same house</b>, and he gets faster. Get caught on day three and he drags you away for good. The house has <b>3 or 4 floors</b> joined by two steel <b>stairwells</b> in opposite corners that you can really climb, and he uses them too. Watch the floor for rusty <b>bear traps</b>: they hold you still and the snap is loud. The exit on the <b>ground floor</b> is sealed: find <b>4 fuses</b>: they sit on pedestals, hide in vents, or just lie around loose, then <b>open the exit</b> and walk into the light.</p>
+    <p>You wake in a bed, and the power is out. You have <b>three days</b>. Every time he catches you, you wake up on the <b>next day</b> in the <b>same house</b>, and he gets faster. Get caught on day three and he drags you away for good. The house has <b>3 or 4 floors</b> joined by two rusted steel <b>stairwells</b> built onto the outside of the house, behind green-lit fire doors in the east and west walls. You can really climb them, and he uses them too. Watch the floor for rusty <b>bear traps</b>: they hold you still and the snap is loud. The exit on the <b>ground floor</b> is sealed: find <b>4 fuses</b>: they sit on pedestals, hide in vents, or just lie around loose, then <b>open the exit</b> and walk into the light.</p>
     <p>Close <b>doors</b> behind you. A shut door hides you from his eyes, and an open one you did not open means he has already been through.</p>
-    <p>Your flashlight runs on <b>batteries</b>. Take <b>bottles</b> and throw one: he will go and look. You can only <b>carry one item at a time</b>. Pick it up with <b>E</b> and drop it with <b>SPACE</b> to free your hands. A <b>brass key</b> opens the room he never visits; spare <b>batteries</b> are used with <b>R</b>. Press <b>C</b> or <b>CTRL</b> to toggle crouch: you move slowly, but quietly and lower. <b>Vents</b> are screwed shut: carry a <b>screwdriver</b> to one and hold <b>E</b>, then crouch and crawl through. While you are inside a vent he cannot see you or catch you. Anything that makes noise (dropping or throwing things, unscrewing a vent) reaches him no matter how far away he is. <b>Notes</b> tell you what happened here.</p>
+    <p>Your flashlight runs on <b>batteries</b>. Take <b>bottles</b> and throw one: he will go and look. You can only <b>carry one item at a time</b>. Pick it up with <b>E</b> and drop it with <b>SPACE</b> to free your hands. A <b>brass key</b> opens the room he never visits; spare <b>batteries</b> are used with <b>R</b>. Press <b>C</b> or <b>CTRL</b> to toggle crouch: you move slowly, but quietly and lower. <b>Vents</b> are screwed shut: carry a <b>screwdriver</b> to one and hold <b>E</b>, then crouch and crawl in. A vent is a real duct: it climbs through the ceiling and runs over the rooms to a second vent (W and S crawl and climb, look where you want to go). While you are inside he cannot see you or catch you. Anything that makes noise (dropping or throwing things, unscrewing a vent) reaches him no matter how far away he is. <b>Notes</b> tell you what happened here.</p>
     <p><b>Lockers</b> are your only shelter. If he <b>sees you climb in</b>, he will drag you out. Sprinting is loud. Lights fail. Don't stop moving.</p>
-    <div class="keys">WASD move &nbsp;·&nbsp; SHIFT sprint &nbsp;·&nbsp; MOUSE look &nbsp;·&nbsp; look at a door + E open / close &nbsp;·&nbsp; F flashlight &nbsp;·&nbsp; G throw item &nbsp;·&nbsp; C / CTRL toggle crouch &nbsp;·&nbsp; SPACE drop item &nbsp;·&nbsp; R use battery &nbsp;·&nbsp; ESC pause</div>
+    <div class="keys tc">TOUCH: left thumb drag = move (drag far = sprint) &nbsp;·&nbsp; right thumb drag = look &nbsp;·&nbsp; USE = E (open, take, hide, hold at vents) &nbsp;·&nbsp; LIGHT = flashlight &nbsp;·&nbsp; THROW = G &nbsp;·&nbsp; DROP = SPACE &nbsp;·&nbsp; BATT = R &nbsp;·&nbsp; CROUCH = C &nbsp;·&nbsp; II = pause</div><div class="keys kb">WASD move &nbsp;·&nbsp; SHIFT sprint &nbsp;·&nbsp; MOUSE look &nbsp;·&nbsp; look at a door + E open / close &nbsp;·&nbsp; F flashlight &nbsp;·&nbsp; G throw item &nbsp;·&nbsp; C / CTRL toggle crouch &nbsp;·&nbsp; SPACE drop item &nbsp;·&nbsp; R use battery &nbsp;·&nbsp; ESC pause</div>
   </div>
   <button class="gb sm bx" id="hBack">Back ›</button>
 </div>
@@ -129,8 +139,8 @@ html,body{margin:0;background:#000}
  var FILES=[
   ['css/style.css',13000,'css'],
   ['js/vendor/firebase-app-compat.js',32000],['js/vendor/firebase-database-compat.js',167000],
-  ['js/model.js',1690000],['js/player.js',140000],['js/avatar.js',7000],['js/audio.js',7000],['js/level.js',16000],
-  ['js/props.js',38000],['js/enemy.js',9000],['js/net.js',9000],['js/menu.js',3000],['js/main.js',42000]
+  ['js/model.js',1690000],['js/player.js',140000],['js/avatar.js',7000],['js/audio.js',7000],['js/level.js',19000],
+  ['js/props.js',74000],['js/enemy.js',9000],['js/net.js',9000],['js/menu.js',3000],['js/main.js',42000]
  ];
  var THREE_URLS=['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js','https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'],THREE_SIZE=600000;
  var TOTAL=THREE_SIZE;FILES.forEach(function(f){TOTAL+=f[1]});
