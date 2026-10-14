@@ -74,3 +74,8 @@ The database URL is already in `js/net.js` (`FB_CONFIG`).
 - The difficulty **Nightmare** is now called **Extreme**.
 - **Fog & darkness** is **off by default**: the halls are fully lit and there is no fog. Tick it in Options for the dark version. At **Extreme and above** it is forced on. In multiplayer this follows the party's difficulty, so everyone in an Extreme+ party gets it. It is derived from the difficulty already stored in the party (`m/df`), so the database rules need no change; note that Firebase rules cannot stop a modified client from ignoring it.
 - When fog and darkness are off, the halls get strong warm ambient light and stronger wall lights, so everything is clearly visible. The Brightness slider still scales on top of this.
+
+## v6.5.0: custom audio, real thrown items
+- New `audio/` folder (**upload it with the rest**): `Main_Menu.mp3` (menu music, loops), `Ingame_Ambience.mp3` (in-game ambience, loops, replaces the synthesised drone, softer during a chase and muffled in lockers) and `flashlight_toggle.mp3` (flashlight on/off). Every other sound is still the original synthesised audio, and if a file cannot be loaded the built-in sound is used instead.
+- Music starts on the first tap or key press (browsers block sound before that). The audio is downloaded in the background after the page loads, so the game itself starts as fast as before.
+- Thrown and dropped items (bottle, battery, brass key, screwdriver) now fly and tumble as their real models instead of plain boxes and cylinders.

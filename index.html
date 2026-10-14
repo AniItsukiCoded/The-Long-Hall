@@ -53,7 +53,7 @@ html,body{margin:0;background:#000}
 <div id="card" class="hidden"><h1>THE LONG<br>HALLS</h1><div>the boiled one</div></div>
 
 <div id="menu" class="screen">
-  <div id="ver">v6.4.0 · multiplayer</div><button class="rs" id="mDev"></button>
+  <div id="ver">v6.5.0 · multiplayer</div><button class="rs" id="mDev"></button>
   <div id="menuL">
     <button class="gb" id="start">Play</button>
     <button class="gb" id="mMP">Multiplayer</button>
@@ -144,6 +144,8 @@ html,body{margin:0;background:#000}
   ['js/model.js',1690000],['js/player.js',140000],['js/avatar.js',7000],['js/audio.js',7000],['js/level.js',19000],
   ['js/props.js',74000],['js/enemy.js',9000],['js/net.js',9000],['js/menu.js',3000],['js/main.js',42000]
  ];
+ /* candidate URLs for any other file (the game's audio), same order as the script sources */
+ window.LHU=function(p){var a=[];SOURCES.forEach(function(s){if(s.ok&&!s.ok())return;a.push(s.u(p))});return a};
  var THREE_URLS=['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js','https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'],THREE_SIZE=600000;
  var TOTAL=THREE_SIZE;FILES.forEach(function(f){TOTAL+=f[1]});
 
