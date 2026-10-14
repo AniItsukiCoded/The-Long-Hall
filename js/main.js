@@ -423,26 +423,26 @@ function bindMP(){$('mMP').onclick=()=>{hide_('menu');show('mpmenu');$('mpErr').
 /* ---------- touch controls (Mobile device mode) ---------- */
 function tkey(code,down){dispatchEvent(new KeyboardEvent(down?'keydown':'keyup',{code:code,key:code,bubbles:true,cancelable:true}))}
 function goFS(){try{const d=document.documentElement,f=d.requestFullscreen||d.webkitRequestFullscreen;if(f){const p=f.call(d);if(p&&p.catch)p.catch(()=>{})}}catch(e){}try{const p=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(p&&p.catch)p.catch(()=>{})}catch(e){}}
-let runBtn=false,autoRun=false;
-function syncRun(){KEYS.ShiftLeft=(runBtn||autoRun)?1:0}
-function resetTouch(){JOY.x=0;JOY.z=0;runBtn=false;autoRun=false;KEYS.ShiftLeft=0;const j=$('joy');if(j){j.classList.remove('on');j.style.left='';j.style.top=''}document.querySelectorAll('.tb.on').forEach(b=>{b.classList.remove('on');if(b.dataset.k)tkey(b.dataset.k,false)})}
-function touchVis(){const tv=SET.dev==='mobile'&&started&&state==='play'&&!paused;if(tv===lastTv)return;lastTv=tv;$('touch').classList.toggle('hidden',!tv);if(!tv)resetTouch()}
+let sprintOn=false;
+function syncRun(){KEYS.ShiftLeft=sprintOn?1:0;const b=document.querySelector('.tb.run');if(b)b.classList.toggle('on',sprintOn)}
+function resetTouch(){JOY.x=0;JOY.z=0;sprintOn=false;KEYS.ShiftLeft=0;const j=$('joy');if(j){j.classList.remove('on');j.style.left='';j.style.top=''}document.querySelectorAll('.tb.on').forEach(b=>{b.classList.remove('on');if(b.dataset.k)tkey(b.dataset.k,false)})}
+function touchVis(){if(sprintOn&&!KEYS.ShiftLeft){sprintOn=false;syncRun()}/* the game clears Shift when you run out of breath */const tv=SET.dev==='mobile'&&started&&state==='play'&&!paused;if(tv===lastTv)return;lastTv=tv;$('touch').classList.toggle('hidden',!tv);if(!tv)resetTouch()}
 function bindTouch(){
  const jz=$('joyz'),lz=$('lookz'),joy=$('joy'),jk=$('joyk'),RD=56;let jid=null,jx=0,jy=0,lid=null,lx=0,ly=0;
  const find=(e,id)=>{for(const t of e.changedTouches)if(t.identifier===id)return t;return null};
  jz.addEventListener('touchstart',e=>{e.preventDefault();if(jid!==null)return;const t=e.changedTouches[0];jid=t.identifier;jx=t.clientX;jy=t.clientY;joy.style.left=jx+'px';joy.style.top=jy+'px';jk.style.transform='translate(0,0)';joy.classList.add('on')},{passive:false});
  jz.addEventListener('touchmove',e=>{e.preventDefault();const t=find(e,jid);if(!t)return;let dx=t.clientX-jx,dy=t.clientY-jy;const len=Math.hypot(dx,dy),k=len>RD?RD/len:1;
   jk.style.transform='translate('+(dx*k).toFixed(1)+'px,'+(dy*k).toFixed(1)+'px)';
-  if(len<RD*.25){JOY.x=0;JOY.z=0}else{JOY.x=dx*k/RD;JOY.z=dy*k/RD}autoRun=len>RD*1.3;syncRun()},{passive:false});
- const jend=e=>{const t=find(e,jid);if(!t)return;jid=null;joy.style.left='';joy.style.top='';jk.style.transform='';JOY.x=0;JOY.z=0;autoRun=false;syncRun();joy.classList.remove('on')};
+  if(len<RD*.25){JOY.x=0;JOY.z=0}else{JOY.x=dx*k/RD;JOY.z=dy*k/RD}},{passive:false});
+ const jend=e=>{const t=find(e,jid);if(!t)return;jid=null;joy.style.left='';joy.style.top='';jk.style.transform='';JOY.x=0;JOY.z=0;joy.classList.remove('on')};
  jz.addEventListener('touchend',jend);jz.addEventListener('touchcancel',jend);
  lz.addEventListener('touchstart',e=>{e.preventDefault();if(lid!==null)return;const t=e.changedTouches[0];lid=t.identifier;lx=t.clientX;ly=t.clientY},{passive:false});
  lz.addEventListener('touchmove',e=>{e.preventDefault();const t=find(e,lid);if(!t)return;const dx=t.clientX-lx,dy=t.clientY-ly;lx=t.clientX;ly=t.clientY;
   if(state!=='play'||paused)return;yaw-=dx*.0046*SET.sens;pitch=Math.max(-1.4,Math.min(1.4,pitch+(SET.invy?1:-1)*dy*.0046*SET.sens))},{passive:false});
  const lend=e=>{if(find(e,lid))lid=null};lz.addEventListener('touchend',lend);lz.addEventListener('touchcancel',lend);
  document.querySelectorAll('.tb').forEach(b=>{const k=b.dataset.k;
-  const dn=e=>{e.preventDefault();e.stopPropagation();b.classList.add('on');if(k==='ShiftLeft'){runBtn=true;syncRun()}else if(k)tkey(k,true);else if(b.id==='tpause')pause()};
-  const up=e=>{e.preventDefault();b.classList.remove('on');if(k==='ShiftLeft'){runBtn=false;syncRun()}else if(k)tkey(k,false)};
+  const dn=e=>{e.preventDefault();e.stopPropagation();b.classList.add('on');if(k==='ShiftLeft'){sprintOn=!sprintOn;syncRun()}else if(k)tkey(k,true);else if(b.id==='tpause')pause()};
+  const up=e=>{e.preventDefault();if(k==='ShiftLeft')return;b.classList.remove('on');if(k)tkey(k,false)};
   b.addEventListener('touchstart',dn,{passive:false});b.addEventListener('touchend',up,{passive:false});b.addEventListener('touchcancel',up,{passive:false})});
  addEventListener('contextmenu',e=>{if(SET.dev==='mobile')e.preventDefault()})}
 
