@@ -42,22 +42,18 @@ html,body{margin:0;background:#000}
 
 <div id="touch" class="hidden">
   <div id="joyz"></div><div id="joy"><i id="joyk"></i></div><div id="lookz"></div>
-  <button class="tb" id="tpause" aria-label="Pause"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5v14M15 5v14"/></svg></button>
+  <button class="tb" id="tpause">II</button>
   <div id="tbtns">
-    <button class="tb use" data-k="KeyE" aria-label="Use"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v5a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-3l-2-3.5a1.5 1.5 0 0 1 2.4-1.6L9 15"/></svg></button>
-    <button class="tb crouch" data-k="KeyC" aria-label="Crouch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l6 6 6-6M6 13l6 6 6-6"/></svg></button>
-    <button class="tb light" data-k="KeyF" aria-label="Flashlight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6c0 2-2 2-2 4v10a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V10c0-2-2-2-2-4V2h12zM6 6h12M12 12v2"/></svg></button>
-    <button class="tb throw" data-k="KeyG" aria-label="Throw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg></button>
-    <button class="tb drop" data-k="Space" aria-label="Drop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v10M8 9l4 4 4-4M5 17h14M7 21h10"/></svg></button>
-    <button class="tb batt" data-k="KeyR" aria-label="Use battery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="17" height="9" rx="2"/><path d="M22 11v3M7 11v3"/></svg></button>
-    <button class="tb run" data-k="ShiftLeft" aria-label="Run"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l6 6-6 6M13 6l6 6-6 6"/></svg></button>
+    <button class="tb" data-k="KeyF">LIGHT</button><button class="tb" data-k="KeyG">THROW</button><button class="tb big" data-k="KeyE">USE</button>
+    <button class="tb" data-k="Space">DROP</button><button class="tb" data-k="KeyR">BATT</button><button class="tb" data-k="KeyC">CROUCH</button>
+    <button class="tb run" data-k="ShiftLeft">SPRINT</button>
   </div>
 </div>
 <div id="rot">Turn your phone sideways to play.</div>
 <div id="card" class="hidden"><h1>THE LONG<br>HALLS</h1><div>the boiled one</div></div>
 
 <div id="menu" class="screen">
-  <div id="ver">v5.8.0 · multiplayer</div><button class="rs" id="mDev"></button>
+  <div id="ver">v5.9.0 · multiplayer</div><button class="rs" id="mDev"></button>
   <div id="menuL">
     <button class="gb" id="start">Play</button>
     <button class="gb" id="mMP">Multiplayer</button>
@@ -76,7 +72,7 @@ html,body{margin:0;background:#000}
     <p>Close <b>doors</b> behind you. A shut door hides you from his eyes, and an open one you did not open means he has already been through.</p>
     <p>Your flashlight runs on <b>batteries</b>. Take <b>bottles</b> and throw one: he will go and look. You can only <b>carry one item at a time</b>. Pick it up with <b>E</b> and drop it with <b>SPACE</b> to free your hands. A <b>brass key</b> opens the room he never visits; spare <b>batteries</b> are used with <b>R</b>. Press <b>C</b> or <b>CTRL</b> to toggle crouch: you move slowly, but quietly and lower. <b>Vents</b> are screwed shut: carry a <b>screwdriver</b> to one and hold <b>E</b>, then crouch and crawl in. A vent is a real duct: it climbs through the ceiling and runs over the rooms to a second vent (W and S crawl and climb, look where you want to go). While you are inside he cannot see you or catch you. Anything that makes noise (dropping or throwing things, unscrewing a vent) reaches him no matter how far away he is. <b>Notes</b> tell you what happened here.</p>
     <p><b>Lockers</b> are your only shelter. If he <b>sees you climb in</b>, he will drag you out. Sprinting is loud. Lights fail. Don't stop moving.</p>
-    <div class="keys tc">TOUCH: left stick = move (push to the edge to sprint) &nbsp;·&nbsp; drag the right side = look &nbsp;·&nbsp; HAND = open, take, hide, hold at vents (E) &nbsp;·&nbsp; FLASHLIGHT (F) &nbsp;·&nbsp; ARROW = throw (G) &nbsp;·&nbsp; DOWN ARROW = drop (SPACE) &nbsp;·&nbsp; BATTERY = use (R) &nbsp;·&nbsp; CHEVRONS = crouch (C) &nbsp;·&nbsp; II = pause</div><div class="keys kb">WASD move &nbsp;·&nbsp; SHIFT sprint &nbsp;·&nbsp; MOUSE look &nbsp;·&nbsp; look at a door + E open / close &nbsp;·&nbsp; F flashlight &nbsp;·&nbsp; G throw item &nbsp;·&nbsp; C / CTRL toggle crouch &nbsp;·&nbsp; SPACE drop item &nbsp;·&nbsp; R use battery &nbsp;·&nbsp; ESC pause</div>
+    <div class="keys tc">TOUCH: left thumb drag = move &nbsp;·&nbsp; right thumb drag = look &nbsp;·&nbsp; USE = E (open, take, hide, hold at vents) &nbsp;·&nbsp; SPRINT = tap to toggle (stops when out of breath) &nbsp;·&nbsp; LIGHT = flashlight &nbsp;·&nbsp; THROW = G &nbsp;·&nbsp; DROP = SPACE &nbsp;·&nbsp; BATT = R &nbsp;·&nbsp; CROUCH = C &nbsp;·&nbsp; II = pause</div><div class="keys kb">WASD move &nbsp;·&nbsp; SHIFT sprint &nbsp;·&nbsp; MOUSE look &nbsp;·&nbsp; look at a door + E open / close &nbsp;·&nbsp; F flashlight &nbsp;·&nbsp; G throw item &nbsp;·&nbsp; C / CTRL toggle crouch &nbsp;·&nbsp; SPACE drop item &nbsp;·&nbsp; R use battery &nbsp;·&nbsp; ESC pause</div>
   </div>
   <button class="gb sm bx" id="hBack">Back ›</button>
 </div>
