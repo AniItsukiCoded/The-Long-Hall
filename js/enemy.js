@@ -14,22 +14,26 @@ constructor(scene,c){this.g=new THREE.Group();this.pv=new THREE.Group();this.g.a
 face(x,z,k=.15){const a=Math.atan2(x-this.g.position.x,z-this.g.position.z);let d=a-this.g.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));this.g.rotation.y+=d*k}
 /* rotate toward heading a at a limited turn rate; returns the remaining angle error */
 turn(a,dt,rate){let d=a-this.g.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));const m=Math.max(-rate*dt,Math.min(rate*dt,d));this.g.rotation.y+=m;return d-m}
-blk(x,z){const r=.32;return Level.wall(x+r,z+r)||Level.wall(x-r,z+r)||Level.wall(x+r,z-r)||Level.wall(x-r,z-r)}
+blk(x,z){const r=.32;return Level.wall(x+r,z+r)||Level.wall(x-r,z+r)||Level.wall(x+r,z-r)||Level.wall(x-r,z-r)||Level.col.some(c=>c.riser&&x>c.x0-r&&x<c.x1+r&&z>c.z0-r&&z<c.z1+r)}
 anim(dt){this.t+=dt;const ch=this.state==='chase'||this.state==='scare';this.pv.rotation.z=Math.sin(this.t*(ch?7:2.2))*(ch?.07:.05)+(this.state==='stare'?Math.sin(this.t*.9)*.06:0);
  this.pv.rotation.x=(ch?.2:0)+Math.sin(this.t*1.7)*.03+(this.wait>0&&this.state!=='scare'?.14:0);
  /* heavy walking bob in time with his footsteps */
  this.pv.position.y=this.mv?Math.abs(Math.sin(this.acc/this.stride*Math.PI))*(ch?.1:.06):this.pv.position.y*.8;this.mv=false;
  this.light.intensity=this.fl!==this.pfl?0:Level.safe?.6:.4+Math.random()*.4;
  const gp=this.g.position,ty=Level.fy(this.fl)+(Level.gy?Level.gy(gp.x,gp.z):0);gp.y+=(ty-gp.y)*Math.min(1,dt*12)}
-startClimb(un){const up=this.goF>this.fl,h=Level.FH/2,pts=up?[[7.5,0,0],[5.5,-.72,0],[5.1,-.72,0],[1.5,-.72,h],[1.0,-.72,h],[1.0,.72,h],[1.5,.72,h],[5.1,.72,2*h],[5.6,.72,2*h]]:[[7.5,0,0],[5.5,.72,0],[5.1,.72,0],[1.5,.72,-h],[1.0,.72,-h],[1.0,-.72,-h],[1.5,-.72,-h],[5.1,-.72,-2*h],[5.6,-.72,-2*h]],seg=[];let len=0;
+startClimb(un){const up=this.goF>this.fl,A=Level.ANX,h=Level.FH/2,S=Level.S,ox=un.out[0],w=(p,t,y)=>[un.O.x+ox*p,un.O.z+un.tz*t,y],ex=un.entry[0]*S,ez=un.entry[1]*S,sg=up?1:-1,m=A.f1+.8;
+ /* route through the fire door into the annex, up (or down) both flights over the mid landing, and back through the door on the other floor */
+ const pts=up?[[ex,ez,0],w(0,0,0),w(2.3,-.85,0),w(A.f0,-.85,0),w(A.f1,-.85,h),w(m,-.85,h),w(m,.85,h),w(A.f1,.85,h),w(A.f0,.85,2*h),w(2.3,0,2*h),w(0,0,2*h),[ex,ez,2*h]]
+  :[[ex,ez,0],w(0,0,0),w(2.3,.85,0),w(A.f0,.85,0),w(A.f1,.85,-h),w(m,.85,-h),w(m,-.85,-h),w(A.f1,-.85,-h),w(A.f0,-.85,-2*h),w(2.3,0,-2*h),w(0,0,-2*h),[ex,ez,-2*h]],seg=[];let len=0;
  for(let i=1;i<pts.length;i++){const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1],pts[i][2]-pts[i-1][2]);seg.push(d);len+=d}
+ const dr=Level.dmap[un.cx+','+un.cz];if(dr&&!dr.locked){dr.target=1;dr.rate=2.6;if(this.onDoor)this.onDoor(dr)}
  this.cl={un,pts,seg,len,d:0,from:this.fl,to:up?this.fl+1:this.fl-1,sw:false};this.state='travel';this.T=null}
 climbStep(dt){const c=this.cl,un=c.un;this.anim(dt);c.d+=dt*2.7;let d=c.d,i=0;while(i<c.seg.length&&d>c.seg[i]){d-=c.seg[i];i++}
  let a,b,k;if(i>=c.seg.length){a=b=c.pts[c.pts.length-1];k=0}else{a=c.pts[i];b=c.pts[i+1];k=d/c.seg[i]}
- const u=a[0]+(b[0]-a[0])*k,t=a[1]+(b[1]-a[1])*k,y=a[2]+(b[2]-a[2])*k,x=un.O.x+un.inn[0]*u+un.tn[0]*t,z=un.O.z+un.inn[1]*u+un.tn[1]*t,gp=this.g.position,dx=x-gp.x,dz=z-gp.z;
+ const x=a[0]+(b[0]-a[0])*k,z=a[1]+(b[1]-a[1])*k,y=a[2]+(b[2]-a[2])*k,gp=this.g.position,dx=x-gp.x,dz=z-gp.z;
  if(dx*dx+dz*dz>1e-6)this.g.rotation.y=Math.atan2(dx,dz);gp.x=x;gp.z=z;gp.y=Level.fy(c.from)+y;this.mv=true;this.acc+=dt*2.7;
  if(this.nextStep===undefined)this.nextStep=this.acc+this.stride;if(this.acc>=this.nextStep){this.nextStep=this.acc+this.stride;this.footstep()}
- if(!c.sw&&c.d>c.len/2){c.sw=true;this.fl=c.to}
+ if(!c.sw&&c.d>c.len/2){c.sw=true;this.fl=c.to;const dr=Level.withFloor(c.to,()=>Level.dmap[un.cx+','+un.cz]);if(dr&&!dr.locked){dr.target=1;dr.rate=2.6}}
  if(c.d>=c.len){this.cl=null;this.fl=c.to;if(this.onStairs)this.onStairs(un)}}
 get stride(){return this.state==='chase'?2:1.3}
 /* direct pursuit: once he can see you up close he walks straight at YOU, not at the middle of your cell (that is why corners used to be safe) */

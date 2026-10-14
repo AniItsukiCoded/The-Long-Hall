@@ -9,9 +9,11 @@ const THEMES={
  house:{name:'GROUND FLOOR',wall:'#2a2519',floor:'#1f150d',rooms:['study','parlor','bedroom','storage'],hk:null,pipe:.15,fog:.115},
  house2:{name:'SECOND FLOOR',wall:'#1b2a24',floor:'#241a12',rooms:['bedroom','study','parlor','bedroom'],hk:null,pipe:.1,fog:.115},
  attic:{name:'ATTIC',wall:'#33261a',floor:'#2a2018',rooms:['storage','bedroom','storage','study'],hk:['trunk','crate','candles','stool','table','bucket','trunk','plant'],pipe:.05,fog:.1}};
-/* stair shafts: the same two columns on every floor (opposite corners, against the outer wall) so the flights really connect the floors */
-const SHAFTS=[{blk:[1,1],c0:[3,6],s:[-1,0]},{blk:[11,11],c0:[19,16],s:[1,0]}];
-const Level={S:3,H:3.2,FH:3.8,W:23,D:23,fy(f){return f*3.8},FL:[],FG:[],nF:1,sf:0,ef:0,stairs:[],vents:[],g:[],doors:[],dmap:{},col:[],rooms:[],items:[],keys:[],src:[],pool:[],lockers:[],fuses:[],lamps:[],_lt:0,
+/* stairwells: two steel hospital stair annexes bolted onto the OUTSIDE of the boundary wall (west and east), the same two on every floor so the flights really connect the floors */
+const SHAFTS=[{w:'W',z:6},{w:'E',z:16}];
+const Level={S:3,H:3.2,FH:4.9,W:23,D:23,fy(f){return f*Level.FH},
+/* annex layout, measured outward (p) from the door plane in the boundary wall: 1.5 m lobby, 1.6 m landing, 14 steps, 1.6 m mid landing */
+ANX:{f0:3.1,N:14,tr:.28,f1:7.02,pe:8.62,hw:1.5,gap:.2},FL:[],FG:[],nF:1,sf:0,ef:0,stairs:[],vents:[],g:[],doors:[],dmap:{},col:[],rooms:[],items:[],keys:[],src:[],pool:[],lockers:[],fuses:[],lamps:[],_lt:0,
 rnd(){return Math.random()},
 paper(base){const N=512,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d'),wy=N*.66;
  x.fillStyle=base||'#2a2519';x.fillRect(0,0,N,N);
@@ -53,14 +55,14 @@ tex(base,line,stain,rep){const N=512,c=document.createElement('canvas');c.width=
  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep,rep);t.anisotropy=8;return t},
 pass(x,z){const r=this.g[z];if(!r)return false;const v=r[x];if(v===0)return true;if(v===2){const d=this.dmap[x+','+z];return !!d&&!d.locked}return false},
 gen(nocut){const W=this.W=23,D=this.D=23,S=this.S,R=Math.random,P=this.fp,g=this.g=Array.from({length:D},()=>Array(W).fill(1)),L=[1,11,21],dirs=[[1,0],[-1,0],[0,1],[0,-1]];
- const rs=this.roomOf=Array.from({length:D},()=>Array(W).fill(-1));this.rooms=[];this.doors=[];this.dmap={};this.items=[];this.col=[];this.stairs=[];this.vents=[];this.traps=[];this.xd=null;
+ const rs=this.roomOf=Array.from({length:D},()=>Array(W).fill(-1));this.rooms=[];this.doors=[];this.dmap={};this.items=[];this.col=[];this.stairs=[];this.vents=[];this.duct=null;this.traps=[];this.xd=null;
  for(const a of L)for(let i=1;i<=W-2;i++){g[i][a]=0;g[a][i]=0}
  if(!nocut)for(let k=1;k<L.length-1;k++){const a=L[k];for(let j=0;j<L.length-1;j++){if(R()<.2)for(let i=L[j]+1;i<L[j+1];i++)g[i][a]=1;if(R()<.2)for(let i=L[j]+1;i<L[j+1];i++)g[a][i]=1}}
  const room=(x0,z0,x1,z1)=>{const id=this.rooms.length;this.rooms.push({id,x0,z0,x1,z1,doors:[]});for(let z=z0;z<=z1;z++)for(let x=x0;x<=x1;x++){g[z][x]=0;rs[z][x]=id}};
  const split=(x0,z0,x1,z1,dp)=>{const w=x1-x0+1,h=z1-z0+1,cv=w>=7,ch=h>=7;
   if((cv||ch)&&R()<(dp?.4:.7)){if(cv&&(!ch||R()<.5)){const m=x0+((w-1)>>1);split(x0,z0,m-1,z1,dp+1);split(m+1,z0,x1,z1,dp+1)}else{const m=z0+((h-1)>>1);split(x0,z0,x1,m-1,dp+1);split(x0,m+1,x1,z1,dp+1)}}else room(x0,z0,x1,z1)};
- for(const a of L.slice(0,-1))for(const b of L.slice(0,-1)){const sh=P.shafts&&SHAFTS.find(q=>q.blk[0]===a&&q.blk[1]===b);if(sh){room(a+2,b+2,a+8,b+8);this.rooms[this.rooms.length-1].stair=true}else if(R()>.04)split(a+2,b+2,a+8,b+8,0)}
- const noDoor=new Set();if(P.shafts)for(const sh of SHAFTS)for(let d=-1;d<=1;d++)noDoor.add((sh.c0[0]+sh.s[0]+(sh.s[0]?0:d))+','+(sh.c0[1]+sh.s[1]+(sh.s[1]?0:d)));
+ for(const a of L.slice(0,-1))for(const b of L.slice(0,-1)){if(R()>.04)split(a+2,b+2,a+8,b+8,0)}
+ const noDoor=new Set();if(P.shafts)for(const sh of SHAFTS)for(let d=-1;d<=1;d++)noDoor.add((sh.w==='W'?2:W-3)+','+(sh.z+d));
  const setDoor=(x,z)=>{g[z][x]=2};
  for(const r of this.rooms){const o=[];
   for(let x=r.x0;x<=r.x1;x++){o.push([x,r.z0-1,0,-1,'z']);o.push([x,r.z1+1,0,1,'z'])}
@@ -69,6 +71,8 @@ gen(nocut){const W=this.W=23,D=this.D=23,S=this.S,R=Math.random,P=this.fp,g=this
    if(ax==='z')return g[z][x-1]===1&&g[z][x+1]===1;return g[z-1][x]===1&&g[z+1][x]===1}).shuf();
   const n=1+(R()<.4?1:0)+((r.x1-r.x0+1)*(r.z1-r.z0+1)>=40&&R()<.6?1:0);let k=0;
   for(const[x,z]of c){if(k>=n)break;if(dirs.some(([a,b])=>g[z+b][x+a]===2))continue;setDoor(x,z);k++}}
+ /* the stairwell doors: a fire door set into the boundary wall itself */
+ const sdoor=[];if(P.shafts)for(let si=0;si<SHAFTS.length;si++){const sh=SHAFTS[si],cx=sh.w==='W'?0:W-1;g[sh.z][cx]=2;sdoor.push({si,cx,cz:sh.z})}
  const reach=()=>{const d=Array.from({length:D},()=>Array(W).fill(0)),q=[[1,1]];d[1][1]=1;while(q.length){const[x,z]=q.pop();for(const[a,b]of dirs){const X=x+a,Z=z+b;if(g[Z]&&g[Z][X]!==undefined&&g[Z][X]!==1&&!d[Z][X]){d[Z][X]=1;q.push([X,Z])}}}return d};
  for(let it=0;it<90;it++){const r=reach();let un=false;for(let z=0;z<D;z++)for(let x=0;x<W;x++)if(g[z][x]===0&&!r[z][x])un=true;if(!un)break;
   const c=[];for(let z=2;z<D-2;z++)for(let x=2;x<W-2;x++)if(g[z][x]===1){
@@ -77,17 +81,18 @@ gen(nocut){const W=this.W=23,D=this.D=23,S=this.S,R=Math.random,P=this.fp,g=this
   if(!c.length)return false;const[x,z]=c[R()*c.length|0];setDoor(x,z)}
  {const r=reach();for(let z=0;z<D;z++)for(let x=0;x<W;x++)if(g[z][x]===0&&!r[z][x])return false}
  for(let z=0;z<D;z++)for(let x=0;x<W;x++)if(g[z][x]===2){const ax=(g[z][x-1]!==1&&g[z][x+1]!==1)?'x':'z',d={gx:x,gz:z,axis:ax,wx:x*S,wz:z*S,o:0,target:0,locked:false,sw:R()<.5?1:-1,id:this.doors.length};
+  if(P.shafts&&(x===0||x===W-1)&&sdoor.some(q=>q.cx===x&&q.cz===z)){d.fire=true;d.out=x===0?-1:1;d.stairId=sdoor.findIndex(q=>q.cx===x&&q.cz===z)}
   this.doors.push(d);this.dmap[x+','+z]=d;(ax==='x'?[[x-1,z],[x+1,z]]:[[x,z-1],[x,z+1]]).forEach(([a,b])=>{const q=rs[b][a];if(q>=0)this.rooms[q].doors.push(d)})}
  const d0=this.bfs(1,1);this.lockRoom=null;
  if(P.lock){const lc=this.rooms.filter(r=>!r.stair&&r.doors.length===1&&(r.x1-r.x0+1)*(r.z1-r.z0+1)>=9&&d0[(r.z0+r.z1)>>1][(r.x0+r.x1)>>1]>8);
   if(!lc.length)return false;const r=lc[R()*lc.length|0];r.doors[0].locked=true;this.lockRoom=r}
  const ndd=(x,z)=>dirs.some(([a,b])=>g[z+b][x+a]===2);
- /* stair units: 1 cell wide, 2 cells deep, backed against a plain wall of an ordinary room */
- const H1=1.4,sset=new Set();
- if(P.shafts)for(let si=0;si<SHAFTS.length;si++){const sh=SHAFTS[si],a=sh.s[0],b=sh.s[1],x=sh.c0[0],z=sh.c0[1],x1=x-a,z1=z-b,x2=x-2*a,z2=z-2*b;
-  if(g[z+b][x+a]!==1||g[z][x]!==0||g[z1][x1]!==0||g[z2][x2]!==0||ndd(x,z)||ndd(x1,z1)||ndd(x2,z2))return false;
-  const un={kind:'shaft',id:si,cx:x,cz:z,s:[a,b],inn:[-a,-b],tn:[-b,a],O:{x:x*S+a*S/2,z:z*S+b*S/2},cells:[[x,z],[x1,z1]],entry:[x2,z2],up:!!P.up,dn:!!P.down};
-  un.cells.concat([un.entry]).forEach(c=>sset.add(c.join()));this.stairs.push(un)}
+ /* stair annexes: the door cell sits in the boundary wall, the stairwell itself is built OUTSIDE the 23x23 grid */
+ const sset=new Set();
+ if(P.shafts)for(const q of sdoor){const sh=SHAFTS[q.si],ox=sh.w==='W'?-1:1,ex=q.cx-ox,ez=q.cz;
+  if(g[ez][ex]!==0)return false;
+  const un={kind:'annex',id:q.si,side:sh.w,cx:q.cx,cz:q.cz,out:[ox,0],tz:ox<0?1:-1,O:{x:q.cx*S,z:q.cz*S},cells:[[q.cx,q.cz]],entry:[ex,ez],up:!!P.up,dn:!!P.down};
+  sset.add(q.cx+','+q.cz);sset.add(ex+','+ez);this.stairs.push(un)}
  let sc=[];for(const r of this.rooms){if(r===this.lockRoom||r.stair||(r.x1-r.x0+1)*(r.z1-r.z0+1)<6)continue;
   for(let z=r.z0;z<=r.z1;z++)for(let x=r.x0;x<=r.x1;x++){if(d0[z][x]<0||ndd(x,z)||sset.has(x+','+z))continue;const sd=dirs.filter(([a,b])=>g[z+b][x+a]===1);if(sd.length===1)sc.push([x,z,sd[0]])}}
  if(!sc.length)return false;
@@ -108,8 +113,10 @@ gen(nocut){const W=this.W=23,D=this.D=23,S=this.S,R=Math.random,P=this.fp,g=this
  for(let i=0;i<(P.loose|0);i++)place('fuse',take(.6,3));
  if(P.vent)place('screwdriver',take(.5,2));
  for(let i=0;i<P.notes;i++)place('note',take(.85,3));for(let i=0;i<P.bats;i++)place('battery',take(.65));for(let i=0;i<P.bots;i++)place('bottle',take(.5));
- if(P.vent){const vc=fl.filter(c=>!nd(c[0],c[1])&&!used.has(c.join())&&Props.side(c)&&dist[c[1]][c[0]]>2).shuf();const A=vc[0];let B=null;if(!A)return false;for(const c of vc)if(Math.abs(c[0]-A[0])+Math.abs(c[1]-A[1])>=9){B=c;break}if(!B)return false;
-  [A,B].forEach(c=>{used.add(c.join());const s=Props.side(c);this.vents.push({gx:c[0],gz:c[1],s,wx:c[0]*S+s[0]*(S/2),wz:c[1]*S+s[1]*(S/2),x:c[0]*S+s[0]*(S/2-.5),z:c[1]*S+s[1]*(S/2-.5),fx:c[0]*S+s[0]*(S/2-1.1),fz:c[1]*S+s[1]*(S/2-1.1),open:false,prog:0,ang:0,i:this.vents.length})})}
+ if(P.vent){const sn=c=>this.stairs.some(u=>Math.abs(u.entry[0]-c[0])+Math.abs(u.entry[1]-c[1])<=4),vc=fl.filter(c=>!nd(c[0],c[1])&&!used.has(c.join())&&Props.side(c)&&dist[c[1]][c[0]]>2&&!sn(c)).shuf();const A=vc[0];let B=null;if(!A)return false;for(const c of vc)if(Math.abs(c[0]-A[0])+Math.abs(c[1]-A[1])>=9){B=c;break}if(!B)return false;
+  /* each vent is a real riser duct standing against the wall: a grille at the bottom, a shaft that climbs through the ceiling into the duct space above the rooms */
+  [A,B].forEach(c=>{used.add(c.join());const s=Props.side(c),px=c[0]*S,pz=c[1]*S;this.vents.push({gx:c[0],gz:c[1],s,wx:px+s[0]*(S/2-1.4),wz:pz+s[1]*(S/2-1.4),x:px+s[0]*(S/2-1.9),z:pz+s[1]*(S/2-1.9),fx:px+s[0]*(S/2-2.35),fz:pz+s[1]*(S/2-2.35),cx:px+s[0]*(S/2-.7),cz:pz+s[1]*(S/2-.7),open:false,prog:0,ang:0,i:this.vents.length})});
+  this.duct=this.mkDuct(this.vents[0],this.vents[1])}
  if(P.traps){const tc=fl.filter(c=>dist[c[1]][c[0]]>4&&!used.has(c.join())&&!nd(c[0],c[1])).shuf();for(const c of tc){if(this.traps.length>=P.traps)break;if(this.traps.every(t=>Math.hypot(t.cx-c[0],t.cz-c[1])>3)){used.add(c.join());this.traps.push({cx:c[0],cz:c[1],x:c[0]*S+(R()-.5)*1.2,z:c[1]*S+(R()-.5)*1.2,armed:true,ang:0,i:this.traps.length})}}}
  this.enemyStart=fl.filter(([x,z])=>dist[z][x]>8).shuf()[0]||far;return true},
 bfs(sx,sz){const d=Array.from({length:this.D},()=>Array(this.W).fill(-1)),q=[[sx,sz]];d[sz][sx]=0;
@@ -120,27 +127,38 @@ next(f,t){if(f[0]===t[0]&&f[1]===t[1])return t;const par={},k=c=>c[0]+','+c[1],q
 unlock(d){d.locked=false;const r=this.lockRoom;if(r)for(let z=r.z0;z<=r.z1;z++)for(let x=r.x0;x<=r.x1;x++)this.walk.push([x,z])},
 cell(x,z){return[Math.round(x/this.S),Math.round(z/this.S)]},
 wp(c){return{x:c[0]*this.S,z:c[1]*this.S}},
-wall(x,z){const c=this.cell(x,z),v=this.g[c[1]]&&this.g[c[1]][c[0]];return v===undefined||v===1},
+wall(x,z){const c=this.cell(x,z),r=this.g[c[1]],v=r&&r[c[0]];if(v===undefined)return !this.inAnnex(x,z);return v===1},
+inAnnex(x,z){for(const u of this.stairs){const p=(x-u.O.x)*u.out[0],t=(z-u.O.z)*u.tz;if(p>1.45&&p<this.ANX.pe+.05&&Math.abs(t)<this.ANX.hw)return true}return false},
 hitCol(x,z){for(const c of this.col)if(!c.off&&x>c.x0&&x<c.x1&&z>c.z0&&z<c.z1)return true;return false},
 blocked(x,z,r){if((this.lockers||[]).some(l=>Math.hypot(x-l.cx,z-l.cz)<.55+r*.3))return true;const q=r*.75;for(const c of this.col)if(!c.off&&x>c.x0-q&&x<c.x1+q&&z>c.z0-q&&z<c.z1+q)return true;
  return this.wall(x+r,z+r)||this.wall(x-r,z+r)||this.wall(x+r,z-r)||this.wall(x-r,z-r)},
 los(ax,az,bx,bz){const d=Math.hypot(bx-ax,bz-az),n=Math.ceil(d/.5);for(let i=1;i<n;i++){const t=i/n;if(this.wall(ax+(bx-ax)*t,az+(bz-az)*t))return false}
  for(const c of this.col){if(!c.tall)continue;let t0=0,t1=1;const dx=bx-ax,dz=bz-az,P=[-dx,dx,-dz,dz],Q=[ax-c.x0,c.x1-ax,az-c.z0,c.z1-az];let hit=true;for(let k=0;k<4;k++){if(P[k]===0){if(Q[k]<0){hit=false;break}}else{const r=Q[k]/P[k];if(P[k]<0){if(r>t1){hit=false;break}if(r>t0)t0=r}else{if(r<t0){hit=false;break}if(r<t1)t1=r}}}if(hit&&t0<=t1)return false}
  for(const dr of this.doors){if(dr.o>.4)continue;const X=dr.axis==='x',a=X?ax:az,b=X?bx:bz,p=X?dr.wx:dr.wz;if((a-p)*(b-p)<0){const t=(p-a)/(b-a),lat=X?az+(bz-az)*t:ax+(bx-ax)*t;if(Math.abs(lat-(X?dr.wz:dr.wx))<1.5)return false}}return true},
-FLK:['g','roomOf','rooms','doors','dmap','col','items','keys','lockRoom','start','dist','walk','exit','resv','enemyStart','src','lockers','fuses','lamps','xd','stairs','vents','traps','chunks','theme','mkf','fp','wallMat'],
+FLK:['g','roomOf','rooms','doors','dmap','col','items','keys','lockRoom','start','dist','walk','exit','resv','enemyStart','src','lockers','fuses','lamps','xd','stairs','vents','duct','traps','chunks','theme','mkf','fp','wallMat'],
 save(f){const o=this.FL[f]={};for(const k of this.FLK)o[k]=this[k]},
 use(f){const o=this.FL[f];for(const k of this.FLK)this[k]=o[k];this.fi=f;Props._mk=this.mkf},
-unitAt(x,z,st){for(const u of (st||this.stairs)){const dx=x-u.O.x,dz=z-u.O.z,uu=dx*u.inn[0]+dz*u.inn[1],t=dx*u.tn[0]+dz*u.tn[1];if(uu>-.3&&uu<6.01&&Math.abs(t)<1.5)return{u:uu,t,un:u}}return null},
-gy(x,z,st,py){const SS=st||this.stairs;if(!SS.length)return 0;const r=this.unitAt(x,z,SS);if(!r)return 0;const{u,t,un}=r,h=this.FH/2,uL=1.5,uE=5.1;
- if(u>=uE)return 0;
- if(u<=uL&&!un.dn&&py!==undefined&&py<h*.55)return 0;
- if(t<=0){if(!un.up)return 0;if(u<=uL)return h;const k=Math.min(11,Math.floor((uE-u)/(uE-uL)*12));return h*(k+1)/12}
- if(u<=uL)return un.up?h:-h;if(!un.dn)return 0;const k=Math.min(11,Math.floor((u-uL)/(uE-uL)*12));return -h*(1-(k+1)/12)},
+/* position relative to a stair annex: p = metres outward from the door plane, t = lateral (t<0 is the ascending flight, t>0 the descending one) */
+unitAt(x,z,st){for(const u of (st||this.stairs)){const p=(x-u.O.x)*u.out[0],t=(z-u.O.z)*u.tz;if(p>1.45&&p<this.ANX.pe+.3&&Math.abs(t)<this.ANX.hw+.2)return{p,t,un:u}}return null},
+/* walking height inside an annex, relative to the floor you are on. Ascend by the t<0 flight, swap floors on the mid landing, keep going; the descent mirrors it on the t>0 flight */
+gy(x,z,st,py){const SS=st||this.stairs;if(!SS.length)return 0;const r=this.unitAt(x,z,SS);if(!r)return 0;const{p,t,un}=r,A=this.ANX,h=this.FH/2;
+ if(p<A.f0)return 0;
+ if(p<A.f1){const b=Math.max(0,(p-A.f0)/(A.f1-A.f0));return t<0?(un.up?h*b:0):(un.dn?-h*b:0)}
+ if(py!==undefined)return py>=0?(un.up?h:0):(un.dn?-h:0);
+ return t<0?(un.up?h:0):(un.dn?-h:0)},
+/* the duct between two vents: a polyline (x,z,eye height) that climbs the first riser, runs through the space above the ceilings and comes down the second riser */
+mkDuct(a,b){const Y0=.5,YP=3.85,pt=(x,z,y)=>({x,z,y}),m0=v=>pt(v.wx-v.s[0]*.55,v.wz-v.s[1]*.55,Y0),P=[m0(a),pt(a.cx,a.cz,Y0),pt(a.cx,a.cz,YP)];
+ if(a.cx!==b.cx&&a.cz!==b.cz)P.push(pt(b.cx,a.cz,YP));
+ P.push(pt(b.cx,b.cz,YP),pt(b.cx,b.cz,Y0),m0(b));
+ const seg=[];let len=0;for(let i=1;i<P.length;i++){const d=Math.hypot(P[i].x-P[i-1].x,P[i].z-P[i-1].z,P[i].y-P[i-1].y);seg.push(d);len+=d}
+ /* the loose fuse lies on the longest horizontal stretch of the run */
+ let bi=-1,bl=0;for(let i=1;i<P.length;i++){if(Math.abs(P[i].y-P[i-1].y)<.01&&seg[i-1]>bl){bl=seg[i-1];bi=i}}
+ const f0=P[bi-1],f1=P[bi];return{P,seg,len,fuse:{x:(f0.x+f1.x)/2,z:(f0.z+f1.z)/2},YP,Y0}},
 make(scene,seed,multi){const real=Math.random;if(seed!=null)Math.random=mulberry(seed);try{this.buildAll(scene,!!multi)}finally{Math.random=real}},
-buildAll(scene,multi){const R=Math.random;this.root=scene;this.pool=[];this.items=[];this.lockLight=null;this.FL=[];this.FG=[];
+buildAll(scene,multi){const R=Math.random;Props._hm=null;this.root=scene;this.pool=[];this.items=[];this.lockLight=null;this.FL=[];this.FG=[];
  const F=multi?(R()<.5?3:4):1,TH=F===1?['house']:F===3?['basement','house','attic']:['basement','house','house2','attic'],nF=Array(F).fill(F===1?4:1);
  if(F>1&&F<4)nF[R()*F|0]+=4-F;
- const vf=new Set();if(F>1){const idx=[...Array(F).keys()].shuf(),nv=F>=4?2:1;for(let i=0;i<nv;i++)vf.add(idx[i])}
+ const vf=new Set();if(F===1)vf.add(0);else{const idx=[...Array(F).keys()].shuf(),nv=F>=4?2:1;for(let i=0;i<nv;i++)vf.add(idx[i])}
  const nt=Array(F).fill(Math.floor(6/F)),rem=6-nt.reduce((a,b)=>a+b,0);for(let i=0;i<rem;i++)nt[R()*F|0]++;
  const exF=F===1?0:1,plan=[];
  for(let f=0;f<F;f++)plan.push({theme:TH[f],nF:nF[f],duct:vf.has(f),vent:vf.has(f),lock:nF[f]-(vf.has(f)?1:0)>=1&&R()<.3,loose:1,shafts:F>1,up:f<F-1,down:f>0,traps:3,start:f===F-1,exit:f===exF,notes:nt[f],bats:F===1?9:3,bots:F===1?7:3});
@@ -156,20 +174,25 @@ build(scene){const S=this.S,H=this.H,FH=this.FH,W=this.W,D=this.D,g=this.g,T=thi
  /* everything is split into 9 m chunks so far away parts of the house are simply not drawn */
  const CK=9;this.chunks={};const chunk=key=>{let c=this.chunks[key];if(!c){c=new THREE.Group();const p=key.split(',').map(Number);c.userData={chunk:1,cx:(p[0]+.5)*CK,cz:(p[1]+.5)*CK};scene.add(c);this.chunks[key]=c}return c};
  const ck=(x,z)=>Math.floor(x*S/CK)+','+Math.floor(z*S/CK);
- const sh=new Set();for(const u of this.stairs)u.cells.forEach(c=>sh.add(c.join()));
+ const sh=new Set(),vh=new Set(this.vents.map(v=>v.gx+','+v.gz));for(const u of this.stairs)u.cells.forEach(c=>sh.add(c.join()));
  const walls={},floors={},ceils={};
  for(let z=0;z<D;z++)for(let x=0;x<W;x++){if(g[z][x]===1){let nb=false;for(let a=-1;a<=1&&!nb;a++)for(let b=-1;b<=1;b++){const r=g[z+b];if(r&&r[x+a]!==undefined&&r[x+a]!==1){nb=true;break}}if(nb)(walls[ck(x,z)]=walls[ck(x,z)]||[]).push([x,z])}
-  else if(!sh.has(x+','+z)){const k=ck(x,z);(floors[k]=floors[k]||[]).push([x,z]);(ceils[k]=ceils[k]||[]).push([x,z])}}
+  else{const k=ck(x,z),id=x+','+z;if(!sh.has(id))(floors[k]=floors[k]||[]).push([x,z]);if(!vh.has(id))(ceils[k]=ceils[k]||[]).push([x,z])}}
  const mkInst=(base,mat,list,key,y)=>{const geo=base.clone(),p=key.split(',').map(Number);geo.boundingSphere=new THREE.Sphere(new THREE.Vector3((p[0]+.5)*CK,y,(p[1]+.5)*CK),9);const q=new THREE.InstancedMesh(geo,mat,list.length),m4=new THREE.Matrix4();list.forEach(([x,z],i)=>{m4.setPosition(x*S,y,z*S);q.setMatrixAt(i,m4)});chunk(key).add(q)};
  const WH=FH-.05,wgeo=new THREE.BoxGeometry(S,WH,S),fg=new THREE.PlaneGeometry(S,S),cg=new THREE.PlaneGeometry(S,S);fg.rotateX(-Math.PI/2);cg.rotateX(Math.PI/2);
  for(const k in walls)mkInst(wgeo,this.wallMat,walls[k],k,WH/2);for(const k in floors)mkInst(fg,fm,floors[k],k,0);for(const k in ceils)mkInst(cg,cm,ceils[k],k,H);
+ /* the ceiling above a riser duct is cut away; what is left of that cell is three plates around the shaft */
+ for(const v of this.vents){const sx=v.s[0],sz=v.s[1],cx=v.gx*S,cz=v.gz*S,m=(x0,x1,z0,z1)=>{if(x1-x0<.01||z1-z0<.01)return;const q=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,z1-z0),cm);q.rotation.x=Math.PI/2;q.position.set((x0+x1)/2,H,(z0+z1)/2);scene.add(q)};
+  /* riser: .7 either side of the axis, from the wall face .. 1.4 m out */
+  if(sx){const wf=cx+sx*1.5,fr=cx+sx*.1,xa=Math.min(wf,fr),xb=Math.max(wf,fr);m(cx-1.5,xa,cz-1.5,cz+1.5);m(xb,cx+1.5,cz-1.5,cz+1.5);m(xa,xb,cz-1.5,cz-.7);m(xa,xb,cz+.7,cz+1.5)}
+  else{const wf=cz+sz*1.5,fr=cz+sz*.1,za=Math.min(wf,fr),zb=Math.max(wf,fr);m(cx-1.5,cx+1.5,cz-1.5,za);m(cx-1.5,cx+1.5,zb,cz+1.5);m(cx-1.5,cx-.7,za,zb);m(cx+.7,cx+1.5,za,zb)}}
  Props.build(scene);
  for(const c of scene.children.slice()){if(c.userData&&c.userData.chunk)continue;if(c.isLight)continue;let hasL=false;c.traverse(o=>{if(o.isLight)hasL=true});if(hasL)continue;
   if(c.isInstancedMesh){c.frustumCulled=false;continue}if(!c.position.x&&!c.position.z)continue;
   scene.remove(c);chunk(Math.floor(c.position.x/CK)+','+Math.floor(c.position.z/CK)).add(c)}
  if(scene.updateMatrixWorld&&THREE.Vector3){scene.updateMatrixWorld(true);const v=new THREE.Vector3(),fy=this.fy(this.fi),warm=new THREE.Color(0xffa850);scene.traverse(o=>{if(o.userData&&o.userData.flame&&o.getWorldPosition){o.getWorldPosition(v);const ph=Math.random()*6,L=this;this.src.push({x:v.x,y:v.y-fy,z:v.z,col:warm,d:7,I:()=>L.safe?.55:.55+.14*Math.sin(performance.now()/1000*6+ph)})}})}},
 /* which floors / chunks are drawn this frame */
-updVis(px,pz,pf){for(let f=0;f<this.nF;f++){let v=f===pf;if(!v&&Math.abs(f-pf)===1)for(const u of this.FL[pf].stairs)if(Math.hypot(px-(u.O.x+u.inn[0]*3),pz-(u.O.z+u.inn[1]*3))<14){v=true;break}this.FG[f].visible=v}
+updVis(px,pz,pf){for(let f=0;f<this.nF;f++){let v=f===pf;if(!v&&Math.abs(f-pf)===1)for(const u of this.FL[pf].stairs)if(Math.hypot(px-(u.O.x+u.out[0]*5),pz-u.O.z)<12){v=true;break}this.FG[f].visible=v}
  for(let f=0;f<this.nF;f++){if(!this.FG[f].visible)continue;const ch=this.FL[f].chunks;for(const k in ch){const c=ch[k],dx=c.userData.cx-px,dz=c.userData.cz-pz;c.visible=dx*dx+dz*dz<1156}}},
 updLights(px,pz,dt,black,t){const src=this.src,pool=this.pool;this._lt-=dt;const re=this._lt<=0;if(re)this._lt=.25;const cand=this._c||(this._c=[]);cand.length=0;
  for(const s of src){
@@ -179,7 +202,7 @@ updLights(px,pz,dt,black,t){const src=this.src,pool=this.pool;this._lt-=dt;const
   const I=s.I();if(I<=.01)continue;if(re||s.vis===undefined)s.vis=d2<9?true:this.los(px,pz,s.x,s.z);
   s.sc=Math.sqrt(d2)+(s.vis?0:9);cand.push(s)}
  cand.sort((a,b)=>a.sc-b.sc);
- for(let i=0;i<pool.length;i++){const l=pool[i],s=cand[i];if(!s||(black>0&&!s.mat&&s.keep!==true&&false)){l.intensity=0;continue}l.position.set(s.x,s.y+this.fy(this.fi),s.z);l.color.copy(s.col);l.distance=s.d;l.intensity=s.I()}}};
+ for(let i=0;i<pool.length;i++){const l=pool[i],s=cand[i];if(!s||(black>0&&!s.mat&&s.keep!==true&&false)){l.intensity=0;continue}l.position.set(s.x,s.y+this.fy(this.fi),s.z);l.color.copy(s.col);l.distance=s.d;l.intensity=s.I()*(this.lk||1)}}};
 
 Level.paper=unseeded(Level.paper);Level.planks=unseeded(Level.planks);Level.tex=unseeded(Level.tex);
 
