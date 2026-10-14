@@ -118,18 +118,18 @@ dropItem(t,x,z,nid){let it=nid===undefined?Level.items.find(i=>i.taken&&i.t===t)
 build(scene){this.doors(scene);this.fusesExit(scene);this.lockers(scene);this.bed(scene);this.rooms(scene);this.fixtures(scene);this.pipes(scene);this.stains(scene);this.items(scene);this.stairsB(scene);this.ventsB(scene);this.trapsB(scene)},
 fusesExit(scene){const S=Level.S,M=THREE.MeshStandardMaterial,gt=this.glow('rgba(255,170,60,');Level.fuses=[];
  const dark=new M({color:0x1d1b18,roughness:.9}),brass=new M({color:0xb08a3a,metalness:.9,roughness:.35});
- Level.keys.forEach((k,i)=>{const duct=k[0]<-50,p=duct&&Level.duct?{x:Level.duct.fuse.x,z:Level.duct.fuse.z}:Level.wp(k),g=new THREE.Group();g.position.set(p.x,0,p.z);scene.add(g);
+ Level.keys.forEach((k,i)=>{const duct=k[0]<-50,p=duct&&Level.vnet&&Level.vnet.fuse?{x:Level.vnet.fuse.x,z:Level.vnet.fuse.z}:Level.wp(k),g=new THREE.Group();g.position.set(p.x,0,p.z);scene.add(g);
   if(!duct){const ped=new THREE.Mesh(new THREE.BoxGeometry(.4,.8,.4),dark);ped.position.y=.4;g.add(ped);
   const top=new THREE.Mesh(new THREE.BoxGeometry(.52,.05,.52),brass);top.position.y=.83;g.add(top)}
-  const f=new THREE.Group();f.position.y=duct?3.6:1.25;g.add(f);
+  const f=new THREE.Group();f.position.y=duct?.62:1.25;g.add(f);
   f.add(new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.34,16),new M({color:0xffe0a0,transparent:true,opacity:.4,emissive:0xff9a2a,emissiveIntensity:.9,roughness:.1})));
   [-.2,.2].forEach(y=>{const c=new THREE.Mesh(new THREE.CylinderGeometry(.085,.085,.07,16),brass);c.position.y=y;f.add(c)});
   f.add(new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.32),new THREE.MeshBasicMaterial({color:0xffe6a8,fog:false})));
-  const h=new THREE.Sprite(new THREE.SpriteMaterial({map:gt,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,transparent:true}));h.scale.set(1.6,1.6,1);f.add(h);
+  const h=new THREE.Sprite(new THREE.SpriteMaterial({map:gt,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,transparent:true}));h.scale.set(duct?.9:1.6,duct?.9:1.6,1);f.add(h);
   const n=16,pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(n*3),3));
   const sp=new THREE.Points(pg,new THREE.PointsMaterial({map:this.dot(),color:0xffc060,size:.06,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));g.add(sp);
   const l={intensity:1};
-  const fz={g,f,l,sp,n,x:p.x,z:p.z,i:Level.fuseBase+i,by:duct?3.6:1.25,duct,taken:false};Level.fuses.push(fz);Level.src.push({x:p.x,y:duct?3.9:1.4,z:p.z,col:new THREE.Color(0xffa640),d:7,I:()=>fz.taken?0:fz.l.intensity});if(!duct)Level.col.push({x0:p.x-.27,x1:p.x+.27,z0:p.z-.27,z1:p.z+.27})});
+  const fz={g,f,l,sp,n,x:p.x,z:p.z,i:Level.fuseBase+i,by:duct?.62:1.25,duct,taken:false};Level.fuses.push(fz);Level.src.push({x:p.x,y:duct?.9:1.4,z:p.z,col:new THREE.Color(0xffa640),d:7,I:()=>fz.taken?0:fz.l.intensity});if(!duct)Level.col.push({x0:p.x-.27,x1:p.x+.27,z0:p.z-.27,z1:p.z+.27})});
  // exit door
  if(!Level.fp.exit){Level.xd=null;return}
  const E=Level.exit,p=Level.wp(E),d=this.side(E)||[0,-1],g=new THREE.Group();g.position.set(p.x+d[0]*(S/2-.1),0,p.z+d[1]*(S/2-.1));g.rotation.y=Math.atan2(-d[0],-d[1]);scene.add(g);
@@ -177,11 +177,13 @@ locker(scene,lx,lz,ang,num){const M=THREE.MeshStandardMaterial,g=new THREE.Group
  bx(.03,.72,.03,.02,1.65,0,mo,hg);bx(.03,.72,.03,dw-.02,1.65,0,mo,hg);bx(.03,.14,.05,dw-.08,1.0,.04,sv,hg);
  return hg},
 update(dt,t,P){Level.lockers.forEach(l=>{l.ang+=((l.open?-1.9:0)-l.ang)*Math.min(1,dt*7);l.hg.rotation.y=l.ang});Level.fuses.forEach(f=>{if(f.taken)return;f.f.rotation.y=t*1.5;f.f.position.y=(f.by||1.25)+Math.sin(t*2+f.i)*.07;f.l.intensity=.9+.25*Math.sin(t*7+f.i)+(Math.random()<.03?-.5:0);
-  const a=f.sp.geometry.attributes.position;for(let i=0;i<f.n;i++){const ph=i*1.7+f.i,r=.12+.1*((i%3)/2),y=((t*.25+i/f.n)%1);a.setXYZ(i,Math.cos(t*.8+ph)*r,1.0+y*.7,Math.sin(t*.8+ph)*r)}a.needsUpdate=true});
+  const a=f.sp.geometry.attributes.position;for(let i=0;i<f.n;i++){const ph=i*1.7+f.i,r=.12+.1*((i%3)/2),y=((t*.25+i/f.n)%1);a.setXYZ(i,Math.cos(t*.8+ph)*r,(f.duct?.2:1.0)+y*(f.duct?.6:.7),Math.sin(t*.8+ph)*r)}a.needsUpdate=true});
  const x=Level.xd;if(x&&x.open){x.t+=dt;x.glow.visible=true;x.door.position.y=Math.min(4,1.275+x.t*1.1)}
  Level.doors.forEach(d=>{d.o+=(d.target-d.o)*Math.min(1,dt*(d.rate||6));if(Math.abs(d.target-d.o)<.01)d.o=d.target;d.hg.rotation.y=d.o*d.sw*1.7;d.pc.off=d.o>.45;d.lm.visible=d.locked;if(d.locked&&d.lg)d.lg.forEach(q=>q.material.opacity=.45+.35*Math.sin(t*3.2+d.id))});
  Level.traps.forEach(t=>{t.ang+=((t.armed?0:1.4)-t.ang)*Math.min(1,dt*20);if(t.jA){t.jA.rotation.x=-t.ang;t.jB.rotation.x=t.ang}});
- Level.vents.forEach(v=>{v.ang+=((v.open?1.45:0)-v.ang)*Math.min(1,dt*6);if(v.hg)v.hg.rotation.x=v.ang});
+ Level.vents.forEach(v=>{if(v.open){if(v.ang<1.52){v.vel=(v.vel||0)+dt*16;v.ang=Math.min(1.52,v.ang+v.vel*dt);if(v.ang>=1.52&&!v.bn){v.bn=1;v.ang=1.38;v.vel=-1.2}}}
+  else if(v.hg)for(const s of v.sc){if(s.out||!s.g)continue;s.g.position.z=s.z0+s.p*.05;s.g.rotation.z=s.p*14}
+  if(v.hg)v.hg.rotation.x=v.ang;if(!v.open)v.bn=0;});
  Level.items.forEach(it=>{if(it.taken)return;it.sp.material.opacity=.3+.25*Math.sin(t*2.4+it.i*1.3)})}};
 
 Object.assign(Props,{
@@ -417,47 +419,68 @@ stairsB(scene){if(!Level.stairs.length)return;
   b.done(g)}}
 });
 
-/* ---------- vents: a riser duct against the wall, a shaft through the ceiling, a duct run in the space above the rooms ---------- */
+/* ---------- vents: real 3D tunnels inside the wall blocks, each ending in a screwed-shut grille ---------- */
 Object.assign(Props,{
-ventsB(scene){if(!Level.vents.length||!Level.duct)return;
- const L=Level,D=L.duct,M=this.hm(),b=this.batch(),B=(m,...a)=>b.box(m,...a),du=M.duct,dk=M.steelD,TOP=3.3,CE=4.55,T=.06,W=1.3,warm=new THREE.Color(0xffa04a);
- const gt=this.cv(128,96,(x,w,h)=>{x.fillStyle='#74786f';x.fillRect(0,0,w,8);x.fillRect(0,h-8,w,8);x.fillRect(0,0,8,h);x.fillRect(w-8,0,8,h);for(let y=16;y<h-10;y+=12)x.fillRect(8,y,w-16,6);[[14,14],[w-14,14],[14,h-14],[w-14,h-14]].forEach(([a,c])=>{x.fillStyle='#2a2d2a';x.beginPath();x.arc(a,c,5,0,6.3);x.fill();x.fillStyle='#9a9f9a';x.fillRect(a-4,c-1,8,2)})}),
-  gm=new THREE.MeshStandardMaterial({map:gt,transparent:true,alphaTest:.4,side:THREE.DoubleSide,roughness:.5,metalness:.7});
- /* risers */
- for(const v of L.vents){const g=new THREE.Group();g.position.set(v.wx,0,v.wz);g.rotation.y=Math.atan2(-v.s[0],-v.s[1]);scene.add(g);
-  const rb=this.batch(),B=(m,...a)=>rb.box(m,...a);
-  /* local +z points out into the room; the shaft occupies z -1.4..0 */
-  B(du,1.4,.12,T,0,.06,-T/2);B(du,1.4,TOP-.87,T,0,.87+(TOP-.87)/2,-T/2);B(du,.4,.75,T,-.5,.495,-T/2);B(du,.4,.75,T,.5,.495,-T/2);
-  B(du,T,TOP,1.4,-.67,TOP/2,-.7);B(du,T,TOP,1.4,.67,TOP/2,-.7);B(du,1.4,TOP,T,0,TOP/2,-1.37);
-  for(const y of[.9,1.9,2.9]){B(dk,1.48,.09,.04,0,y,.01);B(dk,1.48,.09,.04,0,y,-1.41);B(dk,.04,.09,1.44,-.72,y,-.7);B(dk,.04,.09,1.44,.72,y,-.7)}
-  /* frame round the grille opening */
-  B(dk,1.1,.06,.05,0,.1,.02);B(dk,1.1,.06,.05,0,.89,.02);B(dk,.06,.84,.05,-.52,.5,.02);B(dk,.06,.84,.05,.52,.5,.02);
-  /* ladder up the back of the shaft */
-  for(let y=.35;y<TOP;y+=.3)B(M.rail,.8,.03,.03,0,y,-1.32);B(M.rail,.03,TOP,.03,-.4,TOP/2,-1.32);B(M.rail,.03,TOP,.03,.4,TOP/2,-1.32);
-  /* the grille, hinged along its bottom edge */
-  const hg=new THREE.Group();hg.position.set(0,.12,.02);g.add(hg);const gr=new THREE.Mesh(new THREE.PlaneGeometry(1,.75),gm);gr.position.set(0,.375,0);hg.add(gr);v.hg=hg;
-  /* a dim caged bulb inside lights the shaft and leaks out through the slats */
-  const bu=new THREE.Mesh(new THREE.SphereGeometry(.05,8,6),new THREE.MeshBasicMaterial({color:0xffb060}));bu.position.set(.5,1.3,-1.2);g.add(bu);
-  L.src.push({x:v.cx,y:1.2,z:v.cz,col:warm,d:5,I:()=>.45});
+ventsB(scene){const L=Level,N=L.vnet;if(!N||!L.vents.length)return;
+ const S=L.S,WH=L.FH-.05,M=this.hm(),TW=.65,TH=1.3,LT=.03,warm=new THREE.Color(0xffa04a);
+ /* 1. the solid wall mass around every tunnel cell: 9 pieces per cell, the shaft cut out of the middle. UVs follow world position so the faces match the neighbouring walls. */
+ {const pos=[],nor=[],uv=[],idx=[];
+  const box=(x0,x1,y0,y1,z0,z1,cx,cz)=>{const U=(x,z)=>(x-cx+1.5)/S,Vv=y=>y/WH,
+    f=(n,q)=>{const o=pos.length/3;for(const[x,y,z]of q){pos.push(x,y,z);nor.push(n[0],n[1],n[2]);if(n[0])uv.push(U(0,z)*0+(z-cz+1.5)/S,Vv(y));else if(n[2])uv.push(U(x,0),Vv(y));else uv.push(U(x,0),(z-cz+1.5)/S)}idx.push(o,o+1,o+2,o,o+2,o+3)};
+   f([1,0,0],[[x1,y0,z1],[x1,y0,z0],[x1,y1,z0],[x1,y1,z1]]);f([-1,0,0],[[x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0]]);
+   f([0,0,1],[[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]]);f([0,0,-1],[[x1,y0,z0],[x0,y0,z0],[x0,y1,z0],[x1,y1,z0]]);
+   f([0,1,0],[[x0,y1,z1],[x1,y1,z1],[x1,y1,z0],[x0,y1,z0]]);if(y0>0)f([0,-1,0],[[x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1]])};
+  for(const c of N.cells){const xs=[c.x-1.5,c.x-TW,c.x+TW,c.x+1.5],zs=[c.z-1.5,c.z-TW,c.z+TW,c.z+1.5];
+   for(let i=0;i<3;i++)for(let j=0;j<3;j++){const mi=i===1,mj=j===1;let open=false;
+    if(mi&&mj)open=true;else if(mi)open=j===0?c.a.n:c.a.s;else if(mj)open=i===0?c.a.w:c.a.e;
+    box(xs[i],xs[i+1],open?TH:0,WH,zs[j],zs[j+1],c.x,c.z)}}
+  const G=new THREE.BufferGeometry();G.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));G.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));G.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));G.setIndex(idx);
+  scene.add(new THREE.Mesh(G,L.wallMat))}
+ /* 2. the sheet-metal lining: floor, ceiling and side panels for every open part of every cell, ribs, and a dim bulb */
+ const lm=new THREE.MeshStandardMaterial({map:this.rep(this.noise()),color:0x8c9490,roughness:.5,metalness:.7,emissive:0x1d140c});lm.userData.tile=1;
+ const bm=new THREE.MeshBasicMaterial({color:0xffb060});bm.userData.tile=1;
+ {const b=this.batch(),B=(m,...a)=>b.box(m,...a),dk=M.steelD;
+  const reg=(x0,x1,z0,z1)=>{const w=x1-x0,d=z1-z0,x=(x0+x1)/2,z=(z0+z1)/2;B(lm,w,LT,d,x,LT/2,z);B(lm,w,LT,d,x,TH-LT/2,z)};
+  for(const c of N.cells){const a=c.a,x=c.x,z=c.z,h=TH-2*LT,y=TH/2;
+   reg(x-TW,x+TW,z-TW,z+TW);
+   if(a.e)reg(x+TW,x+1.5,z-TW,z+TW);if(a.w)reg(x-1.5,x-TW,z-TW,z+TW);if(a.s)reg(x-TW,x+TW,z+TW,z+1.5);if(a.n)reg(x-TW,x+TW,z-1.5,z-TW);
+   /* side panels: along the open arms, and a cap across every closed arm of the middle square */
+   if(a.e||a.w){const x0=x-(a.w?1.5:TW),x1=x+(a.e?1.5:TW);for(const sz of[-1,1])B(lm,x1-x0,h,LT,(x0+x1)/2,y,z+sz*(TW-LT/2))}
+   if(a.n||a.s){const z0=z-(a.n?1.5:TW),z1=z+(a.s?1.5:TW);for(const sx of[-1,1])B(lm,LT,h,z1-z0,x+sx*(TW-LT/2),y,(z0+z1)/2)}
+   if(!a.e)B(lm,LT,h,2*TW,x+TW-LT/2,y,z);if(!a.w)B(lm,LT,h,2*TW,x-TW+LT/2,y,z);if(!a.s)B(lm,2*TW,h,LT,x,y,z+TW-LT/2);if(!a.n)B(lm,2*TW,h,LT,x,y,z-TW+LT/2);
+   /* a rib every metre and a half */
+   const rib=(px,pz,alongX)=>{const w=2*TW-2*LT;if(alongX){B(dk,.06,.05,w,px,TH-LT-.025,pz);B(dk,.06,.05,w,px,LT+.025,pz);for(const sz of[-1,1])B(dk,.06,h,.05,px,y,pz+sz*(TW-LT-.025))}
+    else{B(dk,w,.05,.06,px,TH-LT-.025,pz);B(dk,w,.05,.06,px,LT+.025,pz);for(const sx of[-1,1])B(dk,.05,h,.06,px+sx*(TW-LT-.025),y,pz)}};
+   if(a.e)rib(x+1.1,z,true);if(a.w)rib(x-1.1,z,true);if(a.s)rib(x,z+1.1,false);if(a.n)rib(x,z-1.1,false);
+   B(dk,.26,.03,.26,x,TH-LT-.015,z);B(bm,.16,.02,.16,x,TH-LT-.04,z)}
+  b.done(scene)}
+ /* 3. the grilles */
+ const gt=this.cv(128,128,(x,w,h)=>{x.clearRect(0,0,w,h);x.fillStyle='#7a7f78';x.fillRect(0,0,w,12);x.fillRect(0,h-12,w,12);x.fillRect(0,0,12,h);x.fillRect(w-12,0,12,h);x.fillRect(w/2-3,12,6,h-24);
+   for(let y=18;y<h-14;y+=14)x.fillRect(12,y,w-24,8);
+   for(let i=0;i<500;i++){const v=Math.random()*60|0;x.fillStyle=`rgba(${v},${v},${v},.22)`;x.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*2,1)}
+   [[6,6],[w-6,6],[6,h-6],[w-6,h-6]].forEach(([a,c])=>{x.fillStyle='#262926';x.beginPath();x.arc(a,c,5,0,6.3);x.fill()});
+   x.fillStyle='rgba(110,60,20,.35)';for(let i=0;i<6;i++)x.fillRect(14+Math.random()*(w-28),h-30-Math.random()*40,3,30)}),
+  gm=new THREE.MeshStandardMaterial({map:gt,transparent:true,alphaTest:.4,side:THREE.DoubleSide,roughness:.5,metalness:.7}),
+  hd=new THREE.MeshStandardMaterial({color:0x9aa09c,metalness:.9,roughness:.3}),sl=new THREE.MeshStandardMaterial({color:0x111111,roughness:.8});
+ for(const v of L.vents){const g=new THREE.Group();g.position.set(v.fx,0,v.fz);g.rotation.y=Math.atan2(v.n[0],v.n[1]);scene.add(g);
+  const rb=this.batch(),B=(m,...a)=>rb.box(m,...a),dk=M.steelD;
+  /* local +z points out into the room, +y up, the opening is 1.3 x 1.3 m at floor level */
+  B(dk,.09,1.46,.07,-.74,.73,.035);B(dk,.09,1.46,.07,.74,.73,.035);B(dk,1.58,.09,.07,0,1.35,.035);B(dk,1.4,.03,.07,0,.015,.035);
+  /* the hinge pin and a rusty stain on the wall above */
+  B(M.rail,1.1,.03,.03,0,.04,.05);
   rb.done(g);
-  L.col.push({riser:true,tall:true,x0:v.cx-.72,x1:v.cx+.72,z0:v.cz-.72,z1:v.cz+.72})}
- /* the duct run above the ceilings. Nodes are the corners of the polyline at plenum height; horizontal pieces join them. */
- const P=D.P,nodes=[];for(let i=0;i<P.length;i++)if(Math.abs(P[i].y-D.YP)<.01)nodes.push(P[i]);
- const dirOf=(a,c)=>[Math.sign(c.x-a.x),Math.sign(c.z-a.z)],cy=TOP+(CE-TOP)/2,pH=CE-TOP+2*T;
- for(let i=0;i<nodes.length;i++){const n=nodes[i],open=[];if(i>0)open.push(dirOf(n,nodes[i-1]));if(i<nodes.length-1)open.push(dirOf(n,nodes[i+1]));
-  const riser=(i===0||i===nodes.length-1);
-  B(du,W+2*T,T,W+2*T,n.x,CE+T/2,n.z);if(!riser)B(du,W+2*T,T,W+2*T,n.x,TOP-T/2,n.z);
-  for(const[dx,dz]of[[1,0],[-1,0],[0,1],[0,-1]])if(!open.some(o=>o[0]===dx&&o[1]===dz)){if(dx)B(du,T,pH,W+2*T,n.x+dx*(W/2+T/2),cy,n.z);else B(du,W+2*T,pH,T,n.x,cy,n.z+dz*(W/2+T/2))}
-  /* the node squares above a riser need their own floor ring where the shaft is not */
- }
- let lampT=0;
- for(let i=0;i<nodes.length-1;i++){const a=nodes[i],c=nodes[i+1],d=dirOf(a,c),len=Math.hypot(c.x-a.x,c.z-a.z)-W,mx=(a.x+c.x)/2,mz=(a.z+c.z)/2;if(len<=.01)continue;
-  if(d[0]){B(du,len,T,W+2*T,mx,TOP-T/2,mz);B(du,len,T,W+2*T,mx,CE+T/2,mz);B(du,len,pH,T,mx,cy,mz-W/2-T/2);B(du,len,pH,T,mx,cy,mz+W/2+T/2);for(let k=-len/2+.5;k<len/2;k+=2)B(dk,.08,pH+.06,W+.16,mx+k,cy,mz)}
-  else{B(du,W+2*T,T,len,mx,TOP-T/2,mz);B(du,W+2*T,T,len,mx,CE+T/2,mz);B(du,T,pH,len,mx-W/2-T/2,cy,mz);B(du,T,pH,len,mx+W/2+T/2,cy,mz);for(let k=-len/2+.5;k<len/2;k+=2)B(dk,W+.16,pH+.06,.08,mx,cy,mz+k)}
-  /* caged service lamps along the run */
-  const nl=Math.max(1,Math.round(len/4));for(let k=0;k<nl;k++){const t=(k+.5)/nl-.5,lx=mx+(d[0]?t*len:0),lz=mz+(d[1]?t*len:0);
-   const bu=new THREE.Mesh(new THREE.BoxGeometry(.16,.06,.16),new THREE.MeshBasicMaterial({color:0xffb060}));bu.position.set(lx,CE-.05,lz);scene.add(bu);
-   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:this.glow('rgba(255,170,80,'),blending:THREE.AdditiveBlending,depthWrite:false,fog:false,transparent:true,opacity:.3}));sp.scale.set(1.1,1.1,1);sp.position.set(lx,CE-.2,lz);scene.add(sp);
-   L.src.push({x:lx,y:3.95,z:lz,col:warm,d:6,I:()=>.55});lampT++}}
- b.done(scene)}
+  const hg=new THREE.Group();hg.position.set(0,.03,.05);g.add(hg);
+  const pl=new THREE.Mesh(new THREE.PlaneGeometry(1.3,1.3),gm);pl.position.set(0,.65,0);hg.add(pl);
+  v.hg=hg;v.scm=[];
+  v.sc.forEach(sc=>{const sg=new THREE.Group();sg.position.set(sc.lx,sc.ly-.03,.012);hg.add(sg);
+   const hdm=new THREE.Mesh(new THREE.CylinderGeometry(.034,.034,.014,12),hd);hdm.rotation.x=Math.PI/2;sg.add(hdm);
+   const sm=new THREE.Mesh(new THREE.BoxGeometry(.05,.008,.016),sl);sm.position.z=.008;sg.add(sm);
+   const nt=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,.02,6),hd);nt.rotation.x=Math.PI/2;nt.position.z=-.026;sg.add(nt);
+   sc.g=sg;sc.z0=.012;if(sc.out)sg.visible=false;v.scm.push(sg)});
+  /* light leaking through the slats */
+  L.src.push({x:v.cx+v.n[0]*.9,y:1.0,z:v.cz+v.n[1]*.9,col:warm,d:4,I:()=>.22});
+  if(v.open)this.ventOpenNow(v)}},
+/* open a vent instantly (a vent you opened earlier, or that another player opened) */
+ventOpenNow(v){v.open=true;v.left=0;v.ang=1.52;for(const s of v.sc){s.out=true;s.p=1;if(s.g)s.g.visible=false}if(v.hg)v.hg.rotation.x=1.52}
 });
+

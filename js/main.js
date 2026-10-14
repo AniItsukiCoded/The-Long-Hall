@@ -16,7 +16,7 @@ const DIFF=[
 {n:'Nightmare',spd:1.35,hear:18,sight:52,amb:-.1,d:['Faster than your sprint by the second fuse','He hears almost everything','Almost no light. Lockers are your only friend']}];
 let scene,cam,ren,clock,en,amb,fl,keys=0,state='menu',started=false,stam=1,yaw=0,pitch=0,bob=0,stepT=0,beatT=0,eStep=0,eventT=15,blackout=0,msgT=0,time=0,H=null,hideT=0,wasCh=false,scareT=0,from='menu',grace=0,lockTry=0,mxn=0,myn=0,bat=1,bot=0,hasKey=false,bats=0,sel='bottle',crouch=0,fovK=1,day=1,RUN=null,wakeT=0,W0=.5,wk=0,HELD={},kick=0,SC=null,nNotes=0,proj=[],noteT=0,dust=null,fon=true,NT=6,MP=false,mpPlay=false,dead=false,escd=false,paused=false,av={},specId=null,dying={},ending=false,poseT=0,enT=0,chkT=0,pendKill=false,enNet=null,WOFF={x:0,z:0},lastEStr='',fovCur=72,lastLock=0,visYaw=0,visPitch=0,snapT=0,vp={x:0,y:0,z:0},prMax=1,prCur=1,lastESent=0,enS={buf:null,off:null,lastTs:null,sp:80};
 const FY=()=>Level.fy(P.fl),bodies=[];
-let exh=0,vfade=0,VIN=null,VOUT=null,VO=new Set(),trapT=0,scT=30,wReady=0,SEED=0,autoT=0,crouchOn=false,V=null,hasSD=false,py=0,stairFx=null,ventSnd=0;const newSeed=()=>((Math._r||Math.random)()*4294967296)>>>0,ORD=['FIRST','SECOND','THIRD','FOURTH','FIFTH'];
+let exh=0,vfade=0,vk=0,vHint=0,VO=new Set(),trapT=0,scT=30,wReady=0,SEED=0,autoT=0,crouchOn=false,V=null,hasSD=false,py=0,stairFx=null,ventSnd=0;const newSeed=()=>((Math._r||Math.random)()*4294967296)>>>0,ORD=['FIRST','SECOND','THIRD','FOURTH','FIFTH'];
 const _e={};function ws(id,p,v){const e=_e[id]||(_e[id]=document.getElementById(id));if(e.style[p]!==v)e.style[p]=v}
 const P={x:0,z:0,noisy:false,hidden:false,lk:null,yaw:0,pid:null,fl:0},KEYS={};
 const RK='lhrun',loadRun=()=>{try{return JSON.parse(sessionStorage.getItem(RK))}catch(e){return null}},saveRun=r=>{try{r?sessionStorage.setItem(RK,JSON.stringify(r)):sessionStorage.removeItem(RK)}catch(e){}};
@@ -94,24 +94,29 @@ function fuseGot(f,who,q){if(f.taken)return;f.taken=true;f.g.visible=false;f.l.i
 function hide(l){const pre={x:P.x,z:P.z,hidden:false,crouch:!!P.crouch};H=l;hideT=0;snapT=.3;l.open=false;P.x=l.cx;P.z=l.cz;yaw=l.yaw;pitch=0;if(MP){if(Net.isHost()&&en.fl===P.fl&&en.cansee(pre))en.check(l,true)}else if(en.seen&&en.dist<DIFF[SET.diff].sight)en.check(l,true);
  show('lockerfx');Level.lockLight.position.set(l.cx,1.9+FY(),l.cz);Level.lockLight.intensity=.4;Aud.locker();Aud.muffle(true)}
 function leave(){const l=H;H=null;snapT=.25;l.open=true;setTimeout(()=>{if(H!==l)l.open=false},2500);P.x=l.px;P.z=l.pz;hide_('lockerfx');Level.lockLight.intensity=0;Aud.locker();Aud.muffle(false)}
-function aimHit(wx,wz,axis,hw,y0,y1,mt){const cp=Math.cos(pitch),dx=-Math.sin(yaw)*cp,dy=Math.sin(pitch),dz=-Math.cos(yaw)*cp,ey=1.65-.6*crouch+py;let t,lat;
+function aimHit(wx,wz,axis,hw,y0,y1,mt){const cp=Math.cos(pitch),dx=-Math.sin(yaw)*cp,dy=Math.sin(pitch),dz=-Math.cos(yaw)*cp,ey=1.65-.6*crouch+py-.25*vk;let t,lat;
  if(axis==='x'){if(Math.abs(dx)<1e-4)return false;t=(wx-P.x)/dx;if(t<0||t>mt)return false;lat=P.z+dz*t-wz}else{if(Math.abs(dz)<1e-4)return false;t=(wz-P.z)/dz;if(t<0||t>mt)return false;lat=P.x+dx*t-wx}
  const y=ey+dy*t;return Math.abs(lat)<hw&&y>y0&&y<y1}
 function target(){if(H)return null;let best=null,bs=99;const fx=-Math.sin(yaw),fz=-Math.cos(yaw);
  const tr=(k,o,x,z,lim,fac,label)=>{const dx=x-P.x,dz=z-P.z,d=Math.hypot(dx,dz);if(d>lim)return;const dot=d>.01?(dx*fx+dz*fz)/d:1;if(fac&&dot<.25&&d>1.1)return;const s=d-dot*.8;if(s<bs){bs=s;best={k,o,label}}};
  for(const f of Level.fuses)if(!f.taken&&!!f.duct===!!V)tr('fuse',f,f.x,f.z,1.9,0,'[E] TAKE FUSE');
- if(V)return best;
+ if(!V){
  for(const it of Level.items)if(!it.taken)tr('item',it,it.x,it.z,1.7,1,it.t==='note'?'[E] READ NOTE':it.t==='fuse'?'[E] TAKE FUSE':carrying()>0?'HANDS FULL · SPACE TO DROP':it.t==='key'?'[E] TAKE BRASS KEY':it.t==='battery'?'[E] TAKE BATTERY':it.t==='screwdriver'?'[E] TAKE SCREWDRIVER':'[E] TAKE BOTTLE');
  const x=Level.xd;if(x&&!x.open)tr('exit',x,x.x,x.z,2.4,0,keys>=4?'[E] OPEN EXIT':`EXIT SEALED (${keys}/4)`);
  for(const l of Level.lockers)if(!lockerBusy(l))tr('locker',l,l.cx,l.cz,1.9,0,'[E] HIDE');
  /* doors and vents only react while you are actually LOOKING at them */
  for(const d of Level.doors){const dd=Math.hypot(d.wx-P.x,d.wz-P.z);if(d.target&&dd<.9)continue;if(!aimHit(d.wx,d.wz,d.axis,.85,0,2.4,2.8))continue;tr('door',d,d.wx,d.wz,2.8,0,d.locked?(hasKey?'[E] UNLOCK DOOR':'LOCKED'):d.target?'[E] CLOSE DOOR':'[E] OPEN DOOR')}
- for(const v of Level.vents){const dd=Math.hypot(v.x-P.x,v.z-P.z);if(dd>2.2||!aimHit(v.wx,v.wz,v.s[0]?'x':'z',.6,0,1.1,2.8))continue;
-  const lb=v.open?(crouchOn?'[E] CRAWL INTO THE VENT':'CROUCH (C) TO FIT IN THE VENT'):hasSD?(v.prog>0?`UNSCREWING ${Math.round(v.prog*100)}%`:'[HOLD E] UNSCREW THE VENT'):'SCREWED SHUT · NEEDS A SCREWDRIVER';if(dd-.8<bs){bs=dd-.8;best={k:'vent',o:v,label:lb}}}
+ }
+ /* vents: the cover is held by 4 screws, from either side of it */
+ for(const v of Level.vents){const dd=Math.hypot(v.fx-P.x,v.fz-P.z);if(dd>3)continue;const ax=v.n[0]?'x':'z';
+  if(v.open){if(!V&&!crouchOn&&dd<2.6&&aimHit(v.fx,v.fz,ax,.7,0,1.4,2.8)&&dd-.8<bs){bs=dd-.8;best={k:'vhint',o:v,label:'CROUCH (C) TO WALK INTO THE VENT'}}continue}
+  const s=screwAim(v);if(!s&&!aimHit(v.fx,v.fz,ax,.8,0,1.45,2.8))continue;
+  const lb=!hasSD?'SCREWED SHUT · NEEDS A SCREWDRIVER':s?(s.p>0?`UNSCREWING ${Math.round(s.p*100)}%`:`[HOLD E] UNSCREW · ${v.left} OF 4 LEFT`):`AIM AT A SCREW · ${v.left} OF 4 LEFT`;
+  if(dd-.8<bs){bs=dd-.8;best={k:s&&hasSD?'screw':'vhint',o:v,s,label:lb}}}
  return best}
 const carrying=()=>bot+bats+(hasKey?1:0)+(hasSD?1:0);
 const cnt=t=>t==='bottle'?bot:t==='battery'?bats:t==='key'?(hasKey?1:0):hasSD?1:0,heldType=()=>bot?'bottle':bats?'battery':hasKey?'key':hasSD?'screwdriver':null;
-function noiseAt(x,z,fl){if(V)return;fl=fl===undefined?P.fl:fl;if(!MP)en.hearNoise(x,z,fl);else if(Net.isHost())en.hearNoise(x,z,fl);else Net.throwB({k:2,u:Net.pid,x:r2(x),z:r2(z),f:fl})}
+function noiseAt(x,z,fl,force){if(V&&!force)return;fl=fl===undefined?P.fl:fl;if(!MP)en.hearNoise(x,z,fl);else if(Net.isHost())en.hearNoise(x,z,fl);else Net.throwB({k:2,u:Net.pid,x:r2(x),z:r2(z),f:fl})}
 function hud(){const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};set('botc',bot);set('batc',bats);set('notc',nNotes);
  if(cnt(sel)<=0){const n=['bottle','battery','key','screwdriver'].find(t=>cnt(t)>0);if(n)sel=n}
  {const ne=$('notn');if(ne&&ne.lastElementChild)ne.lastElementChild.textContent='/ '+NT}
@@ -147,7 +152,7 @@ function interact(){if(state!=='play')return;if(H){if(hideT>.8)leave();return}
  else if(t.k==='item')takeItem(t.o);
  else if(t.k==='exit'){const x=t.o;if(keys>=4){openExit();if(MP)Net.exit()}else{say(`It needs power. ${keys}/4 fuses.`);Aud.tone(90,.3,'square',.1)}}
  else if(t.k==='locker')hide(t.o);
- else if(t.k==='vent'){const v=t.o;if(v.open){if(crouchOn)startVent(v);else say('Too low to walk into. Crouch first (C).',2000)}else if(!hasSD)say('Screwed shut. You need a screwdriver.',2200)}
+ else if(t.k==='vhint'){const v=t.o;if(v.open)say('Crouch (C) and walk in.',1800);else if(!hasSD)say('Screwed shut. You need a screwdriver.',2200);else say('Four screws hold it. Aim at one and hold E.',2600)}
  else if(t.k==='door'){const d=t.o;if(d.locked){if(hasKey){hasKey=false;noiseAt(d.wx,d.wz);Level.unlock(d);d.target=1;if(MP){Net.unlock(d.id);Net.door(d.id,1)}Aud.keyget();Aud.dopen();say('The lock gives.',2500);hud()}else{Aud.locked();say('Locked. There must be a key somewhere.',2800)}return}
   d.target=d.target?0:1;if(MP)Net.door(d.id,d.target);d.target?Aud.dopen():Aud.dclose()}}
 function throwHeld(){if(state!=='play'||H||V)return;const t=heldType();if(!t)return;if(t==='bottle'){throwBottle();return}
@@ -163,31 +168,30 @@ function initDust(){const n=220,pg=new THREE.BufferGeometry(),a=new Float32Array
 function updDust(dt){const a=dust.geometry.attributes.position;for(let i=0;i<a.count;i++){let x=a.getX(i),y=a.getY(i)+dt*.05,z=a.getZ(i);const dx=x-P.x,dz=z-P.z;if(dx>8)x-=16;else if(dx<-8)x+=16;if(dz>8)z-=16;else if(dz<-8)z+=16;const fy=FY();if(y>fy+3||y<fy)y=fy+R()*.3;a.setXYZ(i,x,y,z)}a.needsUpdate=true}
 function springTrap(t){t.armed=false;trapT=2.6;kick=1;Aud.bang();Aud.tone(90,.3,'square',.2);say('A BEAR TRAP.',2200);noiseAt(t.x,t.z);if(MP)Net.door(8000+P.fl*10+t.i,1)}
 function ventOpened(v){const k=P.fl*10+v.i;VO.add(k);if(MP)Net.unlock(9000+k)}
-function ductAt(D,s){let i=0;s=Math.max(0,Math.min(D.len,s));while(i<D.seg.length-1&&s>D.seg[i]){s-=D.seg[i];i++}const a=D.P[i],b=D.P[i+1],L=D.seg[i]||1,k=s/L;return{x:a.x+(b.x-a.x)*k,y:a.y+(b.y-a.y)*k,z:a.z+(b.z-a.z)*k,tx:(b.x-a.x)/L,ty:(b.y-a.y)/L,tz:(b.z-a.z)/L}}
-function startVent(v){const s=v.s;VIN={v,t:0,x0:P.x,z0:P.z,x1:v.wx-s[0]*.55,z1:v.wz-s[1]*.55};crouchOn=true;yaw=Math.atan2(s[0],s[1])+Math.PI;pitch=-.25;Aud.locker()}
-/* the vent is a real shaft: you crawl in at the grille, climb the riser, crawl through the duct above the ceilings and climb down the other riser */
-function enterVent(v){const D=Level.duct,from=v===Level.vents[0]?0:1,s0=from?D.len:0,q=ductAt(D,s0);V={v,from,s:s0,dir:from?-1:1,go:1.6,y:q.y};P.x=q.x;P.z=q.z;crouchOn=true;P.crouch=true;P.hidden=true;const dx=from?-q.tx:q.tx,dz=from?-q.tz:q.tz;yaw=Math.atan2(-dx,-dz);pitch=-.1;snapT=.4;Aud.locker();say('Nothing can see you in here. W / S to crawl and climb, look where you want to go.',4200)}
-function leaveVent(end){const v=Level.vents[end],s=v.s;V=null;P.hidden=false;if(!v.open){v.open=true;ventOpened(v)}P.x=v.wx-s[0]*.55;P.z=v.wz-s[1]*.55;VOUT={v,t:0};yaw=Math.atan2(s[0],s[1])+Math.PI;pitch=-.2;snapT=.4;crouchOn=true;Aud.locker()}
-function unscrew(v,dt){v.prog=Math.min(1,v.prog+dt/2.6);ventSnd-=dt;if(ventSnd<=0){ventSnd=.55;Aud.tone(850+R()*350,.09,'sawtooth',.08,650);noiseAt(v.x,v.z)}
- if(v.prog>=1){v.open=true;ventOpened(v);Aud.tone(120,.3,'square',.16);noiseAt(v.x,v.z);say('The grate comes loose. Crouch (C) and crawl in.',3600)}}
+function screwAim(v){const cp=Math.cos(pitch),dx=-Math.sin(yaw)*cp,dy=Math.sin(pitch),dz=-Math.cos(yaw)*cp,ey=1.65-.6*crouch+py-.25*vk;let b=null,bd=.17;
+ for(const s of v.sc){if(s.out)continue;const ax=s.wx-P.x,ay=s.wy-ey,az=s.wz-P.z,t=ax*dx+ay*dy+az*dz;if(t<.1||t>2.8)continue;const d=Math.hypot(ax-dx*t,ay-dy*t,az-dz*t);if(d<bd){bd=d;b=s}}return b}
+/* the last screw: the cover drops, clangs on the floor and stays open for good. It is loud: he hears it wherever he is. */
+function ventOpen(v){v.open=true;v.left=0;v.vel=0;for(const s of v.sc){s.out=true;s.p=1;if(s.g)s.g.visible=false}
+ Aud.tone(150,.4,'square',.2,55);Aud.noise(.55,.7,1400,'bandpass');setTimeout(()=>{Aud.tone(260,.15,'square',.1,120);Aud.noise(.25,.4,2200,'bandpass')},280);
+ noiseAt(v.px,v.pz,undefined,true);ventOpened(v);say('The cover clangs to the floor. It stays open now. Crouch (C) and walk in.',4200)}
+/* hold E on a screw: it turns out of the plate, then it is gone */
+function unscrew(v,s,dt){s.p=Math.min(1,s.p+dt/1.3);ventSnd-=dt;if(ventSnd<=0){ventSnd=.38;Aud.tone(880+R()*520,.06,'sawtooth',.07,640);Aud.noise(.04,.07,4200,'highpass')}
+ if(!s.hrd){s.hrd=1;noiseAt(v.px,v.pz,undefined,true)}
+ if(s.p>=1){s.out=true;s.hrd=0;v.left--;if(s.g)s.g.visible=false;Aud.tone(1900,.09,'triangle',.12,1200);Aud.noise(.07,.18,5000,'highpass');
+  if(v.left<=0)ventOpen(v);else say(v.left+(v.left===1?' screw left.':' screws left.'),1300)}}
 function floorLook(){const T=Level.theme;if(scene&&scene.fog)scene.fog.density=T.fog*DV().fog;const e=$('dayl');if(e)e.textContent='DAY '+day+(Level.nF>1?' · '+T.name:'')}
 function swFloor(dir){const old=P.fl,to=old+dir;Level.use(to);P.fl=to;py-=dir*Level.FH;floorLook();Level.updVis(P.x,P.z,P.fl);
  if(!MP&&en.fl===old&&!en.cl&&(en.state==='chase'||(en.seen&&en.dist<22))){en.goF=to;en.state='travel';en.follow=true}}
 function update(dt){
- time+=dt;const K=paused?{}:KEYS;let mx=(K.KeyD?1:0)-(K.KeyA?1:0)+(paused?0:JOY.x),mz=(K.KeyS?1:0)-(K.KeyW?1:0)+(paused?0:JOY.z),mv=!H&&!V&&(mx||mz),run=false;setCfg();P.yaw=yaw;if(VIN){VIN.t+=dt;const k=ease(VIN.t/.55);P.x=VIN.x0+(VIN.x1-VIN.x0)*k;P.z=VIN.z0+(VIN.z1-VIN.z0)*k;mx=0;mz=0;mv=false;if(VIN.t>=.55){const v=VIN.v;VIN=null;enterVent(v)}}
- if(VOUT){VOUT.t+=dt;const v=VOUT.v,s=v.s,k=ease(VOUT.t/.55);P.x=v.wx-s[0]*.55+(v.fx-(v.wx-s[0]*.55))*k;P.z=v.wz-s[1]*.55+(v.fz-(v.wz-s[1]*.55))*k;mx=0;mz=0;mv=false;if(VOUT.t>=.55)VOUT=null}
+ time+=dt;const K=paused?{}:KEYS;let mx=(K.KeyD?1:0)-(K.KeyA?1:0)+(paused?0:JOY.x),mz=(K.KeyS?1:0)-(K.KeyW?1:0)+(paused?0:JOY.z),mv=!H&&(mx||mz),run=false;setCfg();P.yaw=yaw;
  if(false&&vfade>0){vfade=Math.max(0,vfade-dt*2.2);const fe=$('flash');fe.style.background='#000';fe.style.opacity=String(+Math.min(1,vfade).toFixed(3))}if(trapT>0){trapT-=dt;mx=0;mz=0;mv=false;K.ShiftLeft=0}
  P.hidden=!!H||!!V;P.lk=H;if(H){P.crouch=false;crouch=0}else if(V){P.crouch=true}
  if(H){hideT+=dt;yaw=H.yaw+Math.max(-.35,Math.min(.35,yaw-H.yaw));pitch=Math.max(-.22,Math.min(.22,pitch))}
- else if(V){const D=Level.duct,fw=-mz;
-  if(V.go>0){const st=Math.min(V.go,1.6*dt);V.s+=V.dir*st;V.go-=st;bob+=dt*5}
-  else if(fw){const q=ductAt(D,V.s);let ds;if(Math.abs(q.ty)>.5)ds=fw*Math.sign(q.ty)*1.8;else{const dd=q.tx*-Math.sin(yaw)+q.tz*-Math.cos(yaw);ds=Math.abs(dd)<.15?0:fw*Math.sign(dd)*1.3}
-   V.s=Math.max(0,Math.min(D.len,V.s+ds*dt));if(ds){bob+=dt*5;ventSnd-=dt;if(ventSnd<=0){ventSnd=.7;Aud.tone(70+R()*30,.07,'triangle',.05)}}}
-  const q=ductAt(D,V.s);P.x=q.x;P.z=q.z;V.y=q.y;pitch=Math.max(-1.2,Math.min(1.2,pitch));stam=Math.min(1,stam+.2*dt);
-  if(!(V.go>0)){if(V.s<=.03)leaveVent(0);else if(V.s>=D.len-.03)leaveVent(1)}}
- else{if(K.ShiftLeft&&crouchOn&&mv)crouchOn=false;const cr=crouchOn;P.crouch=cr;crouch+=((cr?1:0)-crouch)*Math.min(1,dt*10);if(exh>0)exh-=dt;run=!cr&&K.ShiftLeft&&mv&&stam>0&&exh<=0;if(exh<=0)stam=Math.max(0,Math.min(1,stam+(run?-.15:.2)*dt));if(stam<=0&&exh<=0){exh=2.6;K.ShiftLeft=0;Aud.tone(170,.6,'sine',.07,110);say('OUT OF BREATH',1600)}const sp=(cr?1.6:run?5.2:3.1)*(exh>0?.8:1);
+ else{if(K.ShiftLeft&&crouchOn&&mv&&!V)crouchOn=false;/* a low shaft or the mouth of an open vent: you cannot stand up there */if(!crouchOn&&!Level.vOK(P.x,P.z,false)&&Level.vOK(P.x,P.z,true))crouchOn=true;const cr=crouchOn;P.crouch=cr;crouch+=((cr?1:0)-crouch)*Math.min(1,dt*10);if(exh>0)exh-=dt;run=!cr&&K.ShiftLeft&&mv&&stam>0&&exh<=0;if(exh<=0)stam=Math.max(0,Math.min(1,stam+(run?-.15:.2)*dt));if(stam<=0&&exh<=0){exh=2.6;K.ShiftLeft=0;Aud.tone(170,.6,'sine',.07,110);say('OUT OF BREATH',1600)}const sp=(V?1.3:cr?1.6:run?5.2:3.1)*(exh>0?.8:1);
   if(mv){const l=Math.hypot(mx,mz);mx/=l;mz/=l;const c=Math.cos(yaw),s=Math.sin(yaw),vx=(mx*c+mz*s)*sp*dt,vz=(-mx*s+mz*c)*sp*dt;
-   const stuck=Level.blocked(P.x,P.z,.4);if(stuck||!Level.blocked(P.x+vx,P.z,.4))P.x+=vx;if(stuck||!Level.blocked(P.x,P.z+vz,.4))P.z+=vz;bob+=dt*(run?13:cr?5:8);stepT-=dt;if(stepT<=0){if(!cr)Aud.step(run);stepT=run?.3:cr?.7:.5}}}
+   const stuck=!Level.vOK(P.x,P.z,cr);if(stuck||Level.vOK(P.x+vx,P.z,cr))P.x+=vx;if(stuck||Level.vOK(P.x,P.z+vz,cr))P.z+=vz;bob+=dt*(run?13:cr?5:8);stepT-=dt;if(stepT<=0){if(V)Aud.tone(70+R()*30,.08,'triangle',.05);else if(!cr)Aud.step(run);stepT=run?.3:cr?.7:.5}}}
+ /* inside the wall block of a tunnel = in the vent: nothing in the house can see you, hear you or catch you here, even if he watched you climb in */
+ {const nv=!H&&Level.inVent(P.x,P.z);if(nv&&!V){V={};Aud.locker();if(!vHint){vHint=1;say('You are inside the walls. Nothing can see you in here.',4200)}}else if(!nv&&V)V=null;P.hidden=!!H||!!V;if(V)P.crouch=true;vk+=(((V||Level.inApron(P.x,P.z))?1:0)-vk)*Math.min(1,dt*8)}
  if(!H&&!V){const us=Level.unitAt(P.x,P.z);if(us&&us.p>=Level.ANX.f1-.05){const hh=Level.FH/2;if(us.t>=0&&py>hh*.5&&P.fl<Level.nF-1)swFloor(1);else if(us.t<0&&py<-hh*.5&&P.fl>0)swFloor(-1)}}
  py+=((V||H?0:Level.gy(P.x,P.z,undefined,py))-py)*Math.min(1,dt*14);if(V||H)py=0;
  if(!H&&!V&&trapT<=0)for(const t of Level.traps)if(t.armed&&Math.hypot(P.x-t.x,P.z-t.z)<.5){springTrap(t)}
@@ -195,11 +199,12 @@ function update(dt){
  scT-=dt;if(scT<=0&&!V){scT=28+R()*40;if(!chaseOn()){const k=R()*4|0;if(k===0)Aud.creak();else if(k===1)Aud.dclose(.35);else if(k===2)Aud.noise(1.8,.06,900,'bandpass');else[0,.28,.56].forEach(t=>setTimeout(()=>Aud.thud(.3),t*1000))}}
  const ch=chaseOn();if(ch!==wasCh){wasCh=ch;Aud.chase(ch);if(ch)say('RUN.',1200)}
  const d=en.dist,fear=Math.max(0,1-d/18);
+ if(V){pendKill=false;en.found=false}
  if(MP?pendKill:(en.found||(!V&&(d<1.15&&!H&&en.state!=='patrol'||d<.9&&!H)))){en.found=false;pendKill=false;scare();return}
  if(d<16){eStep-=dt;if(eStep<=0){Aud.thud(1-d/16);eStep=ch?.4:.8}}
  const bs=SET.bob?1:0;if(H)cam.position.set(H.cx-H.nx*.08,FY()+1.55+Math.sin(time*1.6)*.004,H.cz-H.nz*.08);
- else if(V)cam.position.set(P.x,FY()+V.y+Math.sin(bob)*.012,P.z);
- else{cam.position.set(P.x,FY()+py+1.65-.6*crouch+Math.sin(bob)*(run?.07:.04)*bs*(1-.6*crouch),P.z);const sh=(fear>.5?(fear-.5)*.02:0)+(trapT>0?.05:0);cam.position.x+=(R()-.5)*sh;cam.position.z+=(R()-.5)*sh}
+
+ else{cam.position.set(P.x,FY()+py+1.65-.6*crouch-.25*vk+Math.sin(bob)*(run?.07:.04)*bs*(1-.6*crouch),P.z);const sh=(fear>.5?(fear-.5)*.02:0)+(trapT>0?.05:0);cam.position.x+=(R()-.5)*sh;cam.position.z+=(R()-.5)*sh}
  {let ry=yaw,rp=pitch;/* entering/leaving a locker used to snap the view: ease it */
   if(snapT>0){snapT-=dt;const k=Math.min(1,dt*12);let dy=yaw-visYaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));visYaw+=dy*k;visPitch+=(pitch-visPitch)*k;vp.x+=(cam.position.x-vp.x)*k;vp.y+=(cam.position.y-vp.y)*k;vp.z+=(cam.position.z-vp.z)*k;ry=visYaw;rp=visPitch;cam.position.set(vp.x,vp.y,vp.z)}
   else{visYaw=yaw;visPitch=pitch;vp.x=cam.position.x;vp.y=cam.position.y;vp.z=cam.position.z}
@@ -218,7 +223,7 @@ function update(dt){
  let pr='';if(H)pr=hideT>.8?'[E] LEAVE LOCKER':'';else{
   const x=Level.xd,xd=x?Math.hypot(x.x-P.x,x.z-P.z):99;if(x&&x.open&&x.t>.8&&xd<1.3){$('flash').style.background='#000';$('flash').style.opacity=1;state='won';setTimeout(()=>{$('flash').style.opacity=0;MP?mpEscape():over(true)},900);return}
   const tg=target();pr=tg?tg.label:'';
-  if(tg&&tg.k==='vent'&&!tg.o.open&&hasSD&&K.KeyE&&!V)unscrew(tg.o,dt);else for(const v of Level.vents)if(!v.open&&v.prog>0)v.prog=Math.max(0,v.prog-dt*.4)}
+  if(tg&&tg.k==='screw'&&hasSD&&K.KeyE)unscrew(tg.o,tg.s,dt);for(const v of Level.vents)if(!v.open)for(const s of v.sc)if(!s.out&&s.p>0&&!(tg&&tg.s===s&&K.KeyE)){s.p=Math.max(0,s.p-dt*.6);if(s.p<=0)s.hrd=0}}
  {const pe=$('prompt'),pv=SET.hints?mt(pr):'';if(pe.textContent!==pv)pe.textContent=pv}ws('stamfill','width',Math.round(stam*1000)/10+'%')}
 function updHeld(dt,mv,run){const t=!H&&state==='play'&&cnt(sel)>0?sel:null;for(const k in HELD)HELD[k].visible=k===t;if(!t)return;kick=Math.max(0,kick-dt*3.2);const h=HELD[t],bs=SET.bob&&mv?1:0;
  h.position.set(.27+Math.sin(bob*.5)*.01*bs,-.27+Math.abs(Math.sin(bob))*.014*bs-kick*.3-crouch*.02,-.52+kick*.16);h.rotation.set(-.35-kick*1.2,.5+Math.sin(time*.7)*.03,.15+Math.sin(time*1.1)*.02)}
@@ -277,7 +282,7 @@ function over(w){if(MP&&!w){mpDie();return}state=w?'won':'dead';const fin=!w&&da
 function disposeScene(sc){sc.traverse(o=>{if(o.geometry&&o.geometry.dispose)o.geometry.dispose();const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];for(const m of ms){for(const k in m){const v=m[k];if(v&&v.isTexture)v.dispose()}m.dispose()}})}
 function mkWorld(seed,multi){if(scene){scene.remove(cam);scene.remove(amb);disposeScene(scene)}
  scene=new THREE.Scene();scene.background=new THREE.Color(0x020101);scene.fog=new THREE.FogExp2(0x010100,.12);scene.add(amb);scene.add(cam);
- Level.make(scene,seed,multi);Level.FL.forEach((F,f)=>F.items.forEach(it=>it.nid=f+'_'+it.i));NT=Level.noteTotal;VO.forEach(k=>{const F=Level.FL[Math.floor(k/10)],vt=F&&F.vents[k%10];if(vt){vt.open=true;vt.ang=1.45}});bodies.length=0;
+ Level.make(scene,seed,multi);Level.FL.forEach((F,f)=>F.items.forEach(it=>it.nid=f+'_'+it.i));NT=Level.noteTotal;VO.forEach(k=>{const F=Level.FL[Math.floor(k/10)],vt=F&&F.vents[k%10];if(vt)Props.ventOpenNow(vt)});bodies.length=0;
  const st=Level.start;P.x=st.x;P.z=st.z;P.fl=Level.sf;py=0;V=null;crouchOn=false;stairFx=null;yaw=st.yaw;pitch=0;
  en=new Enemy(scene,Level.FL[Level.ef].enemyStart);en.fl=Level.ef;en.pfl=P.fl;en.g.position.y=Level.fy(en.fl);en.pv.visible=en.fl===P.fl;en.onDoor=d=>{if(MP&&Net.isHost())Net.door(d.id,1)};
  en.onStairs=un=>{const to=en.fl;en.wait=.6;en.T=null;en.seen=false;
@@ -305,9 +310,9 @@ function netItem(nid,v){const[it,f]=findItem(nid);
  if(v===null||v===0){if(it){if(it.t==='fuse'&&!it.taken&&!it.mine)addFuse(!wLive(),'remote');if(it.drop)rmItemF(it,f);else{it.taken=true;it.g.visible=false;it.sp.visible=false}}return}
  if(typeof v==='object'&&!it){const s=String(v.t),t=TI[s.slice(0,2)]||'bottle',fl=Math.max(0,Math.min(Level.nF-1,+s.slice(2)|0));Props.dropItem(t,v.x,v.z,nid,fl);trapHit(v.x,v.z,fl);if(wLive()&&Net.isHost()&&en)en.hearNoise(v.x,v.z,fl)}}
 const WH={fuse:(i,v)=>{for(const F of Level.FL){const f=F.fuses.find(q=>q.i===i);if(f){fuseGot(f,v,!wLive());return}}},exit:()=>openExit(!wLive()),
- door:(id,v)=>{if(id>=8000&&id<9000){const fl=Math.floor((id-8000)/10),tp=Level.FL[fl]&&Level.FL[fl].traps[(id-8000)%10];if(tp)tp.armed=false;return}if(id>=9000){const fl=Math.floor((id-9000)/10),vt=Level.FL[fl]&&Level.FL[fl].vents[(id-9000)%10];if(vt)vt.open=!!v;return}
+ door:(id,v)=>{if(id>=8000&&id<9000){const fl=Math.floor((id-8000)/10),tp=Level.FL[fl]&&Level.FL[fl].traps[(id-8000)%10];if(tp)tp.armed=false;return}if(id>=9000){const fl=Math.floor((id-9000)/10),vt=Level.FL[fl]&&Level.FL[fl].vents[(id-9000)%10];if(vt&&v)Props.ventOpenNow(vt);return}
   const d=Level.doorById(id);if(!d||d.target===v)return;d.target=v;d.rate=undefined;const fl=Math.floor(id/100);if(fl===P.fl){const dd=Math.hypot(d.wx-P.x,d.wz-P.z);if(dd<26){const vol=Math.max(.15,1-dd/26);v?Aud.dopen(vol):Aud.dclose(vol)}}},
- unlock:id=>{if(id>=9000){const k=id-9000,F=Level.FL[Math.floor(k/10)],vt=F&&F.vents[k%10];if(vt){vt.open=true;vt.ang=1.45}return}const fl=Math.floor(id/100),d=Level.doorById(id);if(d&&d.locked)Level.withFloor(fl,()=>Level.unlock(d))},item:netItem};
+ unlock:id=>{if(id>=9000){const k=id-9000,F=Level.FL[Math.floor(k/10)],vt=F&&F.vents[k%10];if(vt)Props.ventOpenNow(vt);return}const fl=Math.floor(id/100),d=Level.doorById(id);if(d&&d.locked)Level.withFloor(fl,()=>Level.unlock(d))},item:netItem};
 /* ----- avatars of the other players ----- */
 function mkAv(pid){if(pid===Net.pid||av[pid])return;const p=Net.players[pid],a=new Avatar(p?p.n:'?',Net.slot(pid),scene);
  a.T={pid,x:0,z:0,px:0,pz:0,hidden:false,lk:null,noisy:false,crouch:false,yaw:0,live:false,fl:0,held:null};try{a.held=Props.held();for(const k in a.held){const g=a.held[k];g.visible=false;g.position.set(.22,1.0,.32);a.g.add(g)}}catch(e){}a.fl=0;a.lit=false;
@@ -356,7 +361,7 @@ function mpDie(){const d=[];let k=0;const put=t=>{const ang=k*2.4,r=.35+.1*k++;l
  if(H){const l=H;H=null;setTimeout(()=>{l.open=false},2500)}dead=true;P.hidden=false;P.lk=null;Net.setA(1);en.state='patrol';en.T=null;en.wait=0;en.cool=3;enterSpec('You were caught.')}
 function mpEscape(){escd=true;if(H)H=null;Net.setA(2);enterSpec('YOU ESCAPED.');say('YOU ESCAPED.',6000)}
 /* ----- day / party flow ----- */
-function resetRun(){VIN=null;VOUT=null;exh=0;vfade=0;bodies.length=0;keys=0;bat=1;bot=0;hasKey=false;hasSD=false;crouchOn=false;V=null;py=0;stairFx=null;bats=0;sel='bottle';nNotes=0;stam=1;H=null;fon=true;blackout=0;crouch=0;dead=false;escd=false;paused=false;pendKill=false;dying={};ending=false;wasCh=false;noteT=0;eventT=15;enNet=null;enS.buf=null;enS.off=null;enS.lastTs=null;lastESent=0;lastEStr='';
+function resetRun(){vk=0;vHint=0;exh=0;vfade=0;bodies.length=0;keys=0;bat=1;bot=0;hasKey=false;hasSD=false;crouchOn=false;V=null;py=0;stairFx=null;bats=0;sel='bottle';nNotes=0;stam=1;H=null;fon=true;blackout=0;crouch=0;dead=false;escd=false;paused=false;pendKill=false;dying={};ending=false;wasCh=false;noteT=0;eventT=15;enNet=null;enS.buf=null;enS.off=null;enS.lastTs=null;lastESent=0;lastEStr='';
  P.hidden=false;P.lk=null;P.crouch=false;P.noisy=false;P.pid=Net.pid;for(const k in KEYS)KEYS[k]=0;Net.resetPose();
  document.querySelectorAll('#fuses i').forEach(e=>e.classList.remove('on'));$('obj').textContent='FIND THE FUSES';$('note').classList.add('hidden');$('hud').classList.remove('spec');
  ['spec','over','pause','killfx','lockerfx'].forEach(hide_);ren.domElement.style.filter='';$('flash').style.opacity=0;$('chasefx').style.opacity=0;Aud.setHum(0,0);hud()}
