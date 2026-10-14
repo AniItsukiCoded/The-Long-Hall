@@ -69,4 +69,8 @@ The database URL is already in `js/net.js` (`FB_CONFIG`).
 - **Brightness** 50-300% in Options. 100% is each device's own normal brightness (PC, Chromebook, Phone and Tablet keep their different baselines); the slider scales on top of that for every device.
 - **Difficulties** are now Story, Easy, Normal, Hard, Extreme, Hell and Impossible. The flashlight battery also drains faster or slower per difficulty. Saved difficulties are converted automatically, so a saved Normal stays Normal.
 - **New options:** render resolution, vignette strength, chase zoom on/off, crosshair dot, FPS counter, toggle sprint (keyboard), left-handed layout (touch). Sliders now show their value.
-- **Fog & darkness** can be switched off in Options for brighter halls with no fog. At **Extreme and above** they are forced on. In multiplayer this follows the party's difficulty, so everyone in an Extreme+ party gets them. It is derived from the difficulty already stored in the party (`m/df`), so **the database rules need no change** (they already allow difficulty 0-6); note that Firebase rules cannot stop a modified client from ignoring it.
+
+## v6.4.0: lit halls, fog & darkness option
+- The difficulty **Nightmare** is now called **Extreme**.
+- **Fog & darkness** is **off by default**: the halls are fully lit and there is no fog. Tick it in Options for the dark version. At **Extreme and above** it is forced on. In multiplayer this follows the party's difficulty, so everyone in an Extreme+ party gets it. It is derived from the difficulty already stored in the party (`m/df`), so the database rules need no change; note that Firebase rules cannot stop a modified client from ignoring it.
+- When fog and darkness are off, the halls get strong warm ambient light and stronger wall lights, so everything is clearly visible. The Brightness slider still scales on top of this.
