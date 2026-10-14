@@ -22,7 +22,7 @@ const Net={
  /* ---------- party ---------- */
  create(nick,done,pub){pub=pub!==false;if(!this.init())return done('Could not load Firebase.');this.nick=this.clean(nick);this.pid=this.mkPid();let tries=0;
   const attempt=()=>{if(++tries>6)return done('Could not create a party. Try again.');const code=this.mkCode(),r=this.db.ref('p/'+code);
-   r.transaction(cur=>cur===null?{m:{h:this.pid,s:0,d:1,sd:1,df:1,pb:pub?1:0},t:firebase.database.ServerValue.TIMESTAMP,u:{[this.pid]:{n:this.nick,a:0}}}:undefined,(err,ok)=>{
+   r.transaction(cur=>cur===null?{m:{h:this.pid,s:0,d:1,sd:1,df:2,pb:pub?1:0},t:firebase.database.ServerValue.TIMESTAMP,u:{[this.pid]:{n:this.nick,a:0}}}:undefined,(err,ok)=>{
     if(err)return done('Could not reach the server.');if(!ok)return attempt();this.enter(code,done)},false)};attempt()},
  join(code,nick,done){if(!this.init())return done('Could not load Firebase.');code=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(code.length!==5)return done('Enter the 5 character party code.');
   this.nick=this.clean(nick);this.pid=this.mkPid();const r=this.db.ref('p/'+code);
