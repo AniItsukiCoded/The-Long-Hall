@@ -190,12 +190,64 @@ body.dev-mobile #touch.hidden{display:none!important}
 #joy.on{opacity:1}
 #joyk{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:rgba(236,230,216,.42);border:2px solid rgba(236,230,216,.75)}
 #tbtns{position:absolute;right:max(14px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,auto);grid-auto-flow:row;gap:8px;align-items:center;justify-items:center;pointer-events:none}
-.tb{pointer-events:auto;touch-action:none;width:56px;height:56px;border-radius:50%;background:rgba(0,0,0,.5);border:2px solid rgba(236,230,216,.55);color:var(--c);font:italic 12px 'IM Fell English',Georgia,serif;letter-spacing:.03em;padding:0;-webkit-user-select:none;user-select:none;text-shadow:0 1px 0 #000}
-.tb.big{width:84px;height:84px;font-size:19px;grid-row:1/3;grid-column:3;border-color:#fff}
+.tb{--k:calc(var(--tb0,1)*var(--tbs,1));pointer-events:auto;touch-action:none;width:calc(56px*var(--k));height:calc(56px*var(--k));border-radius:50%;background:rgba(0,0,0,.5);border:2px solid rgba(236,230,216,.55);color:var(--c);font:italic 12px 'IM Fell English',Georgia,serif;font-size:calc(12px*var(--k));letter-spacing:.03em;padding:0;-webkit-user-select:none;user-select:none;text-shadow:0 1px 0 #000}
+.tb.big{width:calc(84px*var(--k));height:calc(84px*var(--k));font-size:calc(19px*var(--k));grid-row:1/3;grid-column:3;border-color:#fff}
 .tb.on{background:rgba(236,230,216,.4);color:#fff}
 .tb.run{grid-column:2/4;border-radius:28px;width:100%}
 .tb.run.on{border-color:#fff;box-shadow:0 0 12px rgba(236,230,216,.5)}
-#tpause{position:absolute;top:max(10px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));width:44px;height:44px;font-size:16px;font-style:normal}
+#tpause{position:absolute;top:max(10px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));width:calc(44px*var(--k));height:calc(44px*var(--k));font-size:calc(16px*var(--k));font-style:normal}
 #rot{position:fixed;inset:0;z-index:50;background:#000;align-items:center;justify-content:center;text-align:center;font-size:28px;padding:30px}
 @media(orientation:portrait){body.dev-mobile #rot{display:flex}}
 @media(hover:none){.gb:hover{transform:none}}
+
+/* ---------- v6.2.0: tablet mode, device picker, in-game options ---------- */
+body{--tb0:1}body.dev-tablet{--tb0:1.4}
+body.dev-tablet #joy{width:152px;height:152px;margin:-76px 0 0 -76px}
+body.dev-tablet #joyk{width:68px;height:68px;margin:-34px 0 0 -34px}
+body.dev-tablet #tbtns{gap:12px}
+body.dev-tablet #hud{font-size:18px}
+body.dev-tablet #fuses{top:16px;left:22px}body.dev-tablet #dayl{top:16px;right:22px;font-size:21px}body.dev-tablet #plist{top:48px;right:22px;font-size:18px}
+body.dev-tablet #obj{font-size:19px}body.dev-tablet #inv{left:22px;top:56px;font-size:18px;gap:8px}body.dev-tablet #inv span{min-width:96px}
+body.dev-tablet #prompt{font-size:clamp(20px,3.8vh,28px)}body.dev-tablet #msg{font-size:clamp(24px,4.8vh,34px)}
+body.dev-tablet #tpause{top:max(14px,env(safe-area-inset-top));right:max(20px,env(safe-area-inset-right))}
+.rsrow{flex-basis:100%;display:flex;justify-content:center;margin-top:4px}
+#settings.ingame #dcol{display:none}
+#pOpt{text-align:center}
+#setup{z-index:35;background:radial-gradient(ellipse at 50% 38%,#1d0e0e 0%,#080404 62%,#000 100%);font-family:'IM Fell English',Georgia,serif;font-style:italic;overflow-y:auto;justify-content:center;justify-content:safe center}
+#setup::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.65) 100%)}
+#setup .sw{position:relative;display:flex;flex-direction:column;align-items:center;gap:clamp(8px,2.2vh,18px);max-width:min(760px,94vw);animation:setupIn .7s ease-out both}
+#setup .sk{font-size:clamp(14px,2.6vh,20px);letter-spacing:.34em;text-transform:uppercase;opacity:.5}
+#setup h2{margin:0;font-family:Rye,'IM Fell English',Georgia,serif;font-style:normal;font-weight:400;font-size:clamp(34px,8vh,64px);letter-spacing:.06em;color:#f4f0e6;text-shadow:0 4px 0 #000,0 0 36px rgba(160,0,0,.45);text-decoration:none}
+#setup .sq{margin:0 0 clamp(4px,1.6vh,14px);font-size:clamp(19px,3.8vh,30px);opacity:.85;max-width:90vw}
+#setupCards{display:flex;gap:clamp(12px,3vw,28px);justify-content:center;flex-wrap:wrap}
+.dcard{position:relative;display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1.2vh,10px);width:clamp(170px,30vw,260px);padding:clamp(14px,3vh,26px) clamp(12px,2vw,20px);background:rgba(0,0,0,.45);border:2px solid rgba(236,230,216,.32);border-radius:4px;color:var(--c);font:inherit;cursor:pointer;text-shadow:0 2px 0 #000;transition:transform .18s,border-color .18s,background .18s,box-shadow .18s,color .18s}
+.dcard svg{width:clamp(54px,12vh,92px);height:clamp(54px,12vh,92px);fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;opacity:.9;transition:transform .25s}
+.dcard b{font-weight:400;font-size:clamp(26px,5vh,38px);line-height:1}
+.dcard span{font-size:clamp(14px,2.6vh,18px);line-height:1.3;opacity:.7}
+.dcard em{position:absolute;top:-11px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:13px;letter-spacing:.08em;background:#2a1010;border:1px solid rgba(236,230,216,.35);padding:1px 10px;border-radius:10px;opacity:.9}
+.dcard:hover{transform:translateY(-4px);border-color:rgba(236,230,216,.8);background:rgba(40,12,12,.6);box-shadow:0 0 28px rgba(176,42,42,.35)}
+.dcard:hover svg{transform:scale(1.07)}
+.dcard.on{background:var(--c);color:#16100c;border-color:#fff;text-shadow:none;box-shadow:0 0 0 3px rgba(176,42,42,.7),0 0 34px rgba(176,42,42,.55);transform:translateY(-4px)}
+.dcard.on span{opacity:.8}.dcard.on em{background:#16100c;color:var(--c)}
+.dcard:focus-visible{outline:3px solid #d8b04a;outline-offset:3px}
+#setupGo{text-align:center;margin-top:clamp(2px,1vh,10px);border:3px solid var(--c);padding:4px 30px;transition:opacity .2s,background .15s,transform .15s}
+#setupGo:not(:disabled):hover{transform:none;background:rgba(255,255,255,.14)}
+#setupGo:disabled{opacity:.3}
+@keyframes setupIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){#setup .sw{animation:none}.dcard,.dcard svg{transition:none}}
+body.dev-mobile #setup,body.dev-chromebook #setup{gap:12px}
+
+/* ---------- v6.3.0: bigger options screen, value readouts, FPS, left-handed ---------- */
+#settings{overflow-y:auto;justify-content:center;justify-content:safe center}
+#settings #optBox{max-width:1320px;gap:clamp(18px,3.5vw,56px) clamp(18px,4vw,64px)}
+#settings .col{min-width:min(300px,88vw);max-width:420px}
+#settings h3{margin:6px 0 0}
+.sl output{opacity:.75;font-size:.82em;margin-left:6px;font-style:normal;letter-spacing:.03em}
+.oh{font-size:15px;opacity:.55;margin-top:-8px;text-align:center}
+.cbs.one{grid-template-columns:1fr}
+#fps{position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:60;font:15px/1 monospace;color:#9f9;background:rgba(0,0,0,.55);padding:3px 9px;border-radius:3px;pointer-events:none}
+body.lefty #joyz{left:auto;right:0}body.lefty #lookz{right:auto;left:0}
+body.lefty #tbtns{right:auto;left:max(14px,env(safe-area-inset-left))}
+@media(max-height:520px){#settings .oh{display:none}}
+
+.cb.lock{opacity:.55;cursor:not-allowed}.cb.lock i::after{content:'\1F512';font-size:18px}
