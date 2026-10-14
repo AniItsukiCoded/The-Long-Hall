@@ -4,8 +4,9 @@ cv(w,h,fn){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.ge
 side(cell){const E=cell;return[[1,0],[-1,0],[0,1],[0,-1]].find(([a,b])=>Level.g[E[1]+b]&&Level.g[E[1]+b][E[0]+a]===1)},
 
 dot(){return this._dot||(this._dot=this.cv(32,32,(x)=>{const g=x.createRadialGradient(16,16,0,16,16,16);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.45,'rgba(255,255,255,.55)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,32,32)}))},
-held(){const M=THREE.MeshStandardMaterial,mat=(c,o={})=>new M(Object.assign({color:c,emissive:c,emissiveIntensity:.28,roughness:.5,metalness:.2,depthTest:false,fog:false},o)),H={};
- const add=(g,geo,m,x,y,z,rx=0,ry=0,rz=0)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.rotation.set(rx,ry,rz);o.renderOrder=20;g.add(o);return o};
+/* world=true: the copy another player carries on his avatar. It must be depth tested like any other object, or it shows through his own body and through walls. The first person copy is drawn on top of everything. */
+held(world){const M=THREE.MeshStandardMaterial,mat=(c,o={})=>new M(Object.assign({color:c,emissive:c,emissiveIntensity:.28,roughness:.5,metalness:.2,depthTest:!!world,fog:!!world},o)),H={};
+ const add=(g,geo,m,x,y,z,rx=0,ry=0,rz=0)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.rotation.set(rx,ry,rz);o.renderOrder=world?0:20;g.add(o);return o};
  const gm=mat(0x4fa35c,{transparent:true,opacity:.85,roughness:.15}),br=mat(0xb08a3a,{metalness:.9,roughness:.35}),bk=mat(0x202020),cu=mat(0xd8a020);
  let g=new THREE.Group();add(g,new THREE.CylinderGeometry(.04,.046,.2,12),gm,0,0,0);add(g,new THREE.CylinderGeometry(.016,.04,.08,12),gm,0,.14,0);add(g,new THREE.CylinderGeometry(.018,.018,.02,10),mat(0x6a4a2a),0,.19,0);H.bottle=g;
  g=new THREE.Group();add(g,new THREE.CylinderGeometry(.034,.034,.14,12),bk,0,0,0);add(g,new THREE.CylinderGeometry(.036,.036,.06,12),cu,0,-.01,0);add(g,new THREE.CylinderGeometry(.014,.014,.025,10),br,0,.08,0);H.battery=g;
@@ -181,9 +182,19 @@ update(dt,t,P){Level.lockers.forEach(l=>{l.ang+=((l.open?-1.9:0)-l.ang)*Math.min
  const x=Level.xd;if(x&&x.open){x.t+=dt;x.glow.visible=true;x.door.position.y=Math.min(4,1.275+x.t*1.1)}
  Level.doors.forEach(d=>{d.o+=(d.target-d.o)*Math.min(1,dt*(d.rate||6));if(Math.abs(d.target-d.o)<.01)d.o=d.target;d.hg.rotation.y=d.o*d.sw*1.7;d.pc.off=d.o>.45;d.lm.visible=d.locked;if(d.locked&&d.lg)d.lg.forEach(q=>q.material.opacity=.45+.35*Math.sin(t*3.2+d.id))});
  Level.traps.forEach(t=>{t.ang+=((t.armed?0:1.4)-t.ang)*Math.min(1,dt*20);if(t.jA){t.jA.rotation.x=-t.ang;t.jB.rotation.x=t.ang}});
- Level.vents.forEach(v=>{if(v.open){if(v.ang<1.52){v.vel=(v.vel||0)+dt*16;v.ang=Math.min(1.52,v.ang+v.vel*dt);if(v.ang>=1.52&&!v.bn){v.bn=1;v.ang=1.38;v.vel=-1.2}}}
-  else if(v.hg)for(const s of v.sc){if(s.out||!s.g)continue;s.g.position.z=s.z0+s.p*.05;s.g.rotation.z=s.p*14}
-  if(v.hg)v.hg.rotation.x=v.ang;if(!v.open)v.bn=0;});
+ Level.vents.forEach(v=>{if(v.open&&!v.done){
+   /* a plank hinged on its bottom edge: gravity pulls harder the further it has tipped. At the floor it bounces back once and settles. */
+   v.vel+=dt*11.5*Math.sin(Math.max(.08,v.ang));v.ang+=v.vel*dt;
+   if(v.ang>=1.52){v.ang=1.52;if(v.vel>1.4&&v.bn<2){v.bn++;v.vel=-v.vel*.3}else{v.vel=0;v.done=1}}
+   if(v.ang<.05){v.ang=.05;v.vel=Math.abs(v.vel)}
+   /* once it tips far enough the bottom edge slips out of the frame and the cover slides a little way into the room */
+   if(v.hg)v.hg.position.z=.05+.2*Math.pow(v.ang/1.52,4)}
+  if(v.hg)v.hg.rotation.x=v.ang});
+ /* screws that have fallen out */
+ if(this.sfx)for(let i=this.sfx.length-1;i>=0;i--){const f=this.sfx[i],m=f.m;f.t+=dt;
+  if(!f.rest){f.vy-=9.8*dt;m.position.y+=f.vy*dt;m.position.z+=f.vz*dt;m.position.x+=f.vx*dt;m.rotation.x+=f.sx*dt;m.rotation.z+=f.sz*dt;
+   if(m.position.y<.012){m.position.y=.012;if(f.vy<-.9&&f.b<3){f.vy=-f.vy*.38;f.vz*=.6;f.vx*=.6;f.b++}else{f.rest=1}}}
+  if(f.t>2.8){if(m.parent)m.parent.remove(m);this.sfx.splice(i,1)}}
  Level.items.forEach(it=>{if(it.taken)return;it.sp.material.opacity=.3+.25*Math.sin(t*2.4+it.i*1.3)})}};
 
 Object.assign(Props,{
@@ -421,7 +432,7 @@ stairsB(scene){if(!Level.stairs.length)return;
 
 /* ---------- vents: real 3D tunnels inside the wall blocks, each ending in a screwed-shut grille ---------- */
 Object.assign(Props,{
-ventsB(scene){const L=Level,N=L.vnet;if(!N||!L.vents.length)return;
+ventsB(scene){const L=Level,N=L.vnet;this.sfx=[];if(!N||!L.vents.length)return;
  const S=L.S,WH=L.FH-.05,M=this.hm(),TW=.65,TH=1.3,LT=.03,warm=new THREE.Color(0xffa04a);
  /* 1. the solid wall mass around every tunnel cell: 9 pieces per cell, the shaft cut out of the middle. UVs follow world position so the faces match the neighbouring walls. */
  {const pos=[],nor=[],uv=[],idx=[];
@@ -444,9 +455,11 @@ ventsB(scene){const L=Level,N=L.vnet;if(!N||!L.vents.length)return;
   for(const c of N.cells){const a=c.a,x=c.x,z=c.z,h=TH-2*LT,y=TH/2;
    reg(x-TW,x+TW,z-TW,z+TW);
    if(a.e)reg(x+TW,x+1.5,z-TW,z+TW);if(a.w)reg(x-1.5,x-TW,z-TW,z+TW);if(a.s)reg(x-TW,x+TW,z+TW,z+1.5);if(a.n)reg(x-TW,x+TW,z-1.5,z-TW);
-   /* side panels: along the open arms, and a cap across every closed arm of the middle square */
-   if(a.e||a.w){const x0=x-(a.w?1.5:TW),x1=x+(a.e?1.5:TW);for(const sz of[-1,1])B(lm,x1-x0,h,LT,(x0+x1)/2,y,z+sz*(TW-LT/2))}
-   if(a.n||a.s){const z0=z-(a.n?1.5:TW),z1=z+(a.s?1.5:TW);for(const sx of[-1,1])B(lm,LT,h,z1-z0,x+sx*(TW-LT/2),y,(z0+z1)/2)}
+   /* side panels: two along every open arm (from the middle square out to the cell edge), and a cap across every closed arm of the middle square.
+      (They used to run the full length through the middle square, which walled off the other passage at every corner and T junction.) */
+   {const ml=(TW+1.5)/2,al=1.5-TW;
+    if(a.e)for(const sz of[-1,1])B(lm,al,h,LT,x+ml,y,z+sz*(TW-LT/2));if(a.w)for(const sz of[-1,1])B(lm,al,h,LT,x-ml,y,z+sz*(TW-LT/2));
+    if(a.s)for(const sx of[-1,1])B(lm,LT,h,al,x+sx*(TW-LT/2),y,z+ml);if(a.n)for(const sx of[-1,1])B(lm,LT,h,al,x+sx*(TW-LT/2),y,z-ml)}
    if(!a.e)B(lm,LT,h,2*TW,x+TW-LT/2,y,z);if(!a.w)B(lm,LT,h,2*TW,x-TW+LT/2,y,z);if(!a.s)B(lm,2*TW,h,LT,x,y,z+TW-LT/2);if(!a.n)B(lm,2*TW,h,LT,x,y,z-TW+LT/2);
    /* a rib every metre and a half */
    const rib=(px,pz,alongX)=>{const w=2*TW-2*LT;if(alongX){B(dk,.06,.05,w,px,TH-LT-.025,pz);B(dk,.06,.05,w,px,LT+.025,pz);for(const sz of[-1,1])B(dk,.06,h,.05,px,y,pz+sz*(TW-LT-.025))}
@@ -462,7 +475,7 @@ ventsB(scene){const L=Level,N=L.vnet;if(!N||!L.vents.length)return;
    x.fillStyle='rgba(110,60,20,.35)';for(let i=0;i<6;i++)x.fillRect(14+Math.random()*(w-28),h-30-Math.random()*40,3,30)}),
   gm=new THREE.MeshStandardMaterial({map:gt,transparent:true,alphaTest:.4,side:THREE.DoubleSide,roughness:.5,metalness:.7}),
   hd=new THREE.MeshStandardMaterial({color:0x9aa09c,metalness:.9,roughness:.3}),sl=new THREE.MeshStandardMaterial({color:0x111111,roughness:.8});
- for(const v of L.vents){const g=new THREE.Group();g.position.set(v.fx,0,v.fz);g.rotation.y=Math.atan2(v.n[0],v.n[1]);scene.add(g);
+ for(const v of L.vents){const g=new THREE.Group();g.position.set(v.fx,0,v.fz);g.rotation.y=Math.atan2(v.n[0],v.n[1]);scene.add(g);v.grp=g;
   const rb=this.batch(),B=(m,...a)=>rb.box(m,...a),dk=M.steelD;
   /* local +z points out into the room, +y up, the opening is 1.3 x 1.3 m at floor level */
   B(dk,.09,1.46,.07,-.74,.73,.035);B(dk,.09,1.46,.07,.74,.73,.035);B(dk,1.58,.09,.07,0,1.35,.035);B(dk,1.4,.03,.07,0,.015,.035);
@@ -481,6 +494,15 @@ ventsB(scene){const L=Level,N=L.vnet;if(!N||!L.vents.length)return;
   L.src.push({x:v.cx+v.n[0]*.9,y:1.0,z:v.cz+v.n[1]*.9,col:warm,d:4,I:()=>.22});
   if(v.open)this.ventOpenNow(v)}},
 /* open a vent instantly (a vent you opened earlier, or that another player opened) */
-ventOpenNow(v){v.open=true;v.left=0;v.ang=1.52;for(const s of v.sc){s.out=true;s.p=1;if(s.g)s.g.visible=false}if(v.hg)v.hg.rotation.x=1.52}
+ventOpenNow(v,fall){if(fall&&v.open)return;v.open=true;v.left=0;
+  if(fall&&v.hg){this.ventFall(v,.9)}
+  else{for(const s of v.sc){s.out=true;s.p=1;if(s.g)s.g.visible=false}v.ang=1.52;v.vel=0;v.done=1;if(v.hg){v.hg.rotation.x=1.52;v.hg.position.z=.25}}},
+/* the cover comes off: the loose screws drop and the cover tips out of the frame, falls, hits the floor and bounces once. push = how hard it is shoved (a kick from inside is harder) */
+ventFall(v,push){v.open=true;v.left=0;v.ang=.05;v.vel=push||.4;v.done=0;v.bn=0;for(const s of v.sc)if(!s.out)this.dropScrew(v,s);if(v.hg){v.hg.rotation.x=v.ang;v.hg.position.z=.05}},
+/* a screw leaves its hole and falls to the floor with a bounce, spinning, then is gone */
+dropScrew(v,s){s.out=true;s.p=1;if(s.g)s.g.visible=false;if(!v.grp)return;
+  const M=this._scm||(this._scm=new THREE.MeshStandardMaterial({color:0x9aa09c,metalness:.9,roughness:.3})),G=this._scg||(this._scg=[new THREE.CylinderGeometry(.034,.034,.014,12),new THREE.CylinderGeometry(.012,.012,.06,6)]);
+  const m=new THREE.Group(),h=new THREE.Mesh(G[0],M),sh=new THREE.Mesh(G[1],M);h.rotation.x=Math.PI/2;sh.rotation.x=Math.PI/2;sh.position.z=-.037;m.add(h);m.add(sh);
+  m.position.set(s.lx,s.ly,.062);v.grp.add(m);(this.sfx||(this.sfx=[])).push({m,vy:.8+Math.random()*.6,vz:.25+Math.random()*.4,vx:(Math.random()-.5)*.5,sx:(Math.random()-.5)*14,sz:(Math.random()-.5)*14,t:0,b:0})}
 });
 
