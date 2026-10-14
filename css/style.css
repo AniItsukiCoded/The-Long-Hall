@@ -186,31 +186,16 @@ body.dev-mobile #touch{display:block;position:fixed;inset:0;z-index:2;pointer-ev
 body.dev-mobile #touch.hidden{display:none!important}
 #joyz{position:absolute;left:0;top:0;bottom:0;width:42%;pointer-events:auto;touch-action:none}
 #lookz{position:absolute;right:0;top:0;bottom:0;width:58%;pointer-events:auto;touch-action:none}
-#joy{position:absolute;left:104px;bottom:90px;width:112px;height:112px;margin:-56px 0 0 -56px;border:2px solid rgba(236,230,216,.35);border-radius:50%;background:rgba(0,0,0,.22);pointer-events:none;opacity:.5;transition:opacity .15s}
+#joy{position:absolute;width:112px;height:112px;margin:-56px 0 0 -56px;border:2px solid rgba(236,230,216,.4);border-radius:50%;background:rgba(0,0,0,.28);pointer-events:none;opacity:0;transition:opacity .15s}
 #joy.on{opacity:1}
-#joy{margin:0;transform:translate(-50%,50%)}
-#joy.on{transform:translate(-50%,-50%)}
-#joyk{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;background:rgba(236,230,216,.4);border:2px solid rgba(236,230,216,.7)}
-#tbtns{position:absolute;inset:0;pointer-events:none}
-.tb{position:absolute;pointer-events:auto;touch-action:none;width:54px;height:54px;border-radius:50%;background:rgba(0,0,0,.38);border:2px solid rgba(236,230,216,.45);color:rgba(236,230,216,.9);padding:0;display:flex;align-items:center;justify-content:center;opacity:.7;-webkit-user-select:none;user-select:none}
-.tb svg{width:56%;height:56%;pointer-events:none}
-.tb.on{background:rgba(236,230,216,.4);opacity:1;color:#fff}
-.tb.use{width:80px;height:80px;right:max(22px,env(safe-area-inset-right));bottom:max(26px,env(safe-area-inset-bottom));border-color:rgba(255,255,255,.8)}
-.tb.crouch{right:calc(max(22px,env(safe-area-inset-right)) + 92px);bottom:max(20px,env(safe-area-inset-bottom))}
-.tb.light{right:max(30px,env(safe-area-inset-right));bottom:calc(max(26px,env(safe-area-inset-bottom)) + 94px)}
-.tb.throw{width:46px;height:46px;right:calc(max(22px,env(safe-area-inset-right)) + 82px);bottom:calc(max(20px,env(safe-area-inset-bottom)) + 70px)}
-.tb.drop{width:46px;height:46px;right:calc(max(22px,env(safe-area-inset-right)) + 150px);bottom:calc(max(20px,env(safe-area-inset-bottom)) + 52px)}
-.tb.batt{width:46px;height:46px;right:calc(max(22px,env(safe-area-inset-right)) + 160px);bottom:max(20px,env(safe-area-inset-bottom))}
-.tb.run{left:max(24px,env(safe-area-inset-left));bottom:max(22px,env(safe-area-inset-bottom));width:46px;height:46px;opacity:.5;display:none}
-#tpause{top:max(10px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));width:42px;height:42px}
-/* Granny-style minimal HUD */
-body.dev-mobile #fuses{left:50%;transform:translateX(-50%);top:10px}
-body.dev-mobile #obj{display:none}
-body.dev-mobile #dayl{left:16px;right:auto;top:12px;font-size:15px}
-body.dev-mobile #plist{left:16px;right:auto;top:38px;align-items:flex-start}
-body.dev-mobile #inv{left:auto;right:max(16px,env(safe-area-inset-right));top:64px;bottom:auto;align-items:flex-end;gap:4px;font-size:14px}
-body.dev-mobile #inv>div{background:rgba(0,0,0,.35);border:1px solid rgba(236,230,216,.25);border-radius:6px;padding:3px 9px}
-body.dev-mobile #inv span{min-width:0}
+#joyk{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:rgba(236,230,216,.42);border:2px solid rgba(236,230,216,.75)}
+#tbtns{position:absolute;right:max(14px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,auto);grid-auto-flow:row;gap:8px;align-items:center;justify-items:center;pointer-events:none}
+.tb{pointer-events:auto;touch-action:none;width:56px;height:56px;border-radius:50%;background:rgba(0,0,0,.5);border:2px solid rgba(236,230,216,.55);color:var(--c);font:italic 12px 'IM Fell English',Georgia,serif;letter-spacing:.03em;padding:0;-webkit-user-select:none;user-select:none;text-shadow:0 1px 0 #000}
+.tb.big{width:84px;height:84px;font-size:19px;grid-row:1/3;grid-column:3;border-color:#fff}
+.tb.on{background:rgba(236,230,216,.4);color:#fff}
+.tb.run{grid-column:2/4;border-radius:28px;width:100%}
+.tb.run.on{border-color:#fff;box-shadow:0 0 12px rgba(236,230,216,.5)}
+#tpause{position:absolute;top:max(10px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));width:44px;height:44px;font-size:16px;font-style:normal}
 #rot{position:fixed;inset:0;z-index:50;background:#000;align-items:center;justify-content:center;text-align:center;font-size:28px;padding:30px}
 @media(orientation:portrait){body.dev-mobile #rot{display:flex}}
 @media(hover:none){.gb:hover{transform:none}}
